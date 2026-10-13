@@ -1,37 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" aria-hidden="true">
-  <!--
-    LOOPZE launcher icon — the app's actual logo (a blue lightning bolt,
-    #58a6ff), same path geometry as frontend/public/logo.svg (scaled and
-    centered here), on the dark rounded-square background this OrbitOS
-    ecosystem's launcher tiles use.
-  -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Orbit Flow">
+  <!-- Orbit Flow icon: one node feeding two, joined by wires, on the Orbit OS purple.
+       The bars on the nodes use the colours the editor gives its node groups. -->
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0d1117"/>
-      <stop offset="100%" stop-color="#161b22"/>
+      <stop offset="0" stop-color="#a08bff"/>
+      <stop offset="0.5" stop-color="#6f52e6"/>
+      <stop offset="1" stop-color="#3f25a3"/>
     </linearGradient>
-
-    <linearGradient id="bolt" x1="15.85" y1="13" x2="48.15" y2="51" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#8ec5ff"/>
-      <stop offset="100%" stop-color="#58a6ff"/>
-    </linearGradient>
-
-    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
-      <feGaussianBlur stdDeviation="2.4" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
   </defs>
-
-  <rect width="64" height="64" rx="14" ry="14" fill="url(#bg)"/>
-
-  <!-- Soft glow pass (blurred duplicate beneath the crisp bolt) -->
-  <polygon points="34.85,13 15.85,35.8 31.05,35.8 29.15,51 48.15,28.2 32.95,28.2"
-           fill="#58a6ff" opacity="0.45" filter="url(#glow)"/>
-
-  <!-- The bolt itself -->
-  <polygon points="34.85,13 15.85,35.8 31.05,35.8 29.15,51 48.15,28.2 32.95,28.2"
-           fill="url(#bolt)"/>
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <path d="M27 32 C33 32 31 18 37 18 M27 32 C33 32 31 46 37 46" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"/>
+  <g fill="#0d1117">
+    <rect x="7" y="23.5" width="20" height="17" rx="4.5"/>
+    <rect x="37" y="10" width="20" height="16" rx="4.5"/>
+    <rect x="37" y="38" width="20" height="16" rx="4.5"/>
+  </g>
+  <rect x="7" y="23.5" width="4" height="17" rx="2" fill="#4dff8f"/>
+  <rect x="37" y="10" width="4" height="16" rx="2" fill="#38b6ff"/>
+  <rect x="37" y="38" width="4" height="16" rx="2" fill="#f2b04a"/>
+  <g fill="#ffffff" opacity="0.85">
+    <rect x="14" y="29" width="9" height="2.2" rx="1.1"/>
+    <rect x="14" y="33.5" width="6" height="2.2" rx="1.1"/>
+    <rect x="44" y="15" width="9" height="2.2" rx="1.1"/>
+    <rect x="44" y="19.5" width="6" height="2.2" rx="1.1"/>
+    <rect x="44" y="43" width="9" height="2.2" rx="1.1"/>
+    <rect x="44" y="47.5" width="6" height="2.2" rx="1.1"/>
+  </g>
 </svg>
