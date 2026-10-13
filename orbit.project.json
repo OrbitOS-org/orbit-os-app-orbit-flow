@@ -1,0 +1,11 @@
+{
+  "language": "go",
+  "name": "orbit-os-app-orbit-flow",
+  "appPath": "cmd/orbit_flow",
+  "certsDir": "cmd/certs/grpc",
+  "sdkVersion": "v26.1.0",
+  "targetArch": [
+    "arm64",
+    "armv7"
+  ]
+}

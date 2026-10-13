@@ -1,0 +1,24 @@
+# Orbit Studio
+**/certs/grpc/*.crt
+**/certs/grpc/*.key
+packages/
+.orbit/
+orbit.project.local.json
+/orbit-os-sdk-go/
+
+# Build output and runtime data
+/bin/
+/build/
+/data/
+/cmd/data/
+/orbit_flow
+*.key
+*.log
+
+# Embedded editor build output. Regenerate with `cd frontend && npm install &&
+# npm run build` (Node 20+), which writes here.
+/web/dist/
+frontend/node_modules/
+
+.DS_Store
+.claude/

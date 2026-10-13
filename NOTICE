@@ -1,0 +1,52 @@
+Orbit Flow — visual flow editor for industrial automation on Orbit OS
+Copyright (C) 2026 Orbit OS
+
+Orbit Flow is a modified version of LOOPZE — Industrial Flow Automation
+Copyright (C) 2026 Dennis Bleul
+Source code of LOOPZE: https://github.com/loopzedev/loopze-edge
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+Source code of Orbit Flow: https://github.com/OrbitOS-org/orbit-os-app-orbit-flow
+
+---
+
+Changes made to LOOPZE
+
+Orbit Flow started from LOOPZE in September 2026. The changes are recorded in
+the history of the repository above. In summary:
+
+- runs as an Orbit OS app and registers its page with the Orbit OS Launcher;
+- Modbus RTU runs over the Orbit OS UART API instead of opening serial devices;
+- new nodes for the device's own hardware and services: GPIO, I2C, SPI, system
+  metrics, device identity and mobile notifications;
+- the file nodes are limited to the app's data folder;
+- the embedded NATS server opens no network port by default;
+- renamed to Orbit Flow.
+
+Files that came from LOOPZE keep the copyright notice of Dennis Bleul. Files
+written for Orbit Flow carry the copyright notice of Orbit OS. All of them are
+licensed under the GNU Affero General Public License v3.0 or later.
+
+---
+
+Third-Party Components
+
+Orbit Flow bundles or links against third-party open-source software.
+Their respective licenses apply to those components and are preserved
+in their source distributions (see go.sum, frontend/node_modules,
+and the upstream repositories of each dependency).
+
+The Orbit OS Go SDK (https://github.com/OrbitOS-org/orbit-os-sdk-go) is
+licensed under the Apache License 2.0.
