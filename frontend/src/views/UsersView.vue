@@ -157,6 +157,7 @@ useSettingsAction({ label: 'New user', run: () => openCreate() })
   <div class="h-full flex flex-col bg-terminal-bg text-terminal-text overflow-hidden">
 
     <div class="flex-1 overflow-auto p-6 space-y-2">
+      <div class="settings-column space-y-2">
       <div v-if="tableError" class="settings-error">{{ tableError }}</div>
 
       <div v-if="loading" class="px-3 text-[15px] text-terminal-text-dim">Loading…</div>
@@ -201,6 +202,7 @@ useSettingsAction({ label: 'New user', run: () => openCreate() })
           A disabled user cannot sign in; disabling a user or resetting their password ends their sessions.
         </p>
       </template>
+      </div>
     </div>
 
     <!-- Create-user modal -->

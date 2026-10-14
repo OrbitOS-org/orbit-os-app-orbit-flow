@@ -95,7 +95,7 @@ useSettingsAction({ label: 'Refresh', run: loadSystem, primary: false })
 
 <template>
   <div class="h-full overflow-y-auto p-6">
-    <section class="space-y-6">
+    <section class="settings-column space-y-6">
         <p v-if="systemError" class="settings-error">{{ systemError }}</p>
 
         <div v-for="group in infoGroups" :key="group.title">

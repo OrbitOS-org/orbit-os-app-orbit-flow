@@ -239,6 +239,7 @@ useSettingsAction(canEdit.value ? { label: 'New certificate', run: () => openCre
   <div class="h-full flex flex-col bg-terminal-bg text-terminal-text overflow-hidden">
 
     <div class="flex-1 overflow-auto p-6 space-y-2">
+      <div class="settings-column space-y-2">
       <div v-if="tableError" class="settings-error">{{ tableError }}</div>
 
       <div v-if="store.loading" class="px-3 text-[15px] text-terminal-text-dim">Loading…</div>
@@ -280,6 +281,7 @@ useSettingsAction(canEdit.value ? { label: 'New certificate', run: () => openCre
         Connection nodes refer to a stored certificate by its ID. Pasted keys are encrypted on the device;
         a certificate taken from a file stays in that file.
       </p>
+      </div>
     </div>
 
     <!-- Create / edit modal ─────────────────────────────────────────────── -->
