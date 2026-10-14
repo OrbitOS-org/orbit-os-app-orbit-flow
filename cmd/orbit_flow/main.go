@@ -96,6 +96,11 @@ func main() {
 	// --data-dir, ...) and calls flag.Parse() itself, so the device --host
 	// flag must be registered above, before this call.
 	cfg := config.Load()
+	// Builds from Orbit Studio do not stamp a version: use the one in
+	// metadata.json, the same the Store and the device show.
+	if config.Version == "dev" && appManifest.Version != "" {
+		config.Version = appManifest.Version
+	}
 
 	if cfg.ShowVersion {
 		fmt.Fprintf(os.Stdout, "orbit-flow %s (commit %s, built %s)\n",

@@ -5,6 +5,7 @@
 package api
 
 import (
+	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/config"
 	"context"
 	"crypto/sha256"
 	"encoding/json"
@@ -240,7 +241,7 @@ func (d *Deps) handleGetSettings(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, http.StatusOK, map[string]any{
 		"settings": map[string]any{
 			"httpNodeRoot":    "/",
-			"version":         "0.1.0",
+			"version":         config.Version,
 			"context":         map[string]any{"stores": []string{"memory"}},
 			"flowFilePretty":  true,
 		},

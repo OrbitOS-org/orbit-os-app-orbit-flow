@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useApi } from '@/composables/useApi'
 
 const settings = ref({
   flowFile: 'flows.json',
@@ -24,6 +25,18 @@ function handleSave(): void {
 function handleReset(): void {
   // TODO: reload settings from backend
 }
+
+// Version reported by the app (from its metadata.json).
+const appVersion = ref('')
+onMounted(async () => {
+  try {
+    const res = await useApi().getSettings()
+    const v = (res.settings as Record<string, unknown> | undefined)?.version
+    if (typeof v === 'string') appVersion.value = v
+  } catch {
+    // Leave the version blank.
+  }
+})
 </script>
 
 <template>
@@ -203,7 +216,7 @@ function handleReset(): void {
         <div class="pl-4 border-l border-terminal-border space-y-1 text-xs">
           <div class="flex gap-4">
             <span class="text-terminal-text-dim w-28">Version</span>
-            <span class="text-terminal-text">v0.1.0</span>
+            <span class="text-terminal-text">{{ appVersion ? `v${appVersion}` : '—' }}</span>
           </div>
           <div class="flex gap-4">
             <span class="text-terminal-text-dim w-28">Runtime</span>
