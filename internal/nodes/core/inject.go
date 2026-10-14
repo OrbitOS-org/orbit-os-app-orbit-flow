@@ -118,7 +118,8 @@ func (n *InjectNode) Init() error {
 	}
 
 	if !n.once && !n.hasRecurringTrigger() {
-		slog.Warn("inject node has no trigger configured (neither once, interval, nor cron)",
+		// Normal for a manual inject (fired with its button only).
+		slog.Debug("inject node has no trigger configured (neither once, interval, nor cron)",
 			"node_id", n.config.ID,
 		)
 	}

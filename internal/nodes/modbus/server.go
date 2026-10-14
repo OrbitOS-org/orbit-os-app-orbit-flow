@@ -122,7 +122,7 @@ func NewModbusServer(cfg flow.ConfigNode) (flow.ConfigInstance, error) {
 			StopBits:    uartStopBitsFromInt(stopBits),
 			FlowControl: orbitclient.UartFlowNone,
 		}
-		h := newOrbitRTUHandler(orbit.UartManager, uartCfg, timeout)
+		h := newOrbitRTUHandler(orbit.UartManager, uartCfg, timeout, reconnectBackoff)
 		s.orbitRTU = h
 		s.client = modbus.NewClient(h)
 	}

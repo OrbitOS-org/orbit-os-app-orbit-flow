@@ -40,6 +40,11 @@ type orbitRTUHandler struct {
 	uartMgr *orbitclient.UartManager
 	cfg     orbitclient.UartConfig
 	timeout time.Duration
+	// retryEvery is how often Send tries to open the port again while it is
+	// not open (the connection's reconnect backoff).
+	retryEvery time.Duration
+	lastTry    time.Time
+	lastErr    error
 
 	mu      sync.Mutex
 	port    *orbitclient.UartPort
@@ -50,8 +55,11 @@ type orbitRTUHandler struct {
 
 // newOrbitRTUHandler builds a handler bound to the given OrbitOS UART
 // manager and port configuration. Connect() opens the port lazily.
-func newOrbitRTUHandler(uartMgr *orbitclient.UartManager, cfg orbitclient.UartConfig, timeout time.Duration) *orbitRTUHandler {
-	return &orbitRTUHandler{uartMgr: uartMgr, cfg: cfg, timeout: timeout}
+func newOrbitRTUHandler(uartMgr *orbitclient.UartManager, cfg orbitclient.UartConfig, timeout, retryEvery time.Duration) *orbitRTUHandler {
+	if retryEvery <= 0 {
+		retryEvery = 5 * time.Second
+	}
+	return &orbitRTUHandler{uartMgr: uartMgr, cfg: cfg, timeout: timeout, retryEvery: retryEvery}
 }
 
 // normalizeUartPortName strips a "/dev/" prefix, if present, since
@@ -66,13 +74,20 @@ func normalizeUartPortName(name string) string {
 func (h *orbitRTUHandler) Connect() error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
+	return h.connectLocked()
+}
+
+// connectLocked opens the port if it is not open. Caller holds h.mu.
+func (h *orbitRTUHandler) connectLocked() error {
 	if h.port != nil {
 		return nil
 	}
+	h.lastTry = time.Now()
 
 	port, err := h.uartMgr.Open(h.cfg)
 	if err != nil {
-		return fmt.Errorf("modbus: open uart %s: %w", h.cfg.Port, err)
+		h.lastErr = openError(h.cfg.Port, err)
+		return h.lastErr
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -86,7 +101,18 @@ func (h *orbitRTUHandler) Connect() error {
 	h.port = port
 	h.cancel = cancel
 	h.chunks = chunks
+	h.lastErr = nil
 	return nil
+}
+
+// openError explains why the port did not open. "already open" means
+// another program (another app, or an earlier run that did not close it)
+// holds the port.
+func openError(port string, err error) error {
+	if strings.Contains(err.Error(), "already open") {
+		return fmt.Errorf("modbus: serial port %s is in use by another program: %w", port, err)
+	}
+	return fmt.Errorf("modbus: open uart %s: %w", port, err)
 }
 
 // Close closes the UART port, if open.
@@ -156,7 +182,17 @@ func (h *orbitRTUHandler) Send(aduRequest []byte) ([]byte, error) {
 	defer h.mu.Unlock()
 
 	if h.port == nil {
-		return nil, fmt.Errorf("modbus: uart port %s not connected", h.cfg.Port)
+		// The port did not open (at deploy, or it was lost): try again,
+		// at most once per retryEvery, and say why it is still closed.
+		if time.Since(h.lastTry) >= h.retryEvery {
+			_ = h.connectLocked()
+		}
+		if h.port == nil {
+			if h.lastErr != nil {
+				return nil, h.lastErr
+			}
+			return nil, fmt.Errorf("modbus: uart port %s not connected", h.cfg.Port)
+		}
 	}
 	if _, err := h.port.Write(aduRequest); err != nil {
 		return nil, fmt.Errorf("modbus: uart write %s: %w", h.cfg.Port, err)
