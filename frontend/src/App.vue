@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, provide, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import HeaderBar from '@/components/HeaderBar.vue'
 import FlowTabBar from '@/components/FlowTabBar.vue'
 import NodePalette from '@/components/NodePalette.vue'
@@ -18,6 +19,9 @@ const ui = useUiStore()
 const flowStore = useFlowStore()
 const debugStore = useDebugStore()
 const auth = useAuthStore()
+const route = useRoute()
+// Settings is its own place: the palette, flow tabs and panels step aside.
+const inSettings = computed(() => route.path.startsWith('/settings'))
 
 onMounted(() => {
   auth.init()
@@ -73,7 +77,21 @@ watch(ws.status, (status) => {
   }
 }, { immediate: true })
 
+// Esc closes the editor's side panels, Properties first, the same way the
+// Log closes (TerminalLogPanel handles its own Esc). Typing in a field,
+// an open dialog and the Settings area are left alone.
+function onEscape(e: KeyboardEvent) {
+  if (e.key !== 'Escape' || inSettings.value || ui.logsPanelOpen) return
+  const t = e.target as HTMLElement | null
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable || t.closest('.monaco-editor'))) return
+  if (document.querySelector('[role="dialog"]')) return
+  if (ui.propertiesPanelOpen) ui.closePropertiesPanel()
+  else if (ui.infoPanelOpen) ui.closeInfoPanel()
+}
+onMounted(() => window.addEventListener('keydown', onEscape))
+
 const mainAreaStyle = computed(() => {
+  if (inSettings.value) return { marginLeft: '0px', marginRight: '0px' }
   const left = ui.leftPanelOpen ? '240px' : '0px'
   const rightWidth = (ui.propertiesPanelOpen ? ui.propertiesPanelWidth : 0) + (ui.infoPanelOpen ? ui.infoPanelWidth : 0)
   return {
@@ -104,13 +122,13 @@ const mainAreaStyle = computed(() => {
       <HeaderBar />
 
       <!-- Flow Tab Bar -->
-      <FlowTabBar />
+      <FlowTabBar v-if="!inSettings" />
 
       <!-- Main Content Area -->
       <div class="flex flex-1 overflow-hidden relative">
         <!-- Left Sidebar: Node Palette -->
         <aside
-          v-show="ui.leftPanelOpen"
+          v-show="ui.leftPanelOpen && !inSettings"
           class="w-[240px] flex-shrink-0 absolute top-0 left-0 bottom-0 z-10 bg-terminal-surface border-r border-terminal-border"
         >
           <NodePalette />
@@ -123,11 +141,11 @@ const mainAreaStyle = computed(() => {
         >
           <router-view />
           <!-- Terminal Log overlay: covers the canvas, leaves sidebars visible -->
-          <TerminalLogPanel />
+          <TerminalLogPanel v-if="!inSettings" />
         </main>
 
         <!-- Right Sidebars: Properties | Debug (side by side) -->
-        <div class="absolute top-0 right-0 bottom-0 z-10 flex">
+        <div v-show="!inSettings" class="absolute top-0 right-0 bottom-0 z-10 flex">
           <aside v-show="ui.propertiesPanelOpen" class="h-full">
             <PropertyPanel />
           </aside>

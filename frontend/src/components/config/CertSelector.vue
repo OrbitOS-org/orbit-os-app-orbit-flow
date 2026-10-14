@@ -82,7 +82,7 @@ function formatExpiry(iso: string | undefined): string {
       class="text-[10px] text-terminal-text-dim leading-tight"
     >
       No {{ props.type }} entries in the cert store yet —
-      <router-link to="/certs" class="text-accent hover:underline">add one</router-link>
+      <router-link to="/settings/certs" class="text-accent hover:underline">add one</router-link>
       .
     </div>
     <div v-if="store.error" class="text-[10px] text-status-error leading-tight">

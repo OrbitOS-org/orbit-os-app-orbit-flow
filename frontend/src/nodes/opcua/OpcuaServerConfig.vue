@@ -253,7 +253,7 @@ function cancel() {
               />
               <div class="text-[10px] text-terminal-text-dim leading-tight">
                 Stored references resolve against the
-                <router-link to="/certs" class="text-accent hover:underline">
+                <router-link to="/settings/certs" class="text-accent hover:underline">
                   central cert store
                 </router-link>
                 so the same client pair can back many configs and rotate

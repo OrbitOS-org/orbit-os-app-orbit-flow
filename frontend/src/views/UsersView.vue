@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useSettingsAction } from '@/views/settings/action'
 import { computed, onMounted, ref } from 'vue'
 
 import { useAuthStore } from '@/stores/authStore'
@@ -147,35 +148,16 @@ const ROLE_OPTIONS: Role[] = ['viewer', 'editor', 'admin']
 function isSelf(u: User): boolean {
   return auth.user?.id === u.id
 }
+
+// The section's main action, shown at the top right of the Settings bar.
+useSettingsAction({ label: 'New user', run: () => openCreate() })
 </script>
 
 <template>
   <div class="h-full flex flex-col bg-terminal-bg text-terminal-text overflow-hidden">
-    <header class="flex items-center justify-between px-6 py-4 border-b border-terminal-border">
-      <div>
-        <h1 class="text-base text-terminal-text-bright font-medium">Users</h1>
-        <p class="text-xs text-terminal-text-dim mt-0.5">
-          Manage local accounts. Disabled users cannot sign in; sessions are
-          revoked on disable and on password reset.
-        </p>
-      </div>
-      <div class="flex items-center gap-2">
-        <router-link
-          to="/"
-          class="px-3 py-1.5 text-xs text-terminal-text-dim hover:text-terminal-text border border-terminal-border rounded-sm hover:bg-terminal-surface-alt"
-        >
-          Back to editor
-        </router-link>
-        <button
-          class="px-3 py-1.5 text-xs bg-accent text-terminal-bg font-medium rounded-sm hover:bg-accent-dim"
-          @click="openCreate"
-        >
-          + New user
-        </button>
-      </div>
-    </header>
 
     <div class="flex-1 overflow-auto p-6">
+      <p class="mb-4 max-w-2xl text-xs text-terminal-text-dim">Manage local accounts. Disabled users cannot sign in; sessions are revoked on disable and on password reset.</p>
       <div v-if="tableError" class="mb-4 text-xs text-status-error bg-status-error/10 border border-status-error/40 px-3 py-2 rounded-sm">
         {{ tableError }}
       </div>

@@ -202,9 +202,7 @@ const levelColor: Record<LogLevel, string> = {
     <header
       class="flex items-center gap-2 px-3 py-2 border-b border-terminal-border bg-terminal-surface shrink-0"
     >
-      <span class="text-[11px] uppercase tracking-wider text-terminal-text-dim font-semibold mr-2">
-        Terminal Log
-      </span>
+      <span class="text-[13px] font-semibold text-terminal-text-bright mr-2">Log</span>
 
       <select
         :value="ui.logsLimit"
@@ -271,11 +269,11 @@ const levelColor: Record<LogLevel, string> = {
       </div>
 
       <button
-        class="px-2 py-1 rounded text-[10px] uppercase tracking-wider font-semibold bg-terminal-bg text-terminal-text-dim hover:bg-terminal-surface-alt"
+        class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-terminal-surface-alt/70 text-terminal-text hover:bg-terminal-surface-alt"
         title="Clear display (server buffer untouched)"
         @click="clearDisplay"
       >
-        CLR
+        Clear
       </button>
 
       <span class="text-terminal-text-dim text-[10px] font-mono tabular-nums ml-auto">
@@ -283,13 +281,14 @@ const levelColor: Record<LogLevel, string> = {
       </span>
 
       <button
-        class="p-1 rounded text-terminal-text-dim hover:text-terminal-text hover:bg-terminal-surface-alt"
+        class="w-6 h-6 flex items-center justify-center rounded-full text-terminal-text-dim hover:text-terminal-text bg-terminal-surface-alt/70 hover:bg-terminal-surface-alt transition-all duration-100"
         title="Close (Esc)"
+        aria-label="Close Log"
         @click="ui.closeLogsPanel()"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="w-4 h-4"
+          class="w-3.5 h-3.5"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"

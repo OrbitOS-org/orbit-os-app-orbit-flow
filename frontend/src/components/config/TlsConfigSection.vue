@@ -183,7 +183,7 @@ watch(enabled, (next, prev) => {
         </FormField>
         <div class="text-[10px] text-terminal-text-dim leading-tight">
           Manage stored entries under
-          <router-link to="/certs" class="text-accent hover:underline">
+          <router-link to="/settings/certs" class="text-accent hover:underline">
             Certificates
           </router-link>
           .

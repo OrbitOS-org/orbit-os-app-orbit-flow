@@ -305,7 +305,7 @@ function cancel() {
             </div>
             <div v-else class="text-[10px] text-terminal-text-dim leading-tight">
               Stored refs resolve against the
-              <router-link to="/certs" class="text-accent hover:underline">
+              <router-link to="/settings/certs" class="text-accent hover:underline">
                 central cert store
               </router-link>
               and rotate independently of this flow. File paths are read fresh

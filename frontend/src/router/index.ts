@@ -1,3 +1,4 @@
+import { watch } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 
@@ -11,21 +12,20 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/FlowEditor.vue'),
   },
   {
+    // One Settings area; each section is a child route.
     path: '/settings',
-    name: 'Settings',
-    component: () => import('@/views/SettingsView.vue'),
+    name: 'settings',
+    component: () => import('@/views/SettingsLayout.vue'),
+    children: [
+      { path: 'users', name: 'settings-users', component: () => import('@/views/UsersView.vue'), meta: { requiresAdmin: true } },
+      { path: 'certs', name: 'settings-certs', component: () => import('@/views/CertsView.vue') },
+      { path: 'appearance', name: 'settings-appearance', component: () => import('@/views/settings/AppearanceSection.vue') },
+      { path: 'about', name: 'settings-about', component: () => import('@/views/settings/AboutSection.vue') },
+    ],
   },
-  {
-    path: '/users',
-    name: 'Users',
-    component: () => import('@/views/UsersView.vue'),
-    meta: { requiresAdmin: true },
-  },
-  {
-    path: '/certs',
-    name: 'Certificates',
-    component: () => import('@/views/CertsView.vue'),
-  },
+  // Old addresses.
+  { path: '/users', redirect: '/settings/users' },
+  { path: '/certs', redirect: '/settings/certs' },
   {
     path: '/design-preview',
     name: 'DesignPreview',
@@ -42,9 +42,16 @@ const router = createRouter({
 // the very first navigation finishes (App.vue runs auth.init() at mount,
 // and route loading is async), but to be safe we redirect to "/" if no
 // user or wrong role.
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   if (to.meta.requiresAdmin) {
     const auth = useAuthStore()
+    // On a fresh page load the session is still being read; wait for it,
+    // so reloading an admin page does not bounce to the editor.
+    if (auth.loading) {
+      await new Promise<void>((resolve) => {
+        const stop = watch(() => auth.loading, (l) => { if (!l) { stop(); resolve() } }, { immediate: true })
+      })
+    }
     if (auth.role !== 'admin') {
       return { path: '/' }
     }

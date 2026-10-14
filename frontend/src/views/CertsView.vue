@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useSettingsAction } from '@/views/settings/action'
 import { computed, onMounted, reactive, ref } from 'vue'
 
 import { useApi, type ApiError } from '@/composables/useApi'
@@ -229,37 +230,16 @@ function fingerprintShort(fp?: string): string {
   if (!fp) return '—'
   return `sha256:${fp.slice(0, 16)}…`
 }
+
+// The section's main action, shown at the top right of the Settings bar.
+useSettingsAction(canEdit.value ? { label: 'New certificate', run: () => openCreate() } : null)
 </script>
 
 <template>
   <div class="h-full flex flex-col bg-terminal-bg text-terminal-text overflow-hidden">
-    <header class="flex items-center justify-between px-6 py-4 border-b border-terminal-border">
-      <div>
-        <h1 class="text-base text-terminal-text-bright font-medium">Certificates</h1>
-        <p class="text-xs text-terminal-text-dim mt-0.5">
-          Stored TLS material that connection nodes (TCP, HTTP, MQTT, OPC UA)
-          can reference by ID. Inline PEM is encrypted at rest; file-source
-          entries point at operator-managed paths.
-        </p>
-      </div>
-      <div class="flex items-center gap-2">
-        <router-link
-          to="/"
-          class="px-3 py-1.5 text-xs text-terminal-text-dim hover:text-terminal-text border border-terminal-border rounded-sm hover:bg-terminal-surface-alt"
-        >
-          Back to editor
-        </router-link>
-        <button
-          v-if="canEdit"
-          class="px-3 py-1.5 text-xs bg-accent text-terminal-bg font-medium rounded-sm hover:bg-accent-dim"
-          @click="openCreate"
-        >
-          + New certificate
-        </button>
-      </div>
-    </header>
 
     <div class="flex-1 overflow-auto p-6">
+      <p class="mb-4 max-w-2xl text-xs text-terminal-text-dim">Stored TLS material that connection nodes (TCP, HTTP, MQTT, OPC UA) can reference by ID. Inline PEM is encrypted at rest; file-source entries point at operator-managed paths.</p>
       <div
         v-if="tableError"
         class="mb-4 text-xs text-status-error bg-status-error/10 border border-status-error/40 px-3 py-2 rounded-sm"
