@@ -238,74 +238,48 @@ useSettingsAction(canEdit.value ? { label: 'New certificate', run: () => openCre
 <template>
   <div class="h-full flex flex-col bg-terminal-bg text-terminal-text overflow-hidden">
 
-    <div class="flex-1 overflow-auto p-6">
-      <p class="mb-4 max-w-2xl text-xs text-terminal-text-dim">Stored TLS material that connection nodes (TCP, HTTP, MQTT, OPC UA) can reference by ID. Inline PEM is encrypted at rest; file-source entries point at operator-managed paths.</p>
-      <div
-        v-if="tableError"
-        class="mb-4 text-xs text-status-error bg-status-error/10 border border-status-error/40 px-3 py-2 rounded-sm"
-      >
-        {{ tableError }}
+    <div class="flex-1 overflow-auto p-6 space-y-2">
+      <div v-if="tableError" class="settings-error">{{ tableError }}</div>
+
+      <div v-if="store.loading" class="px-3 text-[15px] text-terminal-text-dim">Loading…</div>
+
+      <div v-else-if="store.certs.length === 0" class="settings-empty">
+        <svg viewBox="0 0 24 24" class="w-9 h-9 text-terminal-text-dim/60" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6z" /><path d="m9 12 2 2 4-4" stroke-linecap="round" />
+        </svg>
+        <div class="text-[16px] font-semibold text-terminal-text-bright">No certificates yet</div>
+        <p class="text-[13.5px] text-terminal-text-dim max-w-md">
+          Add the TLS certificates and keys that MQTT, HTTP, TCP and OPC UA connections use.
+          Keys pasted here are stored encrypted on the device.
+        </p>
+        <button v-if="canEdit" class="pill pill-primary" @click="openCreate">New certificate</button>
       </div>
 
-      <div v-if="store.loading" class="text-terminal-text-dim text-sm">Loading…</div>
-
-      <div
-        v-else-if="store.certs.length === 0"
-        class="text-terminal-text-dim text-sm border border-dashed border-terminal-border rounded-sm p-6 text-center"
-      >
-        No stored certificates yet.
-        <span v-if="canEdit"> Click <em>+ New certificate</em> to create one.</span>
-      </div>
-
-      <table v-else class="w-full text-xs border border-terminal-border">
-        <thead class="bg-terminal-surface text-terminal-text-dim uppercase text-[10px] tracking-wider">
-          <tr>
-            <th class="text-left px-3 py-2">ID</th>
-            <th class="text-left px-3 py-2">Name</th>
-            <th class="text-left px-3 py-2">Type</th>
-            <th class="text-left px-3 py-2">Source</th>
-            <th class="text-left px-3 py-2">Subject</th>
-            <th class="text-left px-3 py-2">Expires</th>
-            <th class="text-left px-3 py-2">Fingerprint</th>
-            <th class="text-right px-3 py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="c in store.certs"
-            :key="c.id"
-            class="border-t border-terminal-border hover:bg-terminal-surface/50"
-          >
-            <td class="px-3 py-2 font-mono text-terminal-text">{{ c.id }}</td>
-            <td class="px-3 py-2">{{ c.name }}</td>
-            <td class="px-3 py-2 text-terminal-text-dim font-mono">{{ c.type }}</td>
-            <td class="px-3 py-2 text-terminal-text-dim font-mono">{{ c.source }}</td>
-            <td class="px-3 py-2 text-terminal-text-dim font-mono truncate max-w-[18rem]">
-              {{ c.subject ?? '—' }}
-            </td>
-            <td class="px-3 py-2 text-terminal-text-dim font-mono">{{ formatDate(c.notAfter) }}</td>
-            <td class="px-3 py-2 text-terminal-text-dim font-mono truncate max-w-[14rem]">
-              {{ fingerprintShort(c.fingerprint) }}
-            </td>
-            <td class="px-3 py-2 text-right">
-              <button
-                v-if="canEdit"
-                class="px-2 py-0.5 text-[10px] uppercase tracking-wider rounded-sm border border-terminal-border text-terminal-text-dim hover:text-terminal-text mr-1"
-                @click="openEdit(c)"
-              >
-                Edit
-              </button>
-              <button
-                v-if="canEdit"
-                class="px-2 py-0.5 text-[10px] uppercase tracking-wider rounded-sm border border-status-error/40 text-status-error hover:bg-status-error/10"
-                @click="confirmDelete(c)"
-              >
-                Delete
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <template v-else>
+        <div class="info-title">Stored certificates</div>
+        <div class="info-list">
+          <div v-for="c in store.certs" :key="c.id" class="info-row">
+            <div class="min-w-0">
+              <div class="text-terminal-text truncate">{{ c.name || c.id }}</div>
+              <div class="text-[12.5px] text-terminal-text-dim truncate">
+                {{ c.type }} · {{ c.source }} · expires {{ formatDate(c.notAfter) }}
+                <span v-if="c.subject"> · {{ c.subject }}</span>
+              </div>
+              <div class="text-[11.5px] font-mono text-terminal-text-dim/80 truncate">
+                {{ c.id }} · {{ fingerprintShort(c.fingerprint) }}
+              </div>
+            </div>
+            <div v-if="canEdit" class="flex items-center gap-2 shrink-0">
+              <button class="pill pill-plain" @click="openEdit(c)">Edit</button>
+              <button class="pill pill-bad" @click="confirmDelete(c)">Delete</button>
+            </div>
+          </div>
+        </div>
+      </template>
+      <p class="settings-note">
+        Connection nodes refer to a stored certificate by its ID. Pasted keys are encrypted on the device;
+        a certificate taken from a file stays in that file.
+      </p>
     </div>
 
     <!-- Create / edit modal ─────────────────────────────────────────────── -->
@@ -314,52 +288,52 @@ useSettingsAction(canEdit.value ? { label: 'New certificate', run: () => openCre
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
       @click.self="resetForm"
     >
-      <div class="w-[40rem] max-h-[90vh] overflow-auto bg-terminal-surface border border-terminal-border rounded-md shadow-xl p-6">
-        <h2 class="text-sm font-medium text-terminal-text-bright mb-1">
+      <div class="ios-dialog w-[40rem] max-w-[92vw] max-h-[90vh] overflow-auto p-6">
+        <h2 class="mb-1">
           {{ form.mode === 'create' ? 'New certificate' : `Edit ${form.editingId}` }}
         </h2>
-        <p class="text-[11px] text-terminal-text-dim mb-4">
+        <p class="text-[12.5px] text-terminal-text-dim mb-4">
           IDs must match <code>^[a-z0-9][a-z0-9_-]{0,63}$</code> and are immutable.
         </p>
 
         <form class="flex flex-col gap-3" @submit.prevent="submitForm">
           <div class="grid grid-cols-2 gap-3">
-            <label class="flex flex-col gap-1 text-[11px]">
+            <label class="flex flex-col gap-1.5 text-[13px]">
               <span class="text-terminal-text-dim">ID</span>
               <input
                 v-model="form.id"
                 :disabled="form.mode === 'edit'"
-                class="bg-terminal-bg border border-terminal-border rounded px-2 py-1 font-mono text-terminal-text disabled:opacity-50"
+                class="bg-terminal-surface-alt/70 border border-transparent rounded-lg px-2.5 py-1.5 font-mono text-[13px] text-terminal-text outline-none focus:border-accent/60 focus:ring-2 focus:ring-accent/25 disabled:opacity-50"
                 placeholder="ca-internal-root"
               />
             </label>
-            <label class="flex flex-col gap-1 text-[11px]">
+            <label class="flex flex-col gap-1.5 text-[13px]">
               <span class="text-terminal-text-dim">Name</span>
               <input
                 v-model="form.name"
-                class="bg-terminal-bg border border-terminal-border rounded px-2 py-1 text-terminal-text"
+                class="bg-terminal-surface-alt/70 border border-transparent rounded-lg px-2.5 py-1.5 outline-none focus:border-accent/60 focus:ring-2 focus:ring-accent/25 text-terminal-text"
                 placeholder="Internal Root CA"
               />
             </label>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
-            <label class="flex flex-col gap-1 text-[11px]">
+            <label class="flex flex-col gap-1.5 text-[13px]">
               <span class="text-terminal-text-dim">Type</span>
               <select
                 v-model="form.type"
-                class="bg-terminal-bg border border-terminal-border rounded px-2 py-1 text-terminal-text"
+                class="bg-terminal-surface-alt/70 border border-transparent rounded-lg px-2.5 py-1.5 outline-none focus:border-accent/60 focus:ring-2 focus:ring-accent/25 text-terminal-text"
               >
                 <option v-for="o in CERT_TYPE_OPTIONS" :key="o.value" :value="o.value">
                   {{ o.label }}
                 </option>
               </select>
             </label>
-            <label class="flex flex-col gap-1 text-[11px]">
+            <label class="flex flex-col gap-1.5 text-[13px]">
               <span class="text-terminal-text-dim">Source</span>
               <select
                 v-model="form.source"
-                class="bg-terminal-bg border border-terminal-border rounded px-2 py-1 text-terminal-text"
+                class="bg-terminal-surface-alt/70 border border-transparent rounded-lg px-2.5 py-1.5 outline-none focus:border-accent/60 focus:ring-2 focus:ring-accent/25 text-terminal-text"
               >
                 <option v-for="o in CERT_SOURCE_OPTIONS" :key="o.value" :value="o.value">
                   {{ o.label }}
@@ -370,7 +344,7 @@ useSettingsAction(canEdit.value ? { label: 'New certificate', run: () => openCre
 
           <p
             v-if="form.mode === 'edit'"
-            class="text-[10px] text-terminal-text-dim leading-tight bg-terminal-bg border border-terminal-border rounded px-2 py-1.5"
+            class="text-[12px] text-terminal-text-dim leading-tight bg-terminal-surface-alt/70 border border-transparent rounded-lg px-2.5 py-1.5 outline-none focus:border-accent/60 focus:ring-2 focus:ring-accent/25.5"
           >
             Existing PEM and paths are not echoed back for security. Leave the
             fields below empty to keep the current material; fill them only
@@ -378,23 +352,23 @@ useSettingsAction(canEdit.value ? { label: 'New certificate', run: () => openCre
           </p>
 
           <template v-if="form.source === 'inline'">
-            <label class="flex flex-col gap-1 text-[11px]">
+            <label class="flex flex-col gap-1.5 text-[13px]">
               <span class="text-terminal-text-dim">Certificate (PEM)</span>
               <textarea
                 v-model="form.certPem"
                 rows="6"
-                class="font-mono text-[11px] bg-terminal-bg border border-terminal-border rounded px-2 py-1 resize-y"
+                class="font-mono text-[12px] bg-terminal-surface-alt/70 border border-transparent rounded-lg px-2.5 py-1.5 resize-y outline-none focus:border-accent/60 focus:ring-2 focus:ring-accent/25"
                 :placeholder="form.mode === 'edit'
                   ? 'Leave empty to keep current certificate'
                   : '-----BEGIN CERTIFICATE-----\n…\n-----END CERTIFICATE-----'"
               />
             </label>
-            <label v-if="requiresKey" class="flex flex-col gap-1 text-[11px]">
+            <label v-if="requiresKey" class="flex flex-col gap-1.5 text-[13px]">
               <span class="text-terminal-text-dim">Private key (PEM)</span>
               <textarea
                 v-model="form.keyPem"
                 rows="6"
-                class="font-mono text-[11px] bg-terminal-bg border border-terminal-border rounded px-2 py-1 resize-y"
+                class="font-mono text-[12px] bg-terminal-surface-alt/70 border border-transparent rounded-lg px-2.5 py-1.5 resize-y outline-none focus:border-accent/60 focus:ring-2 focus:ring-accent/25"
                 :placeholder="form.mode === 'edit'
                   ? 'Leave empty to keep current key'
                   : '-----BEGIN PRIVATE KEY-----\n…\n-----END PRIVATE KEY-----'"
@@ -403,58 +377,58 @@ useSettingsAction(canEdit.value ? { label: 'New certificate', run: () => openCre
           </template>
 
           <template v-else>
-            <label class="flex flex-col gap-1 text-[11px]">
+            <label class="flex flex-col gap-1.5 text-[13px]">
               <span class="text-terminal-text-dim">Certificate file (absolute path)</span>
               <input
                 v-model="form.certPath"
-                class="bg-terminal-bg border border-terminal-border rounded px-2 py-1 font-mono text-terminal-text"
+                class="bg-terminal-surface-alt/70 border border-transparent rounded-lg px-2.5 py-1.5 font-mono text-[13px] text-terminal-text outline-none focus:border-accent/60 focus:ring-2 focus:ring-accent/25"
                 placeholder="/path/to/ca.pem"
               />
             </label>
-            <label v-if="requiresKey" class="flex flex-col gap-1 text-[11px]">
+            <label v-if="requiresKey" class="flex flex-col gap-1.5 text-[13px]">
               <span class="text-terminal-text-dim">Private key file (absolute path)</span>
               <input
                 v-model="form.keyPath"
-                class="bg-terminal-bg border border-terminal-border rounded px-2 py-1 font-mono text-terminal-text"
+                class="bg-terminal-surface-alt/70 border border-transparent rounded-lg px-2.5 py-1.5 font-mono text-[13px] text-terminal-text outline-none focus:border-accent/60 focus:ring-2 focus:ring-accent/25"
                 placeholder="/path/to/client.key"
               />
             </label>
-            <p class="text-[10px] text-terminal-text-dim leading-tight">
+            <p class="text-[12px] text-terminal-text-dim leading-tight">
               File contents are read fresh on every connection init, so external
               tools (cert-manager, Let's Encrypt) can rotate without touching
               this entry.
             </p>
           </template>
 
-          <label class="flex flex-col gap-1 text-[11px]">
+          <label class="flex flex-col gap-1.5 text-[13px]">
             <span class="text-terminal-text-dim">Notes</span>
             <input
               v-model="form.notes"
-              class="bg-terminal-bg border border-terminal-border rounded px-2 py-1 text-terminal-text"
+              class="bg-terminal-surface-alt/70 border border-transparent rounded-lg px-2.5 py-1.5 outline-none focus:border-accent/60 focus:ring-2 focus:ring-accent/25 text-terminal-text"
               placeholder="Provisioned by ops on 2026-05-09"
             />
           </label>
 
-          <div v-if="probe" class="text-[11px] border border-status-success/30 bg-status-success/10 text-terminal-text rounded px-3 py-2 font-mono">
+          <div v-if="probe" class="text-[12.5px] border border-status-success/30 bg-status-success/10 text-terminal-text rounded px-3 py-2 font-mono">
             <div>Subject: {{ probe.subject }}</div>
             <div>Issuer: {{ probe.issuer }}</div>
             <div>Expires: {{ formatDate(probe.notAfter) }}</div>
             <div class="truncate">{{ fingerprintShort(probe.fingerprint) }}</div>
           </div>
-          <div v-if="probeError" class="text-[11px] text-status-error">{{ probeError }}</div>
-          <div v-if="form.error" class="text-[11px] text-status-error">{{ form.error }}</div>
+          <div v-if="probeError" class="text-[12.5px] text-status-error">{{ probeError }}</div>
+          <div v-if="form.error" class="text-[12.5px] text-status-error">{{ form.error }}</div>
 
           <div class="flex justify-end gap-2 mt-1">
             <button
               type="button"
-              class="px-3 py-1.5 text-xs text-terminal-text-dim hover:text-terminal-text border border-terminal-border rounded-sm"
+              class="pill pill-plain"
               @click="resetForm"
             >
               Cancel
             </button>
             <button
               type="button"
-              class="px-3 py-1.5 text-xs text-terminal-text-dim hover:text-terminal-text border border-terminal-border rounded-sm"
+              class="pill pill-plain"
               :disabled="probing"
               @click="previewParse"
             >
@@ -462,7 +436,7 @@ useSettingsAction(canEdit.value ? { label: 'New certificate', run: () => openCre
             </button>
             <button
               type="submit"
-              class="px-3 py-1.5 text-xs bg-accent text-terminal-bg font-medium rounded-sm hover:bg-accent-dim disabled:opacity-50"
+              class="pill pill-primary disabled:opacity-50"
               :disabled="!canSubmit"
             >
               {{ form.mode === 'create' ? 'Create' : 'Save' }}
@@ -478,8 +452,8 @@ useSettingsAction(canEdit.value ? { label: 'New certificate', run: () => openCre
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
       @click.self="deleteTarget = null"
     >
-      <div class="w-[34rem] bg-terminal-surface border border-terminal-border rounded-md shadow-xl p-6">
-        <h2 class="text-sm font-medium text-terminal-text-bright mb-2">
+      <div class="ios-dialog w-[34rem] max-w-[92vw] p-6">
+        <h2 class="mb-2">
           Delete {{ deleteTarget.id }}?
         </h2>
         <p class="text-xs text-terminal-text-dim mb-3">
@@ -489,7 +463,7 @@ useSettingsAction(canEdit.value ? { label: 'New certificate', run: () => openCre
 
         <div
           v-if="deleteRefs.length"
-          class="text-[11px] border border-status-error/40 bg-status-error/10 text-terminal-text rounded px-3 py-2 mb-3"
+          class="text-[12.5px] border border-status-error/40 bg-status-error/10 text-terminal-text rounded px-3 py-2 mb-3"
         >
           <div class="text-status-error font-medium mb-1">
             Cert is still referenced:
@@ -501,19 +475,19 @@ useSettingsAction(canEdit.value ? { label: 'New certificate', run: () => openCre
           </ul>
         </div>
 
-        <div v-if="deleteError" class="text-[11px] text-status-error mb-3">
+        <div v-if="deleteError" class="text-[12.5px] text-status-error mb-3">
           {{ deleteError }}
         </div>
 
         <div class="flex justify-end gap-2">
           <button
-            class="px-3 py-1.5 text-xs text-terminal-text-dim hover:text-terminal-text border border-terminal-border rounded-sm"
+            class="pill pill-plain"
             @click="deleteTarget = null"
           >
             Cancel
           </button>
           <button
-            class="px-3 py-1.5 text-xs bg-status-error/15 border border-status-error/40 text-status-error font-medium rounded-sm hover:bg-status-error/25 disabled:opacity-50"
+            class="pill pill-bad disabled:opacity-50"
             :disabled="deleting"
             @click="performDelete"
           >

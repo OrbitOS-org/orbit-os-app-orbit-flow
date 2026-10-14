@@ -22,7 +22,7 @@ const { theme, setTheme } = useTheme()
           </div>
         </div>
       </div>
-      <p class="px-3 text-xs text-terminal-text-dim">Saved in this browser. The button in the header switches it too.</p>
+      <p class="settings-note">Saved in this browser. The button in the header switches it too.</p>
     </div>
   </div>
 </template>

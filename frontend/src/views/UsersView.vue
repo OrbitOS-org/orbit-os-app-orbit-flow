@@ -156,75 +156,51 @@ useSettingsAction({ label: 'New user', run: () => openCreate() })
 <template>
   <div class="h-full flex flex-col bg-terminal-bg text-terminal-text overflow-hidden">
 
-    <div class="flex-1 overflow-auto p-6">
-      <p class="mb-4 max-w-2xl text-xs text-terminal-text-dim">Manage local accounts. Disabled users cannot sign in; sessions are revoked on disable and on password reset.</p>
-      <div v-if="tableError" class="mb-4 text-xs text-status-error bg-status-error/10 border border-status-error/40 px-3 py-2 rounded-sm">
-        {{ tableError }}
-      </div>
+    <div class="flex-1 overflow-auto p-6 space-y-2">
+      <div v-if="tableError" class="settings-error">{{ tableError }}</div>
 
-      <div v-if="loading" class="text-terminal-text-dim text-sm">Loading…</div>
+      <div v-if="loading" class="px-3 text-[15px] text-terminal-text-dim">Loading…</div>
 
-      <table v-else class="w-full text-xs border border-terminal-border">
-        <thead class="bg-terminal-surface text-terminal-text-dim uppercase text-[10px] tracking-wider">
-          <tr>
-            <th class="text-left px-3 py-2">Username</th>
-            <th class="text-left px-3 py-2">Role</th>
-            <th class="text-left px-3 py-2">Provider</th>
-            <th class="text-left px-3 py-2">Status</th>
-            <th class="text-left px-3 py-2">Created</th>
-            <th class="text-right px-3 py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="u in users"
-            :key="u.id"
-            class="border-t border-terminal-border hover:bg-terminal-surface/50"
-          >
-            <td class="px-3 py-2 font-mono text-terminal-text">
-              {{ u.username }}
-              <span v-if="isSelf(u)" class="ml-1 text-[10px] text-terminal-text-dim">(you)</span>
-            </td>
-            <td class="px-3 py-2">
+      <template v-else>
+        <div class="info-title">Accounts</div>
+        <div class="info-list">
+          <div v-for="u in users" :key="u.id" class="info-row">
+            <div class="min-w-0">
+              <div class="text-terminal-text">
+                {{ u.username }}
+                <span v-if="isSelf(u)" class="text-terminal-text-dim">(you)</span>
+              </div>
+              <div class="text-[12.5px] text-terminal-text-dim">
+                {{ u.authProvider }} · created {{ new Date(u.createdAt).toISOString().slice(0, 10) }}
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
               <select
                 :value="u.role"
-                class="bg-terminal-bg border border-terminal-border text-terminal-text px-2 py-1 text-xs focus:border-accent outline-none"
+                class="pill-select"
+                :aria-label="`Role of ${u.username}`"
                 @change="changeRole(u, ($event.target as HTMLSelectElement).value as Role)"
               >
-                <option v-for="r in ROLE_OPTIONS" :key="r" :value="r">{{ r }}</option>
+                <option v-for="r in ROLE_OPTIONS" :key="r" :value="r">{{ r[0].toUpperCase() + r.slice(1) }}</option>
               </select>
-            </td>
-            <td class="px-3 py-2 text-terminal-text-dim">{{ u.authProvider }}</td>
-            <td class="px-3 py-2">
               <button
-                class="px-2 py-0.5 text-[10px] uppercase tracking-wider rounded-sm border"
-                :class="u.disabled
-                  ? 'border-status-error/40 text-status-error bg-status-error/10'
-                  : 'border-status-success/40 text-status-success bg-status-success/10'"
+                class="pill"
+                :class="u.disabled ? 'pill-bad' : 'pill-ok'"
+                :title="u.disabled ? 'Disabled — click to enable' : 'Active — click to disable'"
                 @click="toggleDisabled(u)"
               >
                 {{ u.disabled ? 'Disabled' : 'Active' }}
               </button>
-            </td>
-            <td class="px-3 py-2 text-terminal-text-dim font-mono">
-              {{ new Date(u.createdAt).toISOString().slice(0, 10) }}
-            </td>
-            <td class="px-3 py-2 text-right">
-              <button
-                class="px-2 py-1 text-[11px] text-terminal-text-dim hover:text-terminal-text border border-terminal-border rounded-sm hover:bg-terminal-surface-alt"
-                @click="openPasswordReset(u)"
-              >
-                Reset password
-              </button>
-            </td>
-          </tr>
-          <tr v-if="users.length === 0">
-            <td colspan="6" class="px-3 py-6 text-center text-terminal-text-dim">
-              No users yet.
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              <button class="pill pill-plain" @click="openPasswordReset(u)">Reset password</button>
+            </div>
+          </div>
+          <div v-if="users.length === 0" class="info-row justify-center text-terminal-text-dim">No users yet.</div>
+        </div>
+        <p class="settings-note">
+          Admins manage users and certificates, editors change and deploy flows, viewers only look.
+          A disabled user cannot sign in; disabling a user or resetting their password ends their sessions.
+        </p>
+      </template>
     </div>
 
     <!-- Create-user modal -->
@@ -233,47 +209,47 @@ useSettingsAction({ label: 'New user', run: () => openCreate() })
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
     >
       <form
-        class="w-[400px] max-w-[90vw] bg-terminal-surface border border-terminal-border rounded shadow-xl"
+        class="ios-dialog w-[400px] max-w-[90vw]"
         @submit.prevent="submitCreate"
       >
-        <header class="px-6 py-4 border-b border-terminal-border">
-          <h2 class="text-base text-terminal-text-bright font-medium">New user</h2>
+        <header class="px-6 pt-5 pb-2">
+          <h2>New user</h2>
         </header>
         <div class="px-6 py-5 space-y-4">
           <div>
-            <label class="block text-[10px] uppercase tracking-wider text-terminal-text-dim mb-1">Username</label>
+            <label class="block text-[12px] text-terminal-text-dim mb-1">Username</label>
             <input
               v-model="createUsername"
               type="text"
               autofocus
               :disabled="createSubmitting"
-              class="w-full bg-terminal-bg border border-terminal-border text-terminal-text px-3 py-2 text-sm outline-none focus:border-accent disabled:opacity-50"
+              class="w-full bg-terminal-surface-alt/70 border border-transparent rounded-lg text-terminal-text px-3 py-2 text-[15px] outline-none focus:border-accent/60 focus:ring-2 focus:ring-accent/25 disabled:opacity-50"
             />
           </div>
           <div>
-            <label class="block text-[10px] uppercase tracking-wider text-terminal-text-dim mb-1">Password</label>
+            <label class="block text-[12px] text-terminal-text-dim mb-1">Password</label>
             <input
               v-model="createPassword"
               type="password"
               autocomplete="new-password"
               :disabled="createSubmitting"
-              class="w-full bg-terminal-bg border border-terminal-border text-terminal-text px-3 py-2 text-sm outline-none focus:border-accent disabled:opacity-50"
+              class="w-full bg-terminal-surface-alt/70 border border-transparent rounded-lg text-terminal-text px-3 py-2 text-[15px] outline-none focus:border-accent/60 focus:ring-2 focus:ring-accent/25 disabled:opacity-50"
             />
-            <p class="mt-1 text-[11px] text-terminal-text-dim">Minimum 8 characters.</p>
+            <p class="mt-1 text-[12.5px] text-terminal-text-dim">Minimum 8 characters.</p>
           </div>
           <div>
-            <label class="block text-[10px] uppercase tracking-wider text-terminal-text-dim mb-1">Role</label>
+            <label class="block text-[12px] text-terminal-text-dim mb-1">Role</label>
             <select
               v-model="createRole"
               :disabled="createSubmitting"
-              class="w-full bg-terminal-bg border border-terminal-border text-terminal-text px-3 py-2 text-sm outline-none focus:border-accent disabled:opacity-50"
+              class="w-full bg-terminal-surface-alt/70 border border-transparent rounded-lg text-terminal-text px-3 py-2 text-[15px] outline-none focus:border-accent/60 focus:ring-2 focus:ring-accent/25 disabled:opacity-50"
             >
               <option value="viewer">viewer — read-only</option>
               <option value="editor">editor — deploy & run</option>
               <option value="admin">admin — full control</option>
             </select>
           </div>
-          <div v-if="createError" class="text-[12px] text-status-error bg-status-error/10 border border-status-error/40 px-3 py-2 rounded-sm">
+          <div v-if="createError" class="text-[12px] text-status-error bg-status-error/10 rounded-lg px-3 py-2 rounded-lg">
             {{ createError }}
           </div>
         </div>
@@ -281,7 +257,7 @@ useSettingsAction({ label: 'New user', run: () => openCreate() })
           <button
             type="button"
             :disabled="createSubmitting"
-            class="px-3 py-1.5 text-sm text-terminal-text-dim hover:text-terminal-text border border-terminal-border rounded-sm hover:bg-terminal-surface-alt disabled:opacity-50"
+            class="pill pill-plain disabled:opacity-50"
             @click="showCreate = false"
           >
             Cancel
@@ -289,7 +265,7 @@ useSettingsAction({ label: 'New user', run: () => openCreate() })
           <button
             type="submit"
             :disabled="!canSubmitCreate"
-            class="px-4 py-1.5 text-sm bg-accent text-terminal-bg font-medium rounded-sm hover:bg-accent-dim disabled:opacity-40 disabled:cursor-not-allowed"
+            class="pill pill-primary disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {{ createSubmitting ? 'Creating…' : 'Create' }}
           </button>
@@ -303,11 +279,11 @@ useSettingsAction({ label: 'New user', run: () => openCreate() })
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
     >
       <form
-        class="w-[400px] max-w-[90vw] bg-terminal-surface border border-terminal-border rounded shadow-xl"
+        class="ios-dialog w-[400px] max-w-[90vw]"
         @submit.prevent="submitPassword"
       >
-        <header class="px-6 py-4 border-b border-terminal-border">
-          <h2 class="text-base text-terminal-text-bright font-medium">
+        <header class="px-6 pt-5 pb-2">
+          <h2>
             Reset password
           </h2>
           <p class="text-xs text-terminal-text-dim mt-0.5">
@@ -317,18 +293,18 @@ useSettingsAction({ label: 'New user', run: () => openCreate() })
         </header>
         <div class="px-6 py-5 space-y-4">
           <div>
-            <label class="block text-[10px] uppercase tracking-wider text-terminal-text-dim mb-1">New password</label>
+            <label class="block text-[12px] text-terminal-text-dim mb-1">New password</label>
             <input
               v-model="passwordValue"
               type="password"
               autocomplete="new-password"
               autofocus
               :disabled="passwordSubmitting"
-              class="w-full bg-terminal-bg border border-terminal-border text-terminal-text px-3 py-2 text-sm outline-none focus:border-accent disabled:opacity-50"
+              class="w-full bg-terminal-surface-alt/70 border border-transparent rounded-lg text-terminal-text px-3 py-2 text-[15px] outline-none focus:border-accent/60 focus:ring-2 focus:ring-accent/25 disabled:opacity-50"
             />
-            <p class="mt-1 text-[11px] text-terminal-text-dim">Minimum 8 characters.</p>
+            <p class="mt-1 text-[12.5px] text-terminal-text-dim">Minimum 8 characters.</p>
           </div>
-          <div v-if="passwordError" class="text-[12px] text-status-error bg-status-error/10 border border-status-error/40 px-3 py-2 rounded-sm">
+          <div v-if="passwordError" class="text-[12px] text-status-error bg-status-error/10 rounded-lg px-3 py-2 rounded-lg">
             {{ passwordError }}
           </div>
         </div>
@@ -336,7 +312,7 @@ useSettingsAction({ label: 'New user', run: () => openCreate() })
           <button
             type="button"
             :disabled="passwordSubmitting"
-            class="px-3 py-1.5 text-sm text-terminal-text-dim hover:text-terminal-text border border-terminal-border rounded-sm hover:bg-terminal-surface-alt disabled:opacity-50"
+            class="pill pill-plain disabled:opacity-50"
             @click="passwordTarget = null"
           >
             Cancel
@@ -344,7 +320,7 @@ useSettingsAction({ label: 'New user', run: () => openCreate() })
           <button
             type="submit"
             :disabled="!canSubmitPassword"
-            class="px-4 py-1.5 text-sm bg-accent text-terminal-bg font-medium rounded-sm hover:bg-accent-dim disabled:opacity-40 disabled:cursor-not-allowed"
+            class="pill pill-primary disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {{ passwordSubmitting ? 'Saving…' : 'Save' }}
           </button>

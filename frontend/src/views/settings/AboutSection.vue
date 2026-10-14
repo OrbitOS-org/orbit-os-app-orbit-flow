@@ -96,7 +96,7 @@ useSettingsAction({ label: 'Refresh', run: loadSystem, primary: false })
 <template>
   <div class="h-full overflow-y-auto p-6">
     <section class="space-y-6">
-        <p v-if="systemError" class="text-xs text-status-error">{{ systemError }}</p>
+        <p v-if="systemError" class="settings-error">{{ systemError }}</p>
 
         <div v-for="group in infoGroups" :key="group.title">
           <div class="info-title">{{ group.title }}</div>
@@ -130,7 +130,7 @@ useSettingsAction({ label: 'Refresh', run: loadSystem, primary: false })
             </div>
             <div class="info-row"><span class="text-terminal-text">Copyright</span><span class="text-terminal-text-dim text-right">© 2026 Dennis Bleul · © 2026 Orbit OS</span></div>
           </div>
-          <p class="mt-2 px-1 text-[11px] text-terminal-text-dim leading-relaxed">
+          <p class="settings-note mt-2">
             Orbit Flow is free software released under the GNU Affero General Public
             License v3.0 or later. If you run a modified version on a server and
             let users interact with it over a network, you must offer those users
