@@ -62,6 +62,8 @@ export const useFlowStore = defineStore("flow", () => {
   const dirtyNodeIds = ref(new Set<string>());
   const dirtyFlowIds = ref(new Set<string>());
   const deployedFlows = ref<Flow[]>([]);
+  // Connections as they are on the device, for deploying a single flow.
+  const deployedConfigs = ref<ConfigNode[]>([]);
   const revision = ref<string | null>(null);
   const deploying = ref(false);
 
@@ -123,6 +125,112 @@ export const useFlowStore = defineStore("flow", () => {
 
   function snapshotDeployedState(): void {
     deployedFlows.value = JSON.parse(JSON.stringify(toRaw(flows.value)));
+    deployedConfigs.value = JSON.parse(JSON.stringify(toRaw(configs.value)));
+  }
+
+  // --------------- Deployment state of each flow ---------------
+
+  /**
+   * Where a flow stands on the device:
+   * - "new":      not deployed yet
+   * - "stopped":  deployed, but disabled, so it does not run
+   * - "changed":  running, with changes in the editor not deployed yet
+   * - "running":  running, the same as in the editor
+   */
+  type FlowState = "new" | "stopped" | "changed" | "running";
+  function flowState(flowId: string): FlowState {
+    const deployed = deployedFlows.value.find((f) => f.id === flowId);
+    if (!deployed) return "new";
+    if (deployed.disabled) return "stopped";
+    return dirtyFlowIds.value.has(flowId) ? "changed" : "running";
+  }
+
+  /** Number of flows with changes not deployed (removed ones included). */
+  const changedFlowCount = computed(() => {
+    let n = 0;
+    for (const id of dirtyFlowIds.value) {
+      const here = flows.value.some((f) => f.id === id);
+      const there = deployedFlows.value.some((f) => f.id === id);
+      if (here || there) n++;
+    }
+    return n;
+  });
+
+  // Connections a set of nodes refers to (any string value equal to an ID).
+  function configsUsedBy(nodes: ApiNode[], pool: ConfigNode[]): ConfigNode[] {
+    const ids = new Set(pool.map((c) => c.id));
+    const used = new Set<string>();
+    const scan = (v: unknown): void => {
+      if (typeof v === "string") { if (ids.has(v)) used.add(v); }
+      else if (Array.isArray(v)) v.forEach(scan);
+      else if (v && typeof v === "object") Object.values(v).forEach(scan);
+    };
+    nodes.forEach((n) => scan(n.config));
+    return pool.filter((c) => used.has(c.id));
+  }
+
+  /**
+   * Deploys one flow and nothing else: the device keeps every other flow
+   * (and connection) as it was last deployed, so changes in other tabs stay
+   * pending. "stop" and "start" change only whether the deployed version
+   * runs; "deploy" sends this flow as it is in the editor.
+   */
+  async function deploySingleFlow(flowId: string, action: "stop" | "start" | "deploy"): Promise<void> {
+    if (deploying.value) throw new Error("A deploy is already running");
+    if (flowId === activeFlowId.value) syncCanvasToActiveFlow();
+    const current = flows.value.find((f) => f.id === flowId);
+    const deployed = deployedFlows.value.find((f) => f.id === flowId);
+    if (!current) throw new Error("No such flow");
+    if (action !== "deploy" && !deployed) throw new Error("This flow is not deployed yet");
+
+    let next: Flow;
+    if (action === "deploy") {
+      next = JSON.parse(JSON.stringify(toRaw(current)));
+    } else {
+      next = { ...JSON.parse(JSON.stringify(toRaw(deployed))), disabled: action === "stop" };
+    }
+    const outFlows = deployedFlows.value.map((f) => (f.id === flowId ? next : f));
+    if (!deployed) {
+      const order = flows.value.findIndex((f) => f.id === flowId);
+      outFlows.splice(Math.min(order, outFlows.length), 0, next);
+    }
+    let outConfigs = deployedConfigs.value;
+    if (action === "deploy") {
+      // Add or update the connections this flow uses; keep the others as deployed.
+      const needed = configsUsedBy(next.nodes, configs.value);
+      const byId = new Map(outConfigs.map((c) => [c.id, c]));
+      needed.forEach((c) => byId.set(c.id, JSON.parse(JSON.stringify(toRaw(c)))));
+      outConfigs = [...byId.values()];
+    }
+
+    const ui = useUiStore();
+    deploying.value = true;
+    ui.setDeployStatus("deploying");
+    try {
+      const result = await useApi().deployFlows({
+        flows: outFlows,
+        configs: outConfigs.length > 0 ? outConfigs : undefined,
+        rev: revision.value ?? undefined,
+        deployMode: "flows",
+      });
+      revision.value = result.rev;
+      deployedFlows.value = JSON.parse(JSON.stringify(outFlows));
+      deployedConfigs.value = JSON.parse(JSON.stringify(outConfigs));
+      if (action === "deploy") {
+        const ids = new Set(current.nodes.map((n) => n.id));
+        dirtyNodeIds.value = new Set([...dirtyNodeIds.value].filter((id) => !ids.has(id)));
+        dirtyFlowIds.value = new Set([...dirtyFlowIds.value].filter((id) => id !== flowId));
+      } else {
+        current.disabled = action === "stop";
+      }
+      dirty.value = dirtyFlowIds.value.size > 0;
+      ui.setDeployStatus("deployed");
+    } catch (err) {
+      ui.setDeployStatus("failed");
+      throw err;
+    } finally {
+      deploying.value = false;
+    }
   }
 
   function revertNode(nodeId: string): void {
@@ -858,6 +966,9 @@ export const useFlowStore = defineStore("flow", () => {
     // Actions
     setActiveFlow,
     exportFlow,
+    flowState,
+    changedFlowCount,
+    deploySingleFlow,
     importExample,
     addFlow,
     removeFlow,

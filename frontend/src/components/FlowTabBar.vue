@@ -22,7 +22,66 @@ function handleDblClick(flowId: string) {
 
 const auth = useAuthStore()
 
-// Each tab is a flow; its × deletes the flow after a confirmation. The last
+// ── Flow menu ────────────────────────────────────────────────────
+const STATE_LABEL: Record<string, string> = {
+  running: 'Running on the device',
+  changed: 'Running · changes not deployed',
+  new: 'Not deployed yet',
+  stopped: 'Stopped on the device',
+}
+const menuFor = ref<string | null>(null)
+const menuPos = ref({ x: 0, y: 0 })
+const menuFlow = computed(() => flowStore.flows.find((f) => f.id === menuFor.value) ?? null)
+const menuState = computed(() => (menuFor.value ? flowStore.flowState(menuFor.value) : 'running'))
+const busy = ref(false)
+const toast = ref<string | null>(null)
+const toastBad = ref(false)
+let toastTimer: ReturnType<typeof setTimeout> | undefined
+
+function openMenu(id: string, e: MouseEvent) {
+  if (menuFor.value === id) { menuFor.value = null; return }
+  const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+  menuPos.value = { x: Math.min(r.left - 8, window.innerWidth - 270), y: r.bottom + 8 }
+  menuFor.value = id
+}
+function showToast(text: string, bad = false) {
+  toast.value = text
+  toastBad.value = bad
+  clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => { toast.value = null }, bad ? 5000 : 2500)
+}
+async function run(action: 'stop' | 'start' | 'deploy') {
+  const flow = menuFlow.value
+  if (!flow) return
+  busy.value = true
+  try {
+    await flowStore.deploySingleFlow(flow.id, action)
+    showToast(action === 'stop' ? `“${flow.label}” stopped on the device` : action === 'start' ? `“${flow.label}” is running` : `“${flow.label}” deployed`)
+  } catch (err) {
+    showToast(err instanceof Error ? err.message : 'The device did not accept the change', true)
+  } finally {
+    busy.value = false
+    menuFor.value = null
+  }
+}
+function rename() {
+  const id = menuFor.value
+  menuFor.value = null
+  if (id) ui.openFlowEditProperties(id)
+}
+function closeFlow() {
+  const id = menuFor.value
+  menuFor.value = null
+  if (id) askDelete(id)
+}
+function closeMenuOnOutside(e: MouseEvent) {
+  const t = e.target as HTMLElement
+  if (!t.closest('.flow-menu') && !t.closest('.tab-more')) menuFor.value = null
+}
+onMounted(() => document.addEventListener('click', closeMenuOnOutside))
+onUnmounted(() => document.removeEventListener('click', closeMenuOnOutside))
+
+// Each tab is a flow; "Close…" deletes or saves it after a confirmation. The last
 // flow cannot be deleted, and only users who can deploy can delete.
 const canDelete = computed(() => auth.can('deploy') && flowStore.flows.length > 1)
 const deletingId = ref<string | null>(null)
@@ -65,7 +124,9 @@ function confirmDelete() {
   deletingId.value = null
 }
 function onEscDelete(e: KeyboardEvent) {
-  if (e.key === 'Escape' && deletingId.value) deletingId.value = null
+  if (e.key !== 'Escape') return
+  if (deletingId.value) deletingId.value = null
+  else if (menuFor.value) menuFor.value = null
 }
 onMounted(() => document.addEventListener('keydown', onEscDelete))
 onUnmounted(() => document.removeEventListener('keydown', onEscDelete))
@@ -149,24 +210,25 @@ function onDragEnd() {
       @drop="onDrop(idx)"
       @dragend="onDragEnd"
     >
-      <span class="truncate max-w-[120px]">{{ flow.label }}</span>
       <span
-        v-if="flowStore.isFlowDirty(flow.id)"
-        class="w-1.5 h-1.5 rounded-full bg-accent"
-        style="box-shadow: 0 0 4px rgb(var(--c-accent) / 0.5)"
+        class="state-mark"
+        :class="flowStore.flowState(flow.id)"
+        :title="STATE_LABEL[flowStore.flowState(flow.id)]"
+        aria-hidden="true"
       />
-      <!-- Close = delete the flow (each tab is a flow), after confirming. -->
+      <span class="truncate max-w-[140px]" :class="{ 'text-terminal-text-dim': flowStore.flowState(flow.id) === 'stopped' }">{{ flow.label }}</span>
+      <span class="sr-only">({{ STATE_LABEL[flowStore.flowState(flow.id)] }})</span>
+      <!-- Flow menu: state, stop/start, deploy this flow, rename, close -->
       <button
-        v-if="canDelete"
-        class="tab-close"
-        :class="flow.id === flowStore.activeFlowId ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100'"
-        :title="`Delete ${flow.label}`"
-        :aria-label="`Delete flow ${flow.label}`"
-        @click.stop="askDelete(flow.id)"
+        class="tab-more"
+        :class="flow.id === flowStore.activeFlowId || menuFor === flow.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100'"
+        :aria-label="`Menu of ${flow.label}`"
+        :aria-expanded="menuFor === flow.id"
+        @click.stop="openMenu(flow.id, $event)"
         @dblclick.stop
         @mousedown.stop
       >
-        <svg viewBox="0 0 12 12" class="w-2 h-2" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>
+        <svg viewBox="0 0 16 4" class="w-3 h-1" aria-hidden="true"><circle cx="2" cy="2" r="1.6" fill="currentColor" /><circle cx="8" cy="2" r="1.6" fill="currentColor" /><circle cx="14" cy="2" r="1.6" fill="currentColor" /></svg>
       </button>
     </div>
 
@@ -192,6 +254,39 @@ function onDragEnd() {
     </div>
   </div>
   <OpenFlowSheet v-if="examplesOpen" @close="examplesOpen = false" />
+
+  <!-- Flow menu -->
+  <div
+    v-if="menuFlow"
+    class="flow-menu ios-menu fixed z-50 w-64 p-1"
+    :style="{ left: menuPos.x + 'px', top: menuPos.y + 'px' }"
+    role="menu"
+  >
+    <div class="flex items-center gap-2 px-2.5 pt-2 pb-2.5 mb-1 border-b border-terminal-border text-[12.5px] text-terminal-text-dim">
+      <span class="state-mark" :class="menuState" aria-hidden="true" />
+      {{ STATE_LABEL[menuState] }}
+    </div>
+    <template v-if="auth.can('deploy')">
+      <button v-if="menuState === 'running' || menuState === 'changed'" class="menu-item" role="menuitem" :disabled="busy" @click="run('stop')">
+        Stop<small>on the device now</small>
+      </button>
+      <button v-if="menuState === 'stopped'" class="menu-item" role="menuitem" :disabled="busy" @click="run('start')">
+        Start<small>on the device now</small>
+      </button>
+      <button v-if="menuState === 'changed' || menuState === 'new' || (menuState === 'stopped' && flowStore.isFlowDirty(menuFlow.id))" class="menu-item" role="menuitem" :disabled="busy" @click="run('deploy')">
+        Deploy this flow<small>only its changes</small>
+      </button>
+      <div class="menu-sep" />
+      <button class="menu-item" role="menuitem" @click="rename">Rename…</button>
+      <div v-if="canDelete" class="menu-sep" />
+      <button v-if="canDelete" class="menu-item danger" role="menuitem" @click="closeFlow">Close…</button>
+    </template>
+  </div>
+
+  <!-- Result of a flow action -->
+  <Transition name="flow-toast">
+    <div v-if="toast" class="flow-toast" :class="{ bad: toastBad }" role="status">{{ toast }}</div>
+  </Transition>
 
   <!-- Confirm deleting a flow -->
   <div
@@ -222,9 +317,24 @@ function onDragEnd() {
 .seg-item:hover:not(.on) { background: rgb(var(--c-surface) / 0.5); }
 .seg-item.on { background: rgb(var(--c-surface)); font-weight: 600; box-shadow: 0 1px 3px rgb(0 0 0 / 0.12), 0 0 0 0.5px rgb(0 0 0 / 0.04); }
 :root[data-theme="dark"] .seg-item.on { background: rgb(99 99 102); }
-.tab-close { width: 16px; height: 16px; margin-right: -4px; border-radius: 9999px; display: grid; place-items: center; color: rgb(var(--c-text-dim)); transition: opacity 0.12s, background-color 0.12s; }
-.tab-close:hover { background: rgb(var(--c-text-dim) / 0.2); color: rgb(var(--c-text)); }
-.menu-item { display: block; width: 100%; text-align: left; padding: 7px 10px; border-radius: 8px; font-size: 13px; color: rgb(var(--c-text)); }
+.state-mark { width: 9px; height: 9px; border-radius: 9999px; flex: none; display: inline-block; }
+.state-mark.running { background: rgb(var(--c-success)); }
+.state-mark.changed { margin-inline: 3px; background: rgb(var(--c-success)); box-shadow: 0 0 0 2px rgb(var(--c-surface)), 0 0 0 3.5px rgb(var(--c-accent)); }
+.state-mark.new { border: 1.6px dashed rgb(var(--c-accent)); }
+.state-mark.stopped { border: 1.8px solid rgb(var(--c-text-dim)); }
+.tab-more { width: 18px; height: 18px; margin-right: -4px; border-radius: 9999px; display: grid; place-items: center; color: rgb(var(--c-text-dim)); transition: opacity 0.12s, background-color 0.12s; }
+.tab-more:hover { background: rgb(var(--c-text-dim) / 0.2); color: rgb(var(--c-text)); }
+.menu-item small { font-size: 11.5px; color: rgb(var(--c-text-dim)); }
+.menu-item:hover small { color: rgb(255 255 255 / 0.8); }
+.menu-item.danger { color: rgb(var(--c-error)); }
+.menu-item.danger:hover { background: rgb(var(--c-error)); color: #fff; }
+.menu-item:disabled { opacity: 0.5; cursor: progress; }
+.menu-sep { height: 1px; margin: 4px 6px; background: rgb(var(--c-border)); }
+.flow-toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 60; padding: 9px 16px; border-radius: 14px; font-size: 13px; background: var(--bar-bg); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border: 1px solid rgb(var(--c-border)); color: rgb(var(--c-text)); box-shadow: 0 8px 24px rgb(0 0 0 / 0.16); }
+.flow-toast.bad { color: rgb(var(--c-error)); }
+.flow-toast-enter-active, .flow-toast-leave-active { transition: opacity 0.2s, transform 0.25s; }
+.flow-toast-enter-from, .flow-toast-leave-to { opacity: 0; transform: translate(-50%, 12px); }
+.menu-item { display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: left; padding: 7px 10px; border-radius: 8px; font-size: 13px; color: rgb(var(--c-text)); }
 .menu-item:hover { background: rgb(var(--c-accent)); color: #fff; }
 .seg-item.drop { box-shadow: inset 2px 0 0 rgb(var(--c-accent)); }
 </style>

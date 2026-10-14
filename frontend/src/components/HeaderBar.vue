@@ -279,6 +279,11 @@ function selectMode(mode: DeployModeType): void {
               <path stroke-linecap="round" stroke-linejoin="round" d="M7 16l-4-4m0 0l4-4m-4 4h18M17 8l4 4m0 0l-4 4" />
             </svg>
             <span>{{ deployLabel }}</span>
+            <span
+              v-if="flowStore.changedFlowCount > 0 && uiStore.deployStatus !== 'deploying' && uiStore.deployStatus !== 'deployed' && uiStore.deployStatus !== 'failed'"
+              class="rounded-full bg-white/25 px-1.5 text-[11.5px] font-medium tabular-nums"
+              :title="`${flowStore.changedFlowCount} flow(s) with changes not deployed`"
+            >{{ flowStore.changedFlowCount }} {{ flowStore.changedFlowCount === 1 ? 'flow' : 'flows' }}</span>
           </button>
 
           <!-- Dropdown toggle -->
