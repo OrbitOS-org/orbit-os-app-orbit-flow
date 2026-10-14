@@ -13,11 +13,11 @@ It is also an example of a complete Orbit OS app in Go: it uses the [Orbit OS Go
 Runs on Raspberry Pi, Arduino UNO Q and other ARM64 devices with Orbit OS (free Community Edition).
 
 > [!NOTE]
-> Orbit Flow is based on [LOOPZE](https://github.com/loopzedev/loopze-edge) by Dennis Bleul and is licensed under the AGPL-3.0. This is an early version: the editor still shows the LOOPZE name in places.
+> Orbit Flow is based on [LOOPZE](https://github.com/loopzedev/loopze-edge) by Dennis Bleul and is licensed under the AGPL-3.0. This is an early version.
 
 ## Features
 
-- **Visual editor** — drag, connect and deploy; several flows in tabs, with a live debug panel and a log view
+- **Visual editor** — drag, connect and deploy; several flows in tabs, with a live debug panel and a log view; dark by default, with a light theme
 - **Industrial protocols built in** — Modbus TCP and RTU, OPC UA (read, subscribe, write), Siemens S7 and MQTT
 - **The device's own I/O** — GPIO, I²C, SPI and the serial ports, through the Orbit OS API
 - **Logic without code, or with it** — switch, change, delay, template and state-machine nodes; JavaScript, expressions or Go when you need them
@@ -65,7 +65,7 @@ You need [VS Code](https://code.visualstudio.com/) with the Orbit Studio extensi
 
 ## Security
 
-- **The page is reached directly on the device's network address**, on a port between 50000 and 60000, not through the Launcher login: the Launcher tile sends the browser there. Orbit Flow has its own login; create the administrator account right after installing, and use it only on networks you trust.
+- **The page is reached directly on the device's network address**, on a port between 50000 and 60000 (52880, or the next free one), not through the Launcher login: the Launcher tile sends the browser there. Orbit Flow has its own login; create the administrator account right after installing, and use it only on networks you trust.
 - The app talks to the device's hardware only through the Orbit OS API, with the permissions listed in `metadata.json`: system information, Launcher registration, serial ports, GPIO, I²C, SPI and mobile notifications.
 - The file nodes can only read and write inside the app's data folder.
 - The message broker inside the app opens no network port.

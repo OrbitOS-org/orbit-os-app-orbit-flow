@@ -23,7 +23,7 @@ const MUSTACHE_TOPIC = '{{topic}}'
   <div class="flex flex-col gap-3 flex-1 min-h-0">
     <div class="text-[10px] text-text-muted leading-tight">
       Sends a push notification to the OrbitOS device owner's phone. The
-      title is set by the runtime ("&lt;device&gt; · LOOPZE") — this node
+      title is set by the runtime ("&lt;device&gt; · Orbit Flow") — this node
       only controls the body below.
     </div>
 

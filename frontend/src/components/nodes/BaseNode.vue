@@ -166,7 +166,7 @@ const outputHandles = computed(() =>
         :class="{ 'pointer-events-none': props.disabled }"
         :disabled="props.disabled"
         :style="{
-          background: actionActive ? t.accent + '22' : '#161b22',
+          background: actionActive ? t.accent + '22' : 'rgb(var(--c-surface))',
           border: `1px solid ${actionActive ? t.accent : t.border}`,
           borderRight: 'none',
           borderRadius: '6px 0 0 6px',
@@ -189,7 +189,7 @@ const outputHandles = computed(() =>
         class="loopze-node relative flex flex-col rounded-md min-w-[210px] select-none"
         :class="{ selected: props.selected }"
         :style="{
-          background: '#161b22',
+          background: 'rgb(var(--c-surface))',
           minHeight: nodeMinHeight,
           border: `1px ${props.disabled ? 'dashed' : 'solid'} ${props.selected ? t.accent : t.border}`,
           boxShadow: props.selected ? `0 0 0 1px ${t.accent}, 0 4px 20px ${t.accentGlow}` : 'none',
@@ -206,8 +206,8 @@ const outputHandles = computed(() =>
           :position="Position.Left"
           :style="{
             ...h.style,
-            borderColor: selected ? t.accent : '#7d8590',
-            background: selected ? t.accent + '33' : '#161b22',
+            borderColor: selected ? t.accent : 'rgb(var(--c-text-dim))',
+            background: selected ? t.accent + '33' : 'rgb(var(--c-surface))',
           }"
           class="!w-2.5 !h-2.5 !rounded-full !border-2 transition-colors"
         />
@@ -225,8 +225,8 @@ const outputHandles = computed(() =>
             :position="Position.Right"
             :style="{
               ...h.style,
-              borderColor: selected ? t.accent : '#7d8590',
-              background: selected ? t.accent + '33' : '#161b22',
+              borderColor: selected ? t.accent : 'rgb(var(--c-text-dim))',
+              background: selected ? t.accent + '33' : 'rgb(var(--c-surface))',
             }"
             class="!w-2.5 !h-2.5 !rounded-full !border-2 transition-colors"
           />
@@ -247,7 +247,7 @@ const outputHandles = computed(() =>
           <span
             v-if="isDirty"
             class="w-2 h-2 shrink-0 rounded-full"
-            style="background: #58a6ff; box-shadow: 0 0 4px #58a6ff80"
+            style="background: rgb(var(--c-accent)); box-shadow: 0 0 4px rgb(var(--c-accent) / 0.5)"
             title="Undeployed changes"
           />
         </div>
@@ -255,8 +255,7 @@ const outputHandles = computed(() =>
         <!-- Body: custom label takes priority, otherwise slot content -->
         <div
           v-if="hasCustomLabel || $slots.body"
-          class="px-3 py-1 text-[10px] font-mono"
-          style="color: #b1bac2"
+          class="px-3 py-1 text-[10px] font-mono text-terminal-text/80"
         >
           <span v-if="hasCustomLabel">{{ props.label }}</span>
           <slot v-else name="body" />
@@ -278,7 +277,7 @@ const outputHandles = computed(() =>
         :class="{ 'pointer-events-none': props.disabled }"
         :disabled="props.disabled"
         :style="{
-          background: props.toggleState ? t.accent + '22' : '#161b22',
+          background: props.toggleState ? t.accent + '22' : 'rgb(var(--c-surface))',
           border: `1px solid ${props.toggleState ? t.accent : t.border}`,
           borderLeft: 'none',
           borderRadius: '0 6px 6px 0',

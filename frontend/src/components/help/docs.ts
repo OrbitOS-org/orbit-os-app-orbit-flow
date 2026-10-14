@@ -496,7 +496,7 @@ export const nodeHelpDocs: Record<string, NodeHelpDoc> = {
       'Address forms: DB.<DBX|DBB|DBW|DBD|DBL|DTL|STRING|WSTRING>, M/MB/MW/MD, I/IB/IW/ID, Q/QB/QW/QD, C, T. The spec at specifications/issues/NODE_S7.md has the full table.',
       'Multi-variable reads use a single AGReadMulti round-trip when they fit the negotiated PDU (typically 462 bytes payload at PDU=480) — much cheaper than N separate reads.',
       'Per-variable scaling: value = raw × scale + offset. Skipped automatically for string/raw/date/dt/dtl/wchar/counter/timer (no numeric meaning).',
-      '64-bit types (LREAL, LINT, ULINT, LWORD, LTIME, LTOD, LDT, DT) use the LOOPZE-coined DBL form (e.g. DB10.DBL16 for 8-byte access). DTL has its own DTL form (12 bytes).',
+      '64-bit types (LREAL, LINT, ULINT, LWORD, LTIME, LTOD, LDT, DT) use the DBL form of this app (e.g. DB10.DBL16 for 8-byte access). DTL has its own DTL form (12 bytes).',
       'Block mode emits []int (not []byte) so the Debug panel shows decimal bytes instead of base64 — the s7-parser accepts both forms.',
     ],
   },

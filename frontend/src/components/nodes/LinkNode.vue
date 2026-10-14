@@ -71,7 +71,7 @@ const hasOutput = computed(() => (props.data?.outputs ?? 0) > 0);
     <span
       v-if="isDirty"
       class="absolute -top-1 -right-1 w-2 h-2 rounded-full"
-      style="background: #58a6ff; box-shadow: 0 0 4px #58a6ff80"
+      style="background: rgb(var(--c-accent)); box-shadow: 0 0 4px rgb(var(--c-accent) / 0.5)"
       title="Undeployed changes"
     />
 

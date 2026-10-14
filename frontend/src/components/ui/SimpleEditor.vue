@@ -2,6 +2,7 @@
 import { ref, computed, watch, onMounted, onUnmounted, shallowRef } from 'vue'
 import '@/lib/monaco/setup-workers'
 import * as monaco from 'monaco-editor'
+import { editorTheme } from '@/lib/monaco/theme'
 
 const props = withDefaults(defineProps<{
   modelValue: string
@@ -39,57 +40,8 @@ function unwrap(full: string): string {
   return lines.slice(PREFIX_LINES, lines.length - 1).join('\n')
 }
 
-// Reuse loopze-dark theme if already defined, otherwise define it.
-let themeConfigured = false
-function ensureTheme() {
-  if (themeConfigured) return
-  themeConfigured = true
-  try {
-    monaco.editor.defineTheme('loopze-dark', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        { token: 'comment', foreground: '7d8590', fontStyle: 'italic' },
-        { token: 'keyword', foreground: 'ff7b72' },
-        { token: 'string', foreground: 'a5d6ff' },
-        { token: 'number', foreground: '79c0ff' },
-        { token: 'type', foreground: 'ffa657' },
-        { token: 'function', foreground: 'd2a8ff' },
-        { token: 'variable', foreground: 'e6edf3' },
-        { token: 'property', foreground: '79c0ff' },
-        { token: 'operator', foreground: 'ff7b72' },
-        { token: 'delimiter', foreground: 'e6edf3' },
-      ],
-      colors: {
-        'editor.background': '#0d1117',
-        'editor.foreground': '#e6edf3',
-        'editor.lineHighlightBackground': '#161b2240',
-        'editor.selectionBackground': '#58a6ff33',
-        'editorCursor.foreground': '#58a6ff',
-        'editorLineNumber.foreground': '#484f58',
-        'editorLineNumber.activeForeground': '#7d8590',
-        'editorGutter.background': '#0d1117',
-        'editorWidget.background': '#161b22',
-        'editorWidget.border': '#30363d',
-        'editorSuggestWidget.background': '#161b22',
-        'editorSuggestWidget.border': '#30363d',
-        'scrollbarSlider.background': '#484f5833',
-        'scrollbarSlider.hoverBackground': '#484f5866',
-        'editorBracketMatch.background': '#58a6ff33',
-        'editorBracketMatch.border': '#58a6ff66',
-        'editorIndentGuide.background': '#21262d',
-        'editorIndentGuide.activeBackground': '#30363d',
-      },
-    })
-  } catch {
-    // Theme may already be defined by CodeEditor — that's fine.
-  }
-}
-
 onMounted(() => {
   if (!container.value) return
-
-  ensureTheme()
 
   const ext = props.language === 'json' ? 'json' : 'js'
   const uri = monaco.Uri.parse(`file:///loopze-sm-${props.language}-${Date.now()}.${ext}`)
@@ -97,7 +49,7 @@ onMounted(() => {
 
   editor.value = monaco.editor.create(container.value, {
     model,
-    theme: 'loopze-dark',
+    theme: editorTheme(),
     readOnly: props.readonly,
     fontSize: 12,
     fontFamily: "'IBM Plex Mono', monospace",

@@ -848,7 +848,7 @@ onMounted(async () => {
                 :variant="BackgroundVariant.Lines"
                 :gap="24"
                 :size="1"
-                pattern-color="#30363d33"
+                pattern-color="rgb(var(--c-border) / 0.2)"
             />
 
             <!-- Zoom / Fit controls -->
@@ -875,6 +875,6 @@ onMounted(async () => {
 
 <style scoped>
 .vue-flow {
-    background-color: #0d1117;
+    background-color: rgb(var(--c-bg));
 }
 </style>

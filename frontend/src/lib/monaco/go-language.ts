@@ -1,4 +1,4 @@
-// LOOPZE-specific completion provider for Go (function-go node).
+// Completion provider for Go (function-go node).
 //
 // Monaco ships a Go tokenizer for syntax highlighting but no language service,
 // so user code in a function-go node has no IntelliSense out of the box. This
@@ -245,7 +245,7 @@ export function registerGoCompletions(): void {
       suggestions.push({
         label: 'import "loopzenode"',
         kind: monaco.languages.CompletionItemKind.Snippet,
-        detail: 'LOOPZE runtime API (node.Send, node.Log, …)',
+        detail: 'Runtime API (node.Send, node.Log, …)',
         insertText: 'import "loopzenode"',
         range,
       })

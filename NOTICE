@@ -33,7 +33,10 @@ the history of the repository above. In summary:
   metrics, device identity and mobile notifications;
 - the file nodes are limited to the app's data folder;
 - the embedded NATS server opens no network port by default;
-- renamed to Orbit Flow.
+- the page's port is chosen in the range Orbit OS reserves for app pages;
+- logs go to the Orbit OS system log;
+- renamed to Orbit Flow, with a new icon, a new colour palette and a light
+  theme in the editor.
 
 Files that came from LOOPZE keep the copyright notice of Dennis Bleul. Files
 written for Orbit Flow carry the copyright notice of Orbit OS. All of them are

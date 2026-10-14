@@ -1,5 +1,7 @@
 // Node design tokens — one palette per category.
-// Every color is intentionally dark/muted to avoid eye strain.
+// The values below are the dark theme's: every color is intentionally
+// dark/muted to avoid eye strain. The light theme's are derived from them
+// (see lightTokens), so a category is still defined in one place.
 
 export interface NodeTokens {
   accent:     string
@@ -272,6 +274,7 @@ export const TOKENS: Record<string, NodeTokens> = {
 // palette colour of a node type, edit the group's manifest — not this file.
 
 import { getCategory } from '@/nodes'
+import { useTheme } from '@/composables/useTheme'
 
 export const STATUS_COLORS: Record<string, string> = {
   red: '#e24b4a',
@@ -281,6 +284,60 @@ export const STATUS_COLORS: Record<string, string> = {
   grey: '#6b7280',
 }
 
+// ── Light theme ────────────────────────────────────────────────────
+
+type RGB = [number, number, number]
+
+function parseHex(hex: string): RGB {
+  const n = parseInt(hex.slice(1, 7), 16)
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+}
+
+function toHex([r, g, b]: RGB): string {
+  return '#' + [r, g, b].map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')
+}
+
+function mix(a: RGB, b: RGB, amountOfB: number): RGB {
+  return [0, 1, 2].map((i) => a[i] + (b[i] - a[i]) * amountOfB) as RGB
+}
+
+/** Perceived brightness, 0 (black) to 1 (white). */
+function brightness([r, g, b]: RGB): number {
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255
+}
+
+const WHITE: RGB = [255, 255, 255]
+const BLACK: RGB = [0, 0, 0]
+const INK_DIM: RGB = [96, 100, 125]
+
+/** The same category on a light surface: darker accent, pale tints. */
+function lightTokens(dark: NodeTokens): NodeTokens {
+  let accent = parseHex(dark.accent)
+  // Bright accents (lime, cyan, amber) do not read on white: darken them
+  // until they do, keeping the hue.
+  const b = brightness(accent)
+  if (b > 0.42) accent = mix(accent, BLACK, 1 - 0.42 / b)
+  const hex = toHex(accent)
+  return {
+    accent:     hex,
+    accentDim:  hex + '14',
+    accentBdr:  hex + '40',
+    accentGlow: hex + '26',
+    bg:         '#ffffff',
+    bgHdr:      toHex(mix(accent, WHITE, 0.93)),
+    bgIcon:     toHex(mix(accent, WHITE, 0.86)),
+    border:     toHex(mix(accent, WHITE, 0.62)),
+    textSub:    toHex(mix(accent, INK_DIM, 0.65)),
+  }
+}
+
+const LIGHT_TOKENS: Record<string, NodeTokens> = {}
+
+const { theme } = useTheme()
+
+/** Colours of a node type in the current theme. Reactive to the theme. */
 export function getTokens(nodeType: string): NodeTokens {
-  return TOKENS[getCategory(nodeType)] ?? TOKENS.process
+  const category = TOKENS[getCategory(nodeType)] ? getCategory(nodeType) : 'process'
+  if (theme.value !== 'light') return TOKENS[category]
+  return (LIGHT_TOKENS[category] ??= lightTokens(TOKENS[category]))
 }

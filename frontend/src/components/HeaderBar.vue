@@ -4,10 +4,13 @@ import { useFlowStore } from '@/stores/flowStore'
 import { useUiStore } from '@/stores/uiStore'
 import { useAuthStore } from '@/stores/authStore'
 import type { DeployModeType } from '@/types/flow'
+import { useTheme } from '@/composables/useTheme'
+import AppMark from '@/components/AppMark.vue'
 
 const flowStore = useFlowStore()
 const uiStore = useUiStore()
 const auth = useAuthStore()
+const { theme, toggleTheme } = useTheme()
 
 async function handleLogout(): Promise<void> {
   await auth.logout()
@@ -88,10 +91,8 @@ function selectMode(mode: DeployModeType): void {
       </button>
 
       <div class="flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-accent" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" />
-        </svg>
-        <span class="text-accent text-sm font-bold tracking-widest font-mono">LOOPZE</span>
+        <AppMark class="w-[18px] h-[18px] text-accent" />
+        <span class="text-terminal-text-bright text-sm font-semibold tracking-wide">Orbit Flow</span>
       </div>
 
       <span class="text-terminal-text-dim text-[10px] tracking-wider hidden sm:inline font-medium uppercase">
@@ -155,6 +156,22 @@ function selectMode(mode: DeployModeType): void {
           <path stroke-linecap="round" stroke-linejoin="round" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
         </svg>
       </router-link>
+
+      <!-- Light / dark theme -->
+      <button
+        class="p-1.5 rounded text-terminal-text-dim hover:text-terminal-text hover:bg-terminal-surface-alt transition-all duration-100"
+        :title="theme === 'dark' ? 'Light theme' : 'Dark theme'"
+        :aria-label="theme === 'dark' ? 'Switch to the light theme' : 'Switch to the dark theme'"
+        @click="toggleTheme()"
+      >
+        <svg v-if="theme === 'dark'" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+          <circle cx="12" cy="12" r="4" />
+          <path stroke-linecap="round" d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+        </svg>
+        <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" />
+        </svg>
+      </button>
 
       <!-- Toggle Terminal Log -->
       <button

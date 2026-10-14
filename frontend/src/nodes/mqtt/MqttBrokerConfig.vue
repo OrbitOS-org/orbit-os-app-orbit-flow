@@ -341,16 +341,16 @@ function cancel() {
 
             <template v-else>
               <FormField label="CA bundle file (absolute path, optional)">
-                <FormInput v-model="tlsCaBundleFile" placeholder="/etc/loopze/certs/ca.pem" mono />
+                <FormInput v-model="tlsCaBundleFile" placeholder="/path/to/ca.pem" mono />
                 <div class="text-[10px] text-terminal-text-dim leading-tight">
                   Empty = system trust roots.
                 </div>
               </FormField>
               <FormField label="Client certificate file (optional)">
-                <FormInput v-model="tlsClientCertFile" placeholder="/etc/loopze/certs/client.pem" mono />
+                <FormInput v-model="tlsClientCertFile" placeholder="/path/to/client.pem" mono />
               </FormField>
               <FormField label="Client key file (optional)">
-                <FormInput v-model="tlsClientKeyFile" placeholder="/etc/loopze/certs/client.key" mono />
+                <FormInput v-model="tlsClientKeyFile" placeholder="/path/to/client.key" mono />
                 <div class="text-[10px] text-terminal-text-dim leading-tight">
                   Set both cert and key for mTLS, or leave both empty.
                 </div>
@@ -374,7 +374,7 @@ function cancel() {
       <SectionHeader title="onConnect Message (optional)">
         <div class="flex flex-col gap-2">
           <FormField label="Topic">
-            <FormInput v-model="onConnectTopic" placeholder="e.g. status/loopze" mono />
+            <FormInput v-model="onConnectTopic" placeholder="e.g. status/orbit-flow" mono />
           </FormField>
           <FormField label="Payload">
             <FormInput v-model="onConnectPayload" placeholder="e.g. online" />
@@ -395,7 +395,7 @@ function cancel() {
       <SectionHeader title="onDisconnect Message (optional)">
         <div class="flex flex-col gap-2">
           <FormField label="Topic">
-            <FormInput v-model="onDisconnectTopic" placeholder="e.g. status/loopze" mono />
+            <FormInput v-model="onDisconnectTopic" placeholder="e.g. status/orbit-flow" mono />
           </FormField>
           <FormField label="Payload">
             <FormInput v-model="onDisconnectPayload" placeholder="e.g. offline" />
@@ -416,7 +416,7 @@ function cancel() {
       <SectionHeader title="LastWill (unclean disconnect, MQTT-spec)">
         <div class="flex flex-col gap-2">
           <FormField label="Topic">
-            <FormInput v-model="lastWillTopic" placeholder="e.g. status/loopze" mono />
+            <FormInput v-model="lastWillTopic" placeholder="e.g. status/orbit-flow" mono />
           </FormField>
           <FormField label="Payload">
             <FormInput v-model="lastWillPayload" placeholder="e.g. offline" />

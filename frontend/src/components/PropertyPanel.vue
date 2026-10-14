@@ -156,7 +156,7 @@ function onResizeEnd() {
           <div class="flex items-center gap-2.5 mb-1.5">
             <span
               class="w-3 h-3 rounded-sm flex-shrink-0"
-              style="background-color: #58a6ff"
+              style="background-color: rgb(var(--c-accent))"
             />
             <span class="text-sm font-semibold text-terminal-text truncate flex-1 min-w-0">
               {{ nodeData?.label || selectedNode.type }}

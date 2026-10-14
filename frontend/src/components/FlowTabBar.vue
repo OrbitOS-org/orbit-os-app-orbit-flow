@@ -80,7 +80,7 @@ function onDragEnd() {
       <span
         v-if="flowStore.isFlowDirty(flow.id)"
         class="w-1.5 h-1.5 rounded-full bg-accent"
-        style="box-shadow: 0 0 4px #58a6ff80"
+        style="box-shadow: 0 0 4px rgb(var(--c-accent) / 0.5)"
       />
     </button>
 

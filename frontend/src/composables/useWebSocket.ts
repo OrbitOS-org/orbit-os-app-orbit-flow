@@ -78,7 +78,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     try {
       socket = new WebSocket(opts.url)
     } catch (err) {
-      console.error('[LOOPZE WS] Failed to create WebSocket:', err)
+      console.error('[Orbit Flow WS] Failed to create WebSocket:', err)
       scheduleReconnect()
       return
     }
@@ -86,12 +86,12 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     socket.onopen = () => {
       status.value = 'connected'
       reconnectAttempts.value = 0
-      console.info('[LOOPZE WS] Connected')
+      console.info('[Orbit Flow WS] Connected')
     }
 
     socket.onclose = (event) => {
       status.value = 'disconnected'
-      console.info(`[LOOPZE WS] Closed (code=${event.code}, reason=${event.reason || 'none'})`)
+      console.info(`[Orbit Flow WS] Closed (code=${event.code}, reason=${event.reason || 'none'})`)
 
       if (!isManualClose) {
         scheduleReconnect()
@@ -99,7 +99,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     }
 
     socket.onerror = (event) => {
-      console.error('[LOOPZE WS] Error:', event)
+      console.error('[Orbit Flow WS] Error:', event)
     }
 
     socket.onmessage = (event) => {
@@ -108,7 +108,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         lastMessage.value = envelope
         dispatch(envelope)
       } catch (err) {
-        console.warn('[LOOPZE WS] Failed to parse message:', event.data, err)
+        console.warn('[Orbit Flow WS] Failed to parse message:', event.data, err)
       }
     }
   }
@@ -129,7 +129,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
   function scheduleReconnect(): void {
     if (isManualClose) return
     if (reconnectAttempts.value >= opts.maxReconnectAttempts) {
-      console.warn('[LOOPZE WS] Max reconnect attempts reached')
+      console.warn('[Orbit Flow WS] Max reconnect attempts reached')
       return
     }
 
@@ -139,7 +139,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     reconnectAttempts.value++
     status.value = 'reconnecting'
 
-    console.info(`[LOOPZE WS] Reconnecting in ${delay}ms (attempt ${reconnectAttempts.value})`)
+    console.info(`[Orbit Flow WS] Reconnecting in ${delay}ms (attempt ${reconnectAttempts.value})`)
 
     reconnectTimer = setTimeout(() => {
       connect()
@@ -173,7 +173,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         listeners.log.forEach((cb) => cb(payload as LogEntry))
         break
       default:
-        console.warn(`[LOOPZE WS] Unknown message type: ${type}`)
+        console.warn(`[Orbit Flow WS] Unknown message type: ${type}`)
     }
   }
 
@@ -204,7 +204,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 
   function send(data: unknown): void {
     if (!socket || socket.readyState !== WebSocket.OPEN) {
-      console.warn('[LOOPZE WS] Cannot send, socket not open')
+      console.warn('[Orbit Flow WS] Cannot send, socket not open')
       return
     }
 

@@ -59,7 +59,7 @@ function port(side: 'left' | 'right', i: number, total: number, color: string) {
       top: `${top}%`,
       transform: 'translateY(-50%)',
       borderColor: color,
-      background: '#0d1117',
+      background: 'rgb(var(--c-bg))',
     },
   })
 }
@@ -113,14 +113,14 @@ const rounded: BtnSet = {
   action: (t, label) => h('button', {
     class: 'shrink-0 w-9 flex items-center justify-center',
     style: {
-      background: '#161b22', border: `1px solid ${t.border}`, borderRight: 'none',
+      background: 'rgb(var(--c-surface))', border: `1px solid ${t.border}`, borderRight: 'none',
       borderRadius: '6px 0 0 6px',
     },
   }, [vText(label, { color: t.textSub })]),
   toggle: (t, state) => h('button', {
     class: 'shrink-0 w-9 flex items-center justify-center',
     style: {
-      background: state ? t.accent + '22' : '#161b22',
+      background: state ? t.accent + '22' : 'rgb(var(--c-surface))',
       border: `1px solid ${state ? t.accent : t.border}`, borderLeft: 'none',
       borderRadius: '0 6px 6px 0',
     },
@@ -148,7 +148,7 @@ function pillBtn(side: 'left' | 'right', t: NodeTokens, label: string, active: b
   return h('button', {
     class: 'shrink-0 w-10 h-10 rounded-full flex items-center justify-center self-center text-[9px] font-bold',
     style: {
-      background: active ? t.accent + '22' : '#161b22',
+      background: active ? t.accent + '22' : 'rgb(var(--c-surface))',
       border: `1px solid ${active ? t.accent : t.border}`,
       color: active ? t.accent : t.textSub,
       [side === 'left' ? 'marginRight' : 'marginLeft']: '8px',
@@ -228,7 +228,7 @@ const V1 = defineComponent({
       const t = getTokens(p.node.nodeType)
       return h('div', {
         class: 'relative flex flex-col rounded-md',
-        style: { minWidth: '200px', background: '#161b22' },
+        style: { minWidth: '200px', background: 'rgb(var(--c-surface))' },
       }, [
         ...ports(p.node, t.accent),
         h('div', { class: 'h-[2px] rounded-t-md', style: { background: t.accent } }),
@@ -250,7 +250,7 @@ const V2 = defineComponent({
       const t = getTokens(p.node.nodeType)
       return h('div', {
         class: 'relative flex flex-col rounded-lg overflow-hidden',
-        style: { minWidth: '230px', background: '#161b22', boxShadow: `0 6px 16px rgba(0,0,0,0.4), 0 0 0 1px ${t.border}` },
+        style: { minWidth: '230px', background: 'rgb(var(--c-surface))', boxShadow: `0 6px 16px rgba(0,0,0,0.4), 0 0 0 1px ${t.border}` },
       }, [
         ...ports(p.node, t.accent),
         h('div', { class: 'flex items-center gap-3 px-4 py-3.5' }, [
@@ -276,7 +276,7 @@ const V3 = defineComponent({
       const t = getTokens(p.node.nodeType)
       return h('div', {
         class: 'relative flex flex-col rounded-md',
-        style: { minWidth: '210px', background: '#161b22' },
+        style: { minWidth: '210px', background: 'rgb(var(--c-surface))' },
       }, [
         ...ports(p.node, t.accent),
         h('div', { class: 'flex items-center gap-2 px-3 pt-2.5' }, [
@@ -298,7 +298,7 @@ const V4 = defineComponent({
       const t = getTokens(p.node.nodeType)
       return h('div', {
         class: 'relative flex rounded-md overflow-hidden',
-        style: { minWidth: '210px', background: '#161b22' },
+        style: { minWidth: '210px', background: 'rgb(var(--c-surface))' },
       }, [
         ...ports(p.node, t.accent),
         h('div', { class: 'shrink-0 w-[2px]', style: { background: t.accent } }),
@@ -322,7 +322,7 @@ const V5 = defineComponent({
       const t = getTokens(p.node.nodeType)
       return h('div', {
         class: 'relative flex rounded-lg overflow-hidden',
-        style: { minWidth: '230px', background: '#161b22', boxShadow: `0 0 0 1px ${t.border}` },
+        style: { minWidth: '230px', background: 'rgb(var(--c-surface))', boxShadow: `0 0 0 1px ${t.border}` },
       }, [
         ...ports(p.node, t.accent),
         h('div', {
@@ -348,7 +348,7 @@ const V6 = defineComponent({
         class: 'relative flex flex-col rounded-lg overflow-hidden',
         style: {
           minWidth: '220px',
-          background: '#0d1117',
+          background: 'rgb(var(--c-bg))',
           border: `1px solid ${t.accent}55`,
         },
       }, [
@@ -405,7 +405,7 @@ const V8 = defineComponent({
       const t = getTokens(p.node.nodeType)
       return h('div', {
         class: 'relative flex flex-col rounded-lg overflow-hidden',
-        style: { minWidth: '220px', background: '#161b22', boxShadow: `0 0 0 1px ${t.border}` },
+        style: { minWidth: '220px', background: 'rgb(var(--c-surface))', boxShadow: `0 0 0 1px ${t.border}` },
       }, [
         ...ports(p.node, t.accent),
         h('div', {
@@ -431,7 +431,7 @@ const V9 = defineComponent({
         class: 'relative flex flex-col rounded-xl',
         style: {
           minWidth: '230px',
-          background: '#1c2128',
+          background: 'rgb(var(--c-surface-alt))',
           boxShadow: '0 12px 24px rgba(0,0,0,0.45), 0 2px 4px rgba(0,0,0,0.3)',
         },
       }, [
@@ -459,7 +459,7 @@ const V10 = defineComponent({
       const t = getTokens(p.node.nodeType)
       return h('div', {
         class: 'relative flex flex-col rounded-md',
-        style: { minWidth: '220px', background: '#161b22', boxShadow: `0 0 0 1px ${t.border}` },
+        style: { minWidth: '220px', background: 'rgb(var(--c-surface))', boxShadow: `0 0 0 1px ${t.border}` },
       }, [
         ...ports(p.node, t.accent),
         h('div', { class: 'flex items-center gap-2 px-3 pt-3' }, [
@@ -483,11 +483,11 @@ const V11 = defineComponent({
       const t = getTokens(p.node.nodeType)
       return h('div', {
         class: 'relative flex flex-col rounded-md',
-        style: { minWidth: '220px', background: '#161b22', boxShadow: '0 0 0 1px #2a3441' },
+        style: { minWidth: '220px', background: 'rgb(var(--c-surface))', boxShadow: '0 0 0 1px #2a3441' },
       }, [
         ...ports(p.node, t.accent),
         h('div', { class: 'flex items-center gap-2 px-3 pt-2.5' }, [
-          h('span', { style: { color: '#7d8590' } }, [h(NodeIcon, { type: p.node.nodeType })]),
+          h('span', { style: { color: 'rgb(var(--c-text-dim))' } }, [h(NodeIcon, { type: p.node.nodeType })]),
           h('span', { class: 'text-[11px] font-medium tracking-wide text-terminal-text' }, p.node.typeLabel),
           h('span', { class: 'w-1 h-1 rounded-full ml-auto', style: { background: t.accent } }),
         ]),
@@ -505,7 +505,7 @@ const V12 = defineComponent({
       const t = getTokens(p.node.nodeType)
       return h('div', {
         class: 'relative flex flex-col items-center px-4 py-3 rounded-lg',
-        style: { minWidth: '210px', background: '#161b22', boxShadow: `0 0 0 1px ${t.border}` },
+        style: { minWidth: '210px', background: 'rgb(var(--c-surface))', boxShadow: `0 0 0 1px ${t.border}` },
       }, [
         ...ports(p.node, t.accent),
         h('div', { class: 'text-[9px] font-semibold uppercase tracking-[0.2em]', style: { color: t.accent } }, p.node.typeLabel),

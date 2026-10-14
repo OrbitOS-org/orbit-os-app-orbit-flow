@@ -5,6 +5,7 @@ import * as monaco from 'monaco-editor'
 import { loopzeTypeDefinitions } from '@/lib/monaco/loopze-types'
 import { registerExprLanguage } from '@/lib/monaco/expr-language'
 import { registerGoCompletions } from '@/lib/monaco/go-language'
+import { editorTheme } from '@/lib/monaco/theme'
 
 const props = withDefaults(defineProps<{
   modelValue: string
@@ -35,65 +36,11 @@ const WRAPPER_PREFIX = '(function(msg, node, global, flow, console) {\n'
 const WRAPPER_SUFFIX = '\n})(msg, node, global, flow, console);'
 const PREFIX_LINES = WRAPPER_PREFIX.split('\n').length - 1 // 1
 
-// ── Configure Monaco theme & defaults once ───────────────────────
+// ── Configure Monaco defaults once (themes: lib/monaco/theme.ts) ───────────────────────
 let configured = false
 function configureMonaco() {
   if (configured) return
   configured = true
-
-  monaco.editor.defineTheme('loopze-dark', {
-    base: 'vs-dark',
-    inherit: true,
-    rules: [
-      { token: 'comment', foreground: '7d8590', fontStyle: 'italic' },
-      { token: 'keyword', foreground: 'ff7b72' },
-      { token: 'string', foreground: 'a5d6ff' },
-      { token: 'number', foreground: '79c0ff' },
-      { token: 'regexp', foreground: 'a5d6ff' },
-      { token: 'type', foreground: 'ffa657' },
-      { token: 'class', foreground: 'ffa657' },
-      { token: 'function', foreground: 'd2a8ff' },
-      { token: 'variable', foreground: 'e6edf3' },
-      { token: 'constant', foreground: '79c0ff' },
-      { token: 'parameter', foreground: 'e6edf3' },
-      { token: 'property', foreground: '79c0ff' },
-      { token: 'operator', foreground: 'ff7b72' },
-      { token: 'delimiter', foreground: 'e6edf3' },
-      { token: 'delimiter.bracket', foreground: 'e6edf3' },
-    ],
-    colors: {
-      'editor.background': '#0d1117',
-      'editor.foreground': '#e6edf3',
-      'editor.lineHighlightBackground': '#161b2240',
-      'editor.selectionBackground': '#58a6ff33',
-      'editor.inactiveSelectionBackground': '#58a6ff1a',
-      'editorCursor.foreground': '#58a6ff',
-      'editorLineNumber.foreground': '#484f58',
-      'editorLineNumber.activeForeground': '#7d8590',
-      'editorGutter.background': '#0d1117',
-      'editorWidget.background': '#161b22',
-      'editorWidget.border': '#30363d',
-      'editorSuggestWidget.background': '#161b22',
-      'editorSuggestWidget.border': '#30363d',
-      'editorSuggestWidget.selectedBackground': '#58a6ff33',
-      'editorSuggestWidget.highlightForeground': '#58a6ff',
-      'editorHoverWidget.background': '#161b22',
-      'editorHoverWidget.border': '#30363d',
-      'input.background': '#0d1117',
-      'input.border': '#30363d',
-      'input.foreground': '#e6edf3',
-      'focusBorder': '#58a6ff',
-      'list.hoverBackground': '#161b22',
-      'list.activeSelectionBackground': '#58a6ff33',
-      'scrollbarSlider.background': '#484f5833',
-      'scrollbarSlider.hoverBackground': '#484f5866',
-      'scrollbarSlider.activeBackground': '#484f58aa',
-      'editorBracketMatch.background': '#58a6ff33',
-      'editorBracketMatch.border': '#58a6ff66',
-      'editorIndentGuide.background': '#21262d',
-      'editorIndentGuide.activeBackground': '#30363d',
-    },
-  })
 
   // Configure JS/TS defaults
   const ts = (monaco.languages as any).typescript
@@ -113,7 +60,7 @@ function configureMonaco() {
       lib: ['es2020'],
     })
 
-    // Add LOOPZE API type definitions
+    // Add the function node API type definitions
     ts.javascriptDefaults.addExtraLib(
       loopzeTypeDefinitions,
       'ts:loopze-runtime.d.ts'
@@ -167,7 +114,7 @@ onMounted(() => {
 
   editor.value = monaco.editor.create(container.value, {
     model,
-    theme: 'loopze-dark',
+    theme: editorTheme(),
     readOnly: props.readonly,
     fontSize: 12,
     fontFamily: "'IBM Plex Mono', monospace",

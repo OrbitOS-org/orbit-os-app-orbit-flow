@@ -428,7 +428,7 @@ function fingerprintShort(fp?: string): string {
               <input
                 v-model="form.certPath"
                 class="bg-terminal-bg border border-terminal-border rounded px-2 py-1 font-mono text-terminal-text"
-                placeholder="/etc/loopze/certs/ca.pem"
+                placeholder="/path/to/ca.pem"
               />
             </label>
             <label v-if="requiresKey" class="flex flex-col gap-1 text-[11px]">
@@ -436,7 +436,7 @@ function fingerprintShort(fp?: string): string {
               <input
                 v-model="form.keyPath"
                 class="bg-terminal-bg border border-terminal-border rounded px-2 py-1 font-mono text-terminal-text"
-                placeholder="/etc/loopze/certs/client.key"
+                placeholder="/path/to/client.key"
               />
             </label>
             <p class="text-[10px] text-terminal-text-dim leading-tight">

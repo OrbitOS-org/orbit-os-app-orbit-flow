@@ -3,7 +3,7 @@ import { ref } from 'vue'
 
 const settings = ref({
   flowFile: 'flows.json',
-  userDir: '~/.loopze',
+  userDir: 'data',
   httpAdminRoot: '/',
   httpNodeRoot: '/',
   debugMaxLength: 1000,
@@ -42,7 +42,7 @@ function handleReset(): void {
         ⚙ Settings
       </h1>
       <p class="text-terminal-text-dim text-xs mt-1">
-        Runtime configuration for the LOOPZE engine
+        Runtime configuration for the flow engine
       </p>
       <div class="border-b border-terminal-border mt-3"></div>
     </div>
@@ -231,22 +231,34 @@ function handleReset(): void {
           <div class="flex gap-4">
             <span class="text-terminal-text-dim w-28">Source Code</span>
             <a
-              href="https://github.com/loopzedev/loopze-edge"
+              href="https://github.com/OrbitOS-org/orbit-os-app-orbit-flow"
               target="_blank"
               rel="noopener noreferrer"
               class="text-accent hover:underline"
             >
-              github.com/loopzedev/loopze-edge
+              github.com/OrbitOS-org/orbit-os-app-orbit-flow
             </a>
           </div>
           <div class="flex gap-4">
+            <span class="text-terminal-text-dim w-28">Based on</span>
+            <span class="text-terminal-text">
+              LOOPZE by Dennis Bleul —
+              <a
+                href="https://github.com/loopzedev/loopze-edge"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-accent hover:underline"
+              >github.com/loopzedev/loopze-edge</a>
+            </span>
+          </div>
+          <div class="flex gap-4">
             <span class="text-terminal-text-dim w-28">Copyright</span>
-            <span class="text-terminal-text">© 2026 Dennis Bleul</span>
+            <span class="text-terminal-text">© 2026 Dennis Bleul · © 2026 Orbit OS</span>
           </div>
         </div>
 
         <p class="pl-4 mt-3 text-[10px] text-terminal-text-dim leading-relaxed max-w-prose">
-          LOOPZE is free software released under the GNU Affero General Public
+          Orbit Flow is free software released under the GNU Affero General Public
           License v3.0 or later. If you run a modified version on a server and
           let users interact with it over a network, you must offer those users
           the corresponding source code.
