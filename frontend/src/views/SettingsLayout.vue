@@ -76,7 +76,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
       <div class="justify-self-end">
         <button
           v-if="action"
-          :class="action.primary === false ? 'terminal-btn rounded-full px-4' : 'terminal-btn-primary'"
+          :class="action.primary === false
+            ? 'bg-terminal-surface-alt/80 text-terminal-text hover:bg-terminal-surface-alt'
+            : 'bg-accent text-white hover:bg-accent-dim'"
+          class="rounded-full px-4 py-1.5 text-[13px] font-semibold transition-colors"
           @click="action.run()"
         >{{ action.label }}</button>
       </div>

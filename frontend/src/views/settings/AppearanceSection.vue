@@ -11,7 +11,7 @@ const { theme, setTheme } = useTheme()
 
 <template>
   <div class="h-full overflow-y-auto p-6">
-    <div class="max-w-xl space-y-2">
+    <div class="space-y-2">
       <div class="info-title">Theme</div>
       <div class="info-list">
         <div class="info-row">
