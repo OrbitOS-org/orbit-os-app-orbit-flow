@@ -286,6 +286,11 @@ export function useApi() {
     return res.types ?? []
   }
 
+  /** Information about the Orbit OS device (GET /system). */
+  async function getSystem(): Promise<Record<string, any>> {
+    return request<Record<string, any>>('/system')
+  }
+
   /** Example flows that ship with the app. */
   async function listExamples(): Promise<ExampleSummary[]> {
     const res = await request<{ examples: ExampleSummary[] }>('/examples')
@@ -687,6 +692,7 @@ export function useApi() {
   }
 
   return {
+    getSystem,
     listExamples,
     getExample,
     getFlows,

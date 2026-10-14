@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useApi } from '@/composables/useApi'
 
 const settings = ref({
@@ -25,6 +25,74 @@ function handleSave(): void {
 function handleReset(): void {
   // TODO: reload settings from backend
 }
+
+// Orbit OS device information (GET /system) and the number of node types.
+interface SystemInfo {
+  deviceName?: string; os?: string; runtime?: string; api?: string; certified?: boolean
+  board?: string; soc?: string; cpu?: string; architecture?: string; memoryMB?: number; linux?: string
+  uptimeSeconds?: number; cpuPercent?: number; memoryPercent?: number; temperatureC?: number
+}
+const system = ref<SystemInfo | null>(null)
+const systemError = ref<string | null>(null)
+const systemLoading = ref(false)
+const nodeTypes = ref<number | null>(null)
+
+function uptime(sec?: number): string {
+  if (!sec) return '—'
+  const d = Math.floor(sec / 86400), h = Math.floor((sec % 86400) / 3600), m = Math.floor((sec % 3600) / 60)
+  return d > 0 ? `${d} d ${h} h` : h > 0 ? `${h} h ${m} min` : `${m} min`
+}
+const pct = (v?: number) => (v === undefined ? '—' : `${v.toFixed(1)} %`)
+
+const infoGroups = computed(() => {
+  const s = system.value
+  if (!s) return []
+  const dash = (v?: string) => v || '—'
+  return [
+    { title: 'Orbit OS', rows: [
+      ['Device name', dash(s.deviceName)],
+      ['System', dash(s.os)],
+      ['Runtime', dash(s.runtime)],
+      ['API', dash(s.api)],
+      ['Certified hardware', s.certified === undefined ? '—' : s.certified ? 'Yes' : 'No'],
+    ] },
+    { title: 'Hardware', rows: [
+      ['Board', dash(s.board)],
+      ['SoC', dash(s.soc)],
+      ['CPU', dash(s.cpu)],
+      ['Architecture', dash(s.architecture)],
+      ['Memory', s.memoryMB ? `${s.memoryMB} MB` : '—'],
+      ['Linux', dash(s.linux)],
+    ] },
+    { title: 'Now', rows: [
+      ['Uptime', uptime(s.uptimeSeconds)],
+      ['CPU usage', pct(s.cpuPercent)],
+      ['Memory in use', pct(s.memoryPercent)],
+      ['Temperature', s.temperatureC === undefined ? '—' : `${s.temperatureC.toFixed(1)} °C`],
+    ] },
+  ]
+})
+
+async function loadSystem() {
+  systemLoading.value = true
+  systemError.value = null
+  try {
+    system.value = await useApi().getSystem()
+  } catch (err) {
+    systemError.value = err instanceof Error ? err.message : 'Device information could not be read'
+  } finally {
+    systemLoading.value = false
+  }
+}
+
+onMounted(async () => {
+  loadSystem()
+  try {
+    nodeTypes.value = (await useApi().getNodes()).length
+  } catch {
+    // Leave it blank.
+  }
+})
 
 // Version reported by the app (from its metadata.json).
 const appVersion = ref('')
@@ -206,77 +274,63 @@ onMounted(async () => {
         </span>
       </div>
 
-      <!-- System Info -->
-      <section class="mt-8 pt-4 border-t border-terminal-border">
-        <h2 class="text-xs text-terminal-text-dim uppercase tracking-widest mb-3 flex items-center gap-2">
-          <span class="w-2 h-2 bg-terminal-text-dim inline-block"></span>
-          System Information
-        </h2>
+      <!-- System Info: the Orbit OS device, then the app -->
+      <section class="mt-8 pt-4 border-t border-terminal-border space-y-5 max-w-xl">
+        <div class="flex items-center justify-between">
+          <h2 class="text-[15px] font-semibold text-terminal-text-bright">System Information</h2>
+          <button class="terminal-btn" :disabled="systemLoading" @click="loadSystem">Refresh</button>
+        </div>
+        <p v-if="systemError" class="text-xs text-status-error">{{ systemError }}</p>
 
-        <div class="pl-4 border-l border-terminal-border space-y-1 text-xs">
-          <div class="flex gap-4">
-            <span class="text-terminal-text-dim w-28">Version</span>
-            <span class="text-terminal-text">{{ appVersion ? `v${appVersion}` : '—' }}</span>
-          </div>
-          <div class="flex gap-4">
-            <span class="text-terminal-text-dim w-28">Runtime</span>
-            <span class="text-terminal-text">Go</span>
-          </div>
-          <div class="flex gap-4">
-            <span class="text-terminal-text-dim w-28">Platform</span>
-            <span class="text-terminal-text">—</span>
-          </div>
-          <div class="flex gap-4">
-            <span class="text-terminal-text-dim w-28">Node Types</span>
-            <span class="text-terminal-text">—</span>
-          </div>
-          <div class="flex gap-4">
-            <span class="text-terminal-text-dim w-28">License</span>
-            <a
-              href="https://www.gnu.org/licenses/agpl-3.0.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-accent hover:underline"
-            >
-              AGPL-3.0-or-later
-            </a>
-          </div>
-          <div class="flex gap-4">
-            <span class="text-terminal-text-dim w-28">Source Code</span>
-            <a
-              href="https://github.com/OrbitOS-org/orbit-os-app-orbit-flow"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-accent hover:underline"
-            >
-              github.com/OrbitOS-org/orbit-os-app-orbit-flow
-            </a>
-          </div>
-          <div class="flex gap-4">
-            <span class="text-terminal-text-dim w-28">Based on</span>
-            <span class="text-terminal-text">
-              LOOPZE by Dennis Bleul —
-              <a
-                href="https://github.com/loopzedev/loopze-edge"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-accent hover:underline"
-              >github.com/loopzedev/loopze-edge</a>
-            </span>
-          </div>
-          <div class="flex gap-4">
-            <span class="text-terminal-text-dim w-28">Copyright</span>
-            <span class="text-terminal-text">© 2026 Dennis Bleul · © 2026 Orbit OS</span>
+        <div v-for="group in infoGroups" :key="group.title">
+          <div class="info-title">{{ group.title }}</div>
+          <div class="info-list">
+            <div v-for="row in group.rows" :key="row[0]" class="info-row">
+              <span class="text-terminal-text">{{ row[0] }}</span>
+              <span class="text-terminal-text-dim text-right tabular-nums">{{ row[1] }}</span>
+            </div>
           </div>
         </div>
 
-        <p class="pl-4 mt-3 text-[10px] text-terminal-text-dim leading-relaxed max-w-prose">
-          Orbit Flow is free software released under the GNU Affero General Public
-          License v3.0 or later. If you run a modified version on a server and
-          let users interact with it over a network, you must offer those users
-          the corresponding source code.
-        </p>
+        <div>
+          <div class="info-title">Orbit Flow</div>
+          <div class="info-list">
+            <div class="info-row"><span class="text-terminal-text">Version</span><span class="text-terminal-text-dim">{{ appVersion ? `v${appVersion}` : '—' }}</span></div>
+            <div class="info-row"><span class="text-terminal-text">Node types</span><span class="text-terminal-text-dim tabular-nums">{{ nodeTypes ?? '—' }}</span></div>
+            <div class="info-row"><span class="text-terminal-text">Built with</span><span class="text-terminal-text-dim">Go and Vue</span></div>
+            <div class="info-row">
+              <span class="text-terminal-text">License</span>
+              <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline">AGPL-3.0-or-later</a>
+            </div>
+            <div class="info-row">
+              <span class="text-terminal-text">Source code</span>
+              <a href="https://github.com/OrbitOS-org/orbit-os-app-orbit-flow" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline text-right">github.com/OrbitOS-org/orbit-os-app-orbit-flow</a>
+            </div>
+            <div class="info-row">
+              <span class="text-terminal-text">Based on</span>
+              <span class="text-terminal-text-dim text-right">LOOPZE by Dennis Bleul —
+                <a href="https://github.com/loopzedev/loopze-edge" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline">github.com/loopzedev/loopze-edge</a>
+              </span>
+            </div>
+            <div class="info-row"><span class="text-terminal-text">Copyright</span><span class="text-terminal-text-dim text-right">© 2026 Dennis Bleul · © 2026 Orbit OS</span></div>
+          </div>
+          <p class="mt-2 px-1 text-[11px] text-terminal-text-dim leading-relaxed">
+            Orbit Flow is free software released under the GNU Affero General Public
+            License v3.0 or later. If you run a modified version on a server and
+            let users interact with it over a network, you must offer those users
+            the corresponding source code.
+          </p>
+        </div>
       </section>
     </div>
   </div>
 </template>
+
+<style scoped>
+.info-title { font-size: 11px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: rgb(var(--c-text-dim)); padding: 0 12px 6px; }
+.info-list { background: rgb(var(--c-surface)); border-radius: 12px; overflow: hidden; border: 1px solid rgb(var(--c-border) / 0.6); }
+.info-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 9px 14px; font-size: 13px; }
+.info-row > :first-child { white-space: nowrap; flex: none; }
+.info-row > :last-child { min-width: 0; overflow-wrap: anywhere; }
+.info-row + .info-row { border-top: 1px solid rgb(var(--c-border) / 0.7); }
+</style>
