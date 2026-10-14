@@ -49,6 +49,13 @@ func TestExamplesAreComplete(t *testing.T) {
 		if ex.Name == "" || ex.Description == "" || len(ex.Flows) == 0 {
 			t.Errorf("%s: needs a name, a description and at least one flow", s.ID)
 		}
+		known := false
+		for _, c := range Categories {
+			known = known || c == s.Category
+		}
+		if !known {
+			t.Errorf("%s: category %q is not one of %v", s.ID, s.Category, Categories)
+		}
 		configs := map[string]bool{}
 		for _, c := range ex.Configs {
 			configs[c.ID] = true

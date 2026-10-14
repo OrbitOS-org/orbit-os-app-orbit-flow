@@ -5,7 +5,12 @@
 // Package examples holds the example flows that ship inside the app. Each
 // example is one JSON file in this folder:
 //
-//	{ "name": "...", "description": "...", "flows": [...], "configs": [...] }
+//	{ "name": "...", "description": "...", "category": "...", "needs": "...",
+//	  "flows": [...], "configs": [...] }
+//
+// category is one of Categories. needs names the hardware or service the
+// example needs to run ("EBYTE board, RS-485"); leave it empty when it runs
+// on any device.
 //
 // "flows" and "configs" use the same format as GET /api/v1/flows. The editor
 // imports an example as a new, undeployed flow with fresh IDs.
@@ -28,11 +33,16 @@ import (
 //go:embed *.json
 var files embed.FS
 
+// Categories are the groups the editor shows, in this order.
+var Categories = []string{"Getting started", "Device", "Industrial", "Data", "Projects"}
+
 // Summary is what the editor lists.
 type Summary struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
+	Category    string `json:"category"`
+	Needs       string `json:"needs,omitempty"`
 }
 
 // List returns the examples, sorted by name.

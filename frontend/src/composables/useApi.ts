@@ -11,7 +11,7 @@ import type { Role, User } from '@/types/auth'
 import type { CertEntryInput, CertEntrySummary } from '@/types/cert'
 import { basePathNoSlash, readCookie } from '@/runtime'
 
-export interface ExampleSummary { id: string; name: string; description: string }
+export interface ExampleSummary { id: string; name: string; description: string; category: string; needs?: string }
 export interface LibrarySummary { id: string; name: string; savedAt: string; nodes: number }
 export interface Example { name: string; description: string; flows: Flow[]; configs?: ConfigNode[] }
 
