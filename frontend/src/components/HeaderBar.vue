@@ -252,7 +252,7 @@ function selectMode(mode: DeployModeType): void {
         <div class="flex items-center">
           <!-- Main deploy button -->
           <button
-            class="flex items-center gap-1.5 pl-3.5 pr-3 py-1.5 text-[13px] font-semibold transition-all duration-150 rounded-l-full"
+            class="h-8 flex items-center gap-1.5 pl-3.5 pr-3 text-[13px] font-semibold transition-all duration-150 rounded-l-full"
             :disabled="deployDisabled"
             :class="{
               'opacity-50 cursor-not-allowed': deployDisabled,
@@ -304,7 +304,7 @@ function selectMode(mode: DeployModeType): void {
 
           <!-- Dropdown toggle -->
           <button
-            class="flex items-center pl-1.5 pr-2.5 py-1.5 transition-all duration-150 rounded-r-full border-l border-l-white/25"
+            class="h-8 flex items-center pl-1.5 pr-2.5 transition-all duration-150 rounded-r-full border-l border-l-white/25"
             :disabled="deployDisabled"
             :class="{
               'opacity-50 cursor-not-allowed': deployDisabled,
