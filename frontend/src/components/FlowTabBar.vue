@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useFlowStore } from '@/stores/flowStore'
 import { useUiStore } from '@/stores/uiStore'
 import { useAuthStore } from '@/stores/authStore'
@@ -20,6 +20,31 @@ function handleDblClick(flowId: string) {
 }
 
 const auth = useAuthStore()
+
+// Each tab is a flow; its × deletes the flow after a confirmation. The last
+// flow cannot be deleted, and only users who can deploy can delete.
+const canDelete = computed(() => auth.can('deploy') && flowStore.flows.length > 1)
+const deletingId = ref<string | null>(null)
+const deleting = computed(() => flowStore.flows.find((f) => f.id === deletingId.value) ?? null)
+const deletingNodes = computed(() => {
+  if (!deleting.value) return 0
+  return deleting.value.id === flowStore.activeFlowId ? flowStore.nodes.length : deleting.value.nodes.length
+})
+function askDelete(id: string) {
+  deletingId.value = id
+}
+function confirmDelete() {
+  if (!deletingId.value) return
+  const ctx = ui.propertiesContext as { type?: string; flowId?: string } | null
+  if (ctx?.type === 'flow-edit' && ctx.flowId === deletingId.value) ui.clearFlowProperties()
+  flowStore.removeFlow(deletingId.value)
+  deletingId.value = null
+}
+function onEscDelete(e: KeyboardEvent) {
+  if (e.key === 'Escape' && deletingId.value) deletingId.value = null
+}
+onMounted(() => document.addEventListener('keydown', onEscDelete))
+onUnmounted(() => document.removeEventListener('keydown', onEscDelete))
 
 // "+" opens a small menu: a new empty flow, or one from an example.
 const addMenuOpen = ref(false)
@@ -75,11 +100,14 @@ function onDragEnd() {
   <div class="flex items-center gap-2 h-11 px-3 bg-terminal-surface border-b border-terminal-border select-none shrink-0 overflow-x-auto">
     <div class="ios-seg">
     <!-- Flow Tabs -->
-    <button
+    <div
       v-for="(flow, idx) in flowStore.flows"
       :key="flow.id"
+      role="tab"
+      tabindex="0"
+      :aria-selected="flow.id === flowStore.activeFlowId"
       draggable="true"
-      class="seg-item relative flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+      class="seg-item group relative flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
       :class="[
         flow.id === flowStore.activeFlowId
           ? 'on'
@@ -89,6 +117,8 @@ function onDragEnd() {
         dropIdx === idx && dragIdx !== idx ? 'drop' : '',
       ]"
       @click="switchFlow(flow.id)"
+      @keydown.enter.prevent="switchFlow(flow.id)"
+      @keydown.space.prevent="switchFlow(flow.id)"
       @dblclick="handleDblClick(flow.id)"
       @dragstart="onDragStart(idx, $event)"
       @dragover="onDragOver(idx, $event)"
@@ -101,7 +131,20 @@ function onDragEnd() {
         class="w-1.5 h-1.5 rounded-full bg-accent"
         style="box-shadow: 0 0 4px rgb(var(--c-accent) / 0.5)"
       />
-    </button>
+      <!-- Close = delete the flow (each tab is a flow), after confirming. -->
+      <button
+        v-if="canDelete"
+        class="tab-close"
+        :class="flow.id === flowStore.activeFlowId ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100'"
+        :title="`Delete ${flow.label}`"
+        :aria-label="`Delete flow ${flow.label}`"
+        @click.stop="askDelete(flow.id)"
+        @dblclick.stop
+        @mousedown.stop
+      >
+        <svg viewBox="0 0 12 12" class="w-2 h-2" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>
+      </button>
+    </div>
 
     </div>
 
@@ -125,6 +168,25 @@ function onDragEnd() {
     </div>
   </div>
   <ExamplesSheet v-if="examplesOpen" @close="examplesOpen = false" />
+
+  <!-- Confirm deleting a flow -->
+  <div
+    v-if="deleting"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]"
+    @click.self="deletingId = null"
+  >
+    <div class="ios-dialog w-[340px] max-w-[90vw] p-5 text-center" role="dialog" aria-modal="true" aria-labelledby="del-title">
+      <h2 id="del-title">Delete “{{ deleting.label }}”?</h2>
+      <p class="mt-2 text-[13px] text-terminal-text-dim">
+        The flow and its {{ deletingNodes }} node{{ deletingNodes === 1 ? '' : 's' }} are removed.
+        They stop running when you deploy.
+      </p>
+      <div class="mt-4 grid grid-cols-2 gap-2">
+        <button class="pill pill-plain py-2" @click="deletingId = null">Cancel</button>
+        <button class="pill py-2 bg-status-error text-white font-semibold" @click="confirmDelete">Delete</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -134,6 +196,8 @@ function onDragEnd() {
 .seg-item:hover:not(.on) { background: rgb(var(--c-surface) / 0.5); }
 .seg-item.on { background: rgb(var(--c-surface)); font-weight: 600; box-shadow: 0 1px 3px rgb(0 0 0 / 0.12), 0 0 0 0.5px rgb(0 0 0 / 0.04); }
 :root[data-theme="dark"] .seg-item.on { background: rgb(99 99 102); }
+.tab-close { width: 16px; height: 16px; margin-right: -4px; border-radius: 9999px; display: grid; place-items: center; color: rgb(var(--c-text-dim)); transition: opacity 0.12s, background-color 0.12s; }
+.tab-close:hover { background: rgb(var(--c-text-dim) / 0.2); color: rgb(var(--c-text)); }
 .menu-item { display: block; width: 100%; text-align: left; padding: 7px 10px; border-radius: 8px; font-size: 13px; color: rgb(var(--c-text)); }
 .menu-item:hover { background: rgb(var(--c-accent)); color: #fff; }
 .seg-item.drop { box-shadow: inset 2px 0 0 rgb(var(--c-accent)); }
