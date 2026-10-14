@@ -16,6 +16,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -27,6 +28,7 @@ import (
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/config"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/credentials"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/flow"
+	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/library"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/logbuffer"
 	flownats "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nats"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes"
@@ -312,6 +314,7 @@ func (s *Server) setupRoutes() {
 		Hub:       s.hub,
 		LogBuffer: s.logBuffer,
 		Certs:     s.certs,
+		Library:   library.New(filepath.Join(s.cfg.DataDir, "library")),
 	}
 	deps.Users = s.users
 	deps.Sessions = s.sessions

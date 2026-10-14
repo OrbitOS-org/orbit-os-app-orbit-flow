@@ -50,6 +50,8 @@ func RegisterRoutes(r chi.Router, deps *Deps) {
 			r.Get("/settings", deps.handleGetSettings)
 			r.Get("/examples", deps.handleListExamples)
 			r.Get("/system", deps.handleGetSystem)
+			r.Get("/library", deps.handleListLibrary)
+			r.Get("/library/{id}", deps.handleGetLibraryFlow)
 			r.Get("/examples/{id}", deps.handleGetExample)
 			r.Get("/status/nodes", deps.handleGetNodeStatuses)
 			r.Get("/debug/messages", deps.handleGetDebugMessages)
@@ -78,6 +80,8 @@ func RegisterRoutes(r chi.Router, deps *Deps) {
 			r.Use(deps.AuthMW.RequireRole(auth.RoleEditor))
 
 			r.Post("/flows", deps.handleDeployFlows)
+			r.Post("/library", deps.handleSaveLibraryFlow)
+			r.Delete("/library/{id}", deps.handleDeleteLibraryFlow)
 			r.Post("/inject/{id}", deps.handleInjectNode)
 			r.Post("/opcua/test-connection", deps.handleOpcuaTestConnection)
 			r.Post("/opcua/browse", deps.handleOpcuaBrowse)

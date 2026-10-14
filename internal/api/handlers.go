@@ -5,22 +5,23 @@
 package api
 
 import (
-	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/config"
 	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/config"
+	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/library"
 	"log/slog"
 	"net/http"
 	"strconv"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/credentials"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/flow"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/logbuffer"
 	flownats "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nats"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/storage"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/ws"
+	"github.com/go-chi/chi/v5"
 )
 
 // Deps holds the dependencies that API handlers need.
@@ -30,7 +31,9 @@ type Deps struct {
 	Broker    *flownats.Broker
 	Hub       *ws.Hub
 	LogBuffer *logbuffer.Buffer
-	Certs     *credentials.CertStore
+	// Library keeps the flows closed with "Save and close".
+	Library *library.Store
+	Certs   *credentials.CertStore
 
 	// authDeps embeds the auth-specific dependencies (UserStore,
 	// SessionManager, Middleware, throttle, setup mutex) so the auth
@@ -240,10 +243,10 @@ func (d *Deps) handleInjectNode(w http.ResponseWriter, r *http.Request) {
 func (d *Deps) handleGetSettings(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, http.StatusOK, map[string]any{
 		"settings": map[string]any{
-			"httpNodeRoot":    "/",
-			"version":         config.Version,
-			"context":         map[string]any{"stores": []string{"memory"}},
-			"flowFilePretty":  true,
+			"httpNodeRoot":   "/",
+			"version":        config.Version,
+			"context":        map[string]any{"stores": []string{"memory"}},
+			"flowFilePretty": true,
 		},
 	})
 }

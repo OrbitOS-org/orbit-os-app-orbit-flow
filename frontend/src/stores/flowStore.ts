@@ -256,6 +256,29 @@ export const useFlowStore = defineStore("flow", () => {
     return first;
   }
 
+  /**
+   * One flow and the connections its nodes use, in the format of the
+   * examples and the library, for "Save and close".
+   */
+  function exportFlow(flowId: string): { name: string; flows: Flow[]; configs: ConfigNode[] } | null {
+    if (flowId === activeFlowId.value) syncCanvasToActiveFlow();
+    const flow = flows.value.find((f) => f.id === flowId);
+    if (!flow) return null;
+    const ids = new Set(configs.value.map((c) => c.id));
+    const used = new Set<string>();
+    const scan = (v: unknown): void => {
+      if (typeof v === "string") { if (ids.has(v)) used.add(v); }
+      else if (Array.isArray(v)) v.forEach(scan);
+      else if (v && typeof v === "object") Object.values(v).forEach(scan);
+    };
+    flow.nodes.forEach((n) => scan(n.config));
+    return {
+      name: flow.label,
+      flows: [JSON.parse(JSON.stringify(toRaw(flow)))],
+      configs: configs.value.filter((c) => used.has(c.id)).map((c) => JSON.parse(JSON.stringify(toRaw(c)))),
+    };
+  }
+
   function removeFlow(flowId: string): void {
     if (flows.value.length <= 1) return;
 
@@ -834,6 +857,7 @@ export const useFlowStore = defineStore("flow", () => {
 
     // Actions
     setActiveFlow,
+    exportFlow,
     importExample,
     addFlow,
     removeFlow,

@@ -12,6 +12,7 @@ import type { CertEntryInput, CertEntrySummary } from '@/types/cert'
 import { basePathNoSlash, readCookie } from '@/runtime'
 
 export interface ExampleSummary { id: string; name: string; description: string }
+export interface LibrarySummary { id: string; name: string; savedAt: string; nodes: number }
 export interface Example { name: string; description: string; flows: Flow[]; configs?: ConfigNode[] }
 
 export interface ApiError {
@@ -289,6 +290,22 @@ export function useApi() {
   /** Information about the Orbit OS device (GET /system). */
   async function getSystem(): Promise<Record<string, any>> {
     return request<Record<string, any>>('/system')
+  }
+
+  /** Flows saved with "Save and close", in the app's data folder. */
+  async function listLibrary(): Promise<LibrarySummary[]> {
+    const res = await request<{ flows: LibrarySummary[] }>('/library')
+    return res.flows ?? []
+  }
+  async function getLibraryFlow(id: string): Promise<Example> {
+    return request<Example>(`/library/${encodeURIComponent(id)}`)
+  }
+  async function saveLibraryFlow(entry: { name: string; flows: Flow[]; configs: ConfigNode[] }): Promise<string> {
+    const res = await request<{ id: string }>('/library', { method: 'POST', body: JSON.stringify(entry) })
+    return res.id
+  }
+  async function deleteLibraryFlow(id: string): Promise<void> {
+    await request<unknown>(`/library/${encodeURIComponent(id)}`, { method: 'DELETE' })
   }
 
   /** Example flows that ship with the app. */
@@ -692,6 +709,10 @@ export function useApi() {
   }
 
   return {
+    listLibrary,
+    getLibraryFlow,
+    saveLibraryFlow,
+    deleteLibraryFlow,
     getSystem,
     listExamples,
     getExample,

@@ -3,7 +3,8 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useFlowStore } from '@/stores/flowStore'
 import { useUiStore } from '@/stores/uiStore'
 import { useAuthStore } from '@/stores/authStore'
-import ExamplesSheet from '@/components/ExamplesSheet.vue'
+import OpenFlowSheet from '@/components/OpenFlowSheet.vue'
+import { useApi } from '@/composables/useApi'
 
 const flowStore = useFlowStore()
 const ui = useUiStore()
@@ -31,8 +32,31 @@ const deletingNodes = computed(() => {
   return deleting.value.id === flowStore.activeFlowId ? flowStore.nodes.length : deleting.value.nodes.length
 })
 function askDelete(id: string) {
+  closeError.value = null
   deletingId.value = id
 }
+const api = useApi()
+const saving = ref(false)
+const closeError = ref<string | null>(null)
+
+// Saves the flow (and the connections it uses) to the app's data folder,
+// then removes it from the editor.
+async function saveAndClose() {
+  if (!deletingId.value) return
+  const entry = flowStore.exportFlow(deletingId.value)
+  if (!entry) return
+  saving.value = true
+  closeError.value = null
+  try {
+    await api.saveLibraryFlow(entry)
+    confirmDelete()
+  } catch (err) {
+    closeError.value = err instanceof Error ? err.message : 'The flow could not be saved'
+  } finally {
+    saving.value = false
+  }
+}
+
 function confirmDelete() {
   if (!deletingId.value) return
   const ctx = ui.propertiesContext as { type?: string; flowId?: string } | null
@@ -163,11 +187,11 @@ function onDragEnd() {
       </button>
       <div v-if="addMenuOpen" class="ios-menu fixed mt-2 w-48 z-50 p-1" role="menu">
         <button class="menu-item" role="menuitem" @click="newFlow">New flow</button>
-        <button class="menu-item" role="menuitem" @click="fromExample">From example…</button>
+        <button class="menu-item" role="menuitem" @click="fromExample">Open…</button>
       </div>
     </div>
   </div>
-  <ExamplesSheet v-if="examplesOpen" @close="examplesOpen = false" />
+  <OpenFlowSheet v-if="examplesOpen" @close="examplesOpen = false" />
 
   <!-- Confirm deleting a flow -->
   <div
@@ -176,14 +200,16 @@ function onDragEnd() {
     @click.self="deletingId = null"
   >
     <div class="ios-dialog w-[340px] max-w-[90vw] p-5 text-center" role="dialog" aria-modal="true" aria-labelledby="del-title">
-      <h2 id="del-title">Delete “{{ deleting.label }}”?</h2>
+      <h2 id="del-title">Close “{{ deleting.label }}”?</h2>
       <p class="mt-2 text-[13px] text-terminal-text-dim">
-        The flow and its {{ deletingNodes }} node{{ deletingNodes === 1 ? '' : 's' }} are removed.
-        They stop running when you deploy.
+        Its {{ deletingNodes }} node{{ deletingNodes === 1 ? '' : 's' }} stop running when you deploy.
+        Save it to reopen it later with + → Open…
       </p>
-      <div class="mt-4 grid grid-cols-2 gap-2">
-        <button class="pill pill-plain py-2" @click="deletingId = null">Cancel</button>
-        <button class="pill py-2 bg-status-error text-white font-semibold" @click="confirmDelete">Delete</button>
+      <p v-if="closeError" class="mt-3 settings-error">{{ closeError }}</p>
+      <div class="mt-4 grid gap-2">
+        <button class="pill pill-primary py-2" :disabled="saving" @click="saveAndClose">{{ saving ? 'Saving…' : 'Save and close' }}</button>
+        <button class="pill py-2 bg-status-error/10 text-status-error font-semibold" :disabled="saving" @click="confirmDelete">Delete</button>
+        <button class="pill pill-plain py-2" :disabled="saving" @click="deletingId = null">Cancel</button>
       </div>
     </div>
   </div>
