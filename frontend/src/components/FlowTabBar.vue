@@ -33,7 +33,6 @@ const menuFor = ref<string | null>(null)
 const menuPos = ref({ x: 0, y: 0 })
 const menuFlow = computed(() => flowStore.flows.find((f) => f.id === menuFor.value) ?? null)
 const menuState = computed(() => (menuFor.value ? flowStore.flowState(menuFor.value) : 'running'))
-const busy = ref(false)
 const toast = ref<string | null>(null)
 const toastBad = ref(false)
 let toastTimer: ReturnType<typeof setTimeout> | undefined
@@ -50,19 +49,16 @@ function showToast(text: string, bad = false) {
   clearTimeout(toastTimer)
   toastTimer = setTimeout(() => { toast.value = null }, bad ? 5000 : 2500)
 }
-async function run(action: 'stop' | 'start' | 'deploy') {
+// Disable / Enable, as in Node-RED: a change like any other, applied on
+// the next Deploy together with the rest.
+function toggleDisabled() {
   const flow = menuFlow.value
+  menuFor.value = null
   if (!flow) return
-  busy.value = true
-  try {
-    await flowStore.deploySingleFlow(flow.id, action)
-    showToast(action === 'stop' ? `“${flow.label}” stopped on the device` : action === 'start' ? `“${flow.label}” is running` : `“${flow.label}” deployed`)
-  } catch (err) {
-    showToast(err instanceof Error ? err.message : 'The device did not accept the change', true)
-  } finally {
-    busy.value = false
-    menuFor.value = null
-  }
+  flowStore.toggleFlowDisabled(flow.id)
+  showToast(flow.disabled
+    ? `“${flow.label}” will stop when you deploy`
+    : `“${flow.label}” will run when you deploy`)
 }
 function rename() {
   const id = menuFor.value
@@ -216,7 +212,7 @@ function onDragEnd() {
         :title="STATE_LABEL[flowStore.flowState(flow.id)]"
         aria-hidden="true"
       />
-      <span class="truncate max-w-[140px]" :class="{ 'text-terminal-text-dim': flowStore.flowState(flow.id) === 'stopped' }">{{ flow.label }}</span>
+      <span class="truncate max-w-[140px]" :class="{ 'text-terminal-text-dim line-through decoration-1': flow.disabled, 'text-terminal-text-dim': flowStore.flowState(flow.id) === 'stopped' }">{{ flow.label }}</span>
       <span class="sr-only">({{ STATE_LABEL[flowStore.flowState(flow.id)] }})</span>
       <!-- Flow menu: state, stop/start, deploy this flow, rename, close -->
       <button
@@ -267,14 +263,8 @@ function onDragEnd() {
       {{ STATE_LABEL[menuState] }}
     </div>
     <template v-if="auth.can('deploy')">
-      <button v-if="menuState === 'running' || menuState === 'changed'" class="menu-item" role="menuitem" :disabled="busy" @click="run('stop')">
-        Stop<small>on the device now</small>
-      </button>
-      <button v-if="menuState === 'stopped'" class="menu-item" role="menuitem" :disabled="busy" @click="run('start')">
-        Start<small>on the device now</small>
-      </button>
-      <button v-if="menuState === 'changed' || menuState === 'new' || (menuState === 'stopped' && flowStore.isFlowDirty(menuFlow.id))" class="menu-item" role="menuitem" :disabled="busy" @click="run('deploy')">
-        Deploy this flow<small>only its changes</small>
+      <button class="menu-item" role="menuitem" @click="toggleDisabled">
+        {{ menuFlow.disabled ? 'Enable flow' : 'Disable flow' }}<small>on the next deploy</small>
       </button>
       <div class="menu-sep" />
       <button class="menu-item" role="menuitem" @click="rename">Rename…</button>

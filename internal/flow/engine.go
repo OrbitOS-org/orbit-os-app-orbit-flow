@@ -478,6 +478,14 @@ func (e *Engine) deployModifiedNodes(flows []Flow, configs []ConfigNode) error {
 		return nil
 	}
 
+	// Disabling or enabling a flow changes no node, so a node-level deploy
+	// would miss it (the flow kept running). Changes that touch a disabled
+	// flow, before or after, are deployed per flow instead.
+	if touchesDisabledFlow(diff, e.flows, flows) {
+		slog.Info("change involves a disabled flow, deploying per flow")
+		return e.deployModifiedFlows(flows, configs)
+	}
+
 	// Handle config node changes and expand dependent nodes.
 	e.applyConfigDiff(diff, configs)
 	ExpandConfigDependents(&diff, newWs)
@@ -1513,4 +1521,24 @@ func countNodes(flows []Flow) int {
 		total += len(f.Nodes)
 	}
 	return total
+}
+
+// touchesDisabledFlow reports whether a changed, added or removed flow is
+// disabled in the old or the new workspace.
+func touchesDisabledFlow(diff WorkspaceDiff, oldFlows, newFlows []Flow) bool {
+	disabled := map[string]bool{}
+	for _, f := range oldFlows {
+		disabled[f.ID] = disabled[f.ID] || f.Disabled
+	}
+	for _, f := range newFlows {
+		disabled[f.ID] = disabled[f.ID] || f.Disabled
+	}
+	for _, ids := range [][]string{diff.ModifiedFlows, diff.AddedFlows, diff.RemovedFlows} {
+		for _, id := range ids {
+			if disabled[id] {
+				return true
+			}
+		}
+	}
+	return false
 }
