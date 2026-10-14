@@ -845,10 +845,10 @@ onMounted(async () => {
 
             <!-- Background grid -->
             <Background
-                :variant="BackgroundVariant.Lines"
-                :gap="24"
-                :size="1"
-                pattern-color="rgb(var(--c-border) / 0.2)"
+                :variant="BackgroundVariant.Dots"
+                :gap="20"
+                :size="1.3"
+                pattern-color="rgb(var(--c-grid) / 0.22)"
             />
 
             <!-- Zoom / Fit controls -->

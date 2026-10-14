@@ -26,13 +26,13 @@ const hasSuffix = !!slots.suffix
 <template>
   <div
     v-if="hasPrefix || hasSuffix"
-    class="flex items-stretch w-full bg-terminal-bg border text-terminal-text
-           focus-within:border-accent transition-colors"
-    :class="invalid ? 'border-status-error' : 'border-terminal-border'"
+    class="flex items-stretch w-full bg-terminal-surface-alt/70 rounded-lg border text-terminal-text
+           focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/25 transition-colors"
+    :class="invalid ? 'border-status-error' : 'border-transparent'"
   >
     <span
       v-if="hasPrefix"
-      class="flex items-center px-2 text-[10px] text-terminal-text-dim border-r border-terminal-border bg-terminal-surface-alt/30 shrink-0"
+      class="flex items-center px-2 text-xs text-terminal-text-dim border-r border-terminal-border/60 shrink-0"
     >
       <slot name="prefix" />
     </span>
@@ -41,14 +41,14 @@ const hasSuffix = !!slots.suffix
       :value="modelValue"
       :type="type"
       :placeholder="placeholder"
-      class="flex-1 min-w-0 bg-transparent px-2 py-1 text-[10px] outline-none placeholder:text-terminal-text-dim"
+      class="flex-1 min-w-0 bg-transparent px-2 py-1.5 text-xs outline-none placeholder:text-terminal-text-dim"
       :class="{ 'font-mono': mono }"
       @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
     />
 
     <span
       v-if="hasSuffix"
-      class="flex items-center px-2 text-[10px] text-terminal-text-dim border-l border-terminal-border bg-terminal-surface-alt/30 shrink-0"
+      class="flex items-center px-2 text-xs text-terminal-text-dim border-l border-terminal-border/60 shrink-0"
     >
       <slot name="suffix" />
     </span>
@@ -59,13 +59,13 @@ const hasSuffix = !!slots.suffix
     :value="modelValue"
     :type="type"
     :placeholder="placeholder"
-    class="bg-terminal-bg border text-terminal-text
-           px-2 py-1 text-[10px] outline-none
-           focus:border-accent focus:ring-0
+    class="bg-terminal-surface-alt/70 rounded-lg border text-terminal-text
+           px-2 py-1.5 text-xs outline-none
+           focus:border-accent/60 focus:ring-2 focus:ring-accent/25
            placeholder:text-terminal-text-dim w-full transition-colors"
     :class="[
       mono ? 'font-mono' : '',
-      invalid ? 'border-status-error' : 'border-terminal-border',
+      invalid ? 'border-status-error' : 'border-transparent',
     ]"
     @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
   />

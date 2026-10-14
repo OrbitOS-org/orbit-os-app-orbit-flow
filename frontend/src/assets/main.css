@@ -14,36 +14,45 @@
 
 :root {
   color-scheme: dark;
-  --c-bg: 10 15 26;
-  --c-surface: 16 19 30;
-  --c-surface-alt: 23 27 41;
-  --c-border: 38 42 59;
-  --c-border-light: 58 63 86;
-  --c-text: 233 233 241;
-  --c-text-dim: 143 147 171;
+  /* iOS dark system colours; accent is the Orbit OS purple. */
+  --c-bg: 0 0 0;
+  --c-surface: 28 28 30;
+  --c-surface-alt: 44 44 46;
+  --c-border: 56 56 58;
+  --c-border-light: 72 72 74;
+  --c-text: 245 245 247;
+  --c-text-dim: 152 152 159;
   --c-text-bright: 255 255 255;
-  --c-accent: 124 99 236;
-  --c-accent-dim: 105 76 219;
-  --c-success: 63 185 80;
-  --c-warning: 210 153 34;
-  --c-error: 248 81 73;
+  --c-accent: 142 125 255;
+  --c-accent-dim: 120 102 240;
+  --c-success: 48 209 88;
+  --c-warning: 255 159 10;
+  --c-error: 255 69 58;
+  /* Workspace */
+  --c-grid: 235 235 245;
+  --c-wire: 124 124 133;
+  --bar-bg: rgb(28 28 30 / 0.78);
 }
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --c-bg: 244 244 250;
+  /* iOS light system colours. */
+  --c-bg: 242 242 247;
   --c-surface: 255 255 255;
-  --c-surface-alt: 235 235 244;
-  --c-border: 213 215 227;
-  --c-border-light: 184 188 207;
-  --c-text: 27 29 42;
-  --c-text-dim: 96 100 125;
-  --c-text-bright: 7 7 12;
-  --c-accent: 90 63 209;
-  --c-accent-dim: 74 49 184;
-  --c-success: 26 127 55;
-  --c-warning: 154 103 0;
-  --c-error: 207 34 46;
+  --c-surface-alt: 229 229 234;
+  --c-border: 216 216 220;
+  --c-border-light: 199 199 204;
+  --c-text: 28 28 30;
+  --c-text-dim: 110 110 115;
+  --c-text-bright: 0 0 0;
+  --c-accent: 95 69 216;
+  --c-accent-dim: 80 55 196;
+  --c-success: 52 199 89;
+  --c-warning: 255 149 0;
+  --c-error: 255 59 48;
+  --c-grid: 60 60 67;
+  --c-wire: 154 154 163;
+  --bar-bg: rgb(249 249 251 / 0.78);
 }
 
 @layer base {
@@ -56,9 +65,9 @@
     padding: 0;
     background-color: rgb(var(--c-bg));
     color: rgb(var(--c-text));
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif;
     font-size: 13px;
-    line-height: 1.5;
+    line-height: 1.45;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -100,70 +109,69 @@
 .vue-flow__background { background-color: rgb(var(--c-bg)) !important; }
 
 .vue-flow__background pattern circle,
-.vue-flow__background pattern rect { fill: rgb(var(--c-border) / 0.2); }
+.vue-flow__background pattern rect { fill: rgb(var(--c-grid) / 0.16); }
 
+/* Wires: grey curves, accent when selected (Node-RED style). */
 .vue-flow__edge-path,
 .vue-flow__connection-path {
-  stroke: rgb(var(--c-border-light)) !important;
-  stroke-width: 2px;
+  stroke: rgb(var(--c-wire)) !important;
+  stroke-width: 2.5px;
+  stroke-linecap: round;
 }
 
 .vue-flow__edge.selected .vue-flow__edge-path,
 .vue-flow__edge:hover .vue-flow__edge-path {
   stroke: rgb(var(--c-accent)) !important;
-  stroke-width: 2.5px;
+  stroke-width: 3px;
 }
 
 .vue-flow__edge-text {
   fill: rgb(var(--c-text-dim));
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: var(--font-mono, ui-monospace), monospace;
   font-size: 11px;
 }
 
 /* ============================================
-   Node Handles — circular with glow on hover
+   Node ports — small rounded squares (Node-RED style)
    ============================================ */
 
 .vue-flow__handle {
-  width: 10px !important;
-  height: 10px !important;
-  border-radius: 50% !important;
-  background-color: rgb(var(--c-surface)) !important;
-  border: 2px solid rgb(var(--c-border-light)) !important;
-  transition: all 0.15s ease;
+  width: 11px !important;
+  height: 11px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  border-radius: 3.5px !important;
+  background-color: #d9d9de !important;
+  border: 1px solid rgb(0 0 0 / 0.4) !important;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
 }
 
+/* Bigger target than the visible port, for touch and trackpads. */
 .vue-flow__handle::after {
   content: '';
   position: absolute;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   border-radius: 50%;
 }
 
-.vue-flow__handle:hover {
-  border-color: rgb(var(--c-accent)) !important;
-  background-color: rgb(var(--c-accent) / 0.13) !important;
-  box-shadow: 0 0 8px rgb(var(--c-accent) / 0.2);
-}
-
-.vue-flow__handle-left  { left:   -5px !important; }
-.vue-flow__handle-right { right:  -5px !important; }
-.vue-flow__handle-top   { top:    -5px !important; }
-.vue-flow__handle-bottom{ bottom: -5px !important; }
-
+.vue-flow__handle:hover,
 .vue-flow__handle.connecting {
   border-color: rgb(var(--c-accent)) !important;
-  background-color: rgb(var(--c-accent) / 0.27) !important;
+  background-color: rgb(var(--c-accent)) !important;
 }
 
+.vue-flow__handle-left  { left:   -6px !important; }
+.vue-flow__handle-right { right:  -6px !important; }
+.vue-flow__handle-top   { top:    -6px !important; }
+.vue-flow__handle-bottom{ bottom: -6px !important; }
+
 .vue-flow__handle.valid {
-  border-color: #3fb950 !important;
-  background-color: #3fb95022 !important;
-  box-shadow: 0 0 8px #3fb95033;
+  border-color: rgb(var(--c-success)) !important;
+  background-color: rgb(var(--c-success)) !important;
 }
 
 /* ============================================
@@ -171,9 +179,12 @@
    ============================================ */
 
 .vue-flow__minimap {
-  background-color: rgb(var(--c-surface)) !important;
+  background-color: var(--bar-bg) !important;
+  backdrop-filter: saturate(180%) blur(16px);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
   border: 1px solid rgb(var(--c-border)) !important;
-  border-radius: 4px !important;
+  border-radius: 12px !important;
+  overflow: hidden;
 }
 
 .vue-flow__minimap-mask {
@@ -194,17 +205,19 @@
 
 .vue-flow__controls {
   border: 1px solid rgb(var(--c-border)) !important;
-  border-radius: 4px !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
-  background: transparent !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 6px 18px rgb(0 0 0 / 0.1) !important;
+  background: var(--bar-bg) !important;
+  backdrop-filter: saturate(180%) blur(16px);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
   overflow: hidden;
+  padding: 3px;
 }
 
 .vue-flow__controls-button {
-  background-color: rgb(var(--c-surface)) !important;
+  background-color: transparent !important;
   border: none !important;
-  border-bottom: 1px solid rgb(var(--c-border)) !important;
-  border-radius: 0 !important;
+  border-radius: 9px !important;
   color: rgb(var(--c-text-dim)) !important;
   fill: rgb(var(--c-text-dim)) !important;
   width: 30px !important;
@@ -264,24 +277,40 @@
     background-color: rgb(var(--c-surface-alt));
     border-color: rgb(var(--c-border-light));
   }
+
+  /* ── iOS surfaces ── */
+  .ios-bar {
+    background: var(--bar-bg);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+  }
+  .ios-menu {
+    background: var(--bar-bg);
+    backdrop-filter: saturate(180%) blur(24px);
+    -webkit-backdrop-filter: saturate(180%) blur(24px);
+    border: 1px solid rgb(var(--c-border));
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.2);
+  }
   .terminal-btn:active {
     background-color: rgb(var(--c-accent) / 0.1);
   }
 
   .terminal-btn-primary {
     @apply bg-accent text-white border border-accent
-           px-3 py-1.5 text-xs font-semibold cursor-pointer rounded
+           px-4 py-1.5 text-xs font-semibold cursor-pointer rounded-full
            hover:bg-accent-dim
            transition-all duration-100;
   }
 
   /* ── Inputs ── */
+  /* Inputs: filled, no border, focus ring — iOS style. */
   .terminal-input {
-    @apply bg-terminal-bg border border-terminal-border text-terminal-text
+    @apply bg-terminal-surface-alt/70 border border-transparent text-terminal-text
            px-2.5 py-1.5 text-xs font-mono rounded
            outline-none
-           focus:border-accent focus:ring-1 focus:ring-accent/20
-           placeholder:text-terminal-text-dim/60;
+           focus:bg-terminal-surface focus:border-accent/60 focus:ring-2 focus:ring-accent/25
+           placeholder:text-terminal-text-dim/70;
   }
 
   .terminal-checkbox {

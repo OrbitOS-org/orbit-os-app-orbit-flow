@@ -15,7 +15,7 @@ const tabs: { id: InfoTab; label: string }[] = [
   { id: 'help', label: 'Help' },
   { id: 'config', label: 'Config' },
   { id: 'context', label: 'Context' },
-  { id: 'state-machines', label: 'SM' },
+  { id: 'state-machines', label: 'States' },
   { id: 'debug', label: 'Debug' },
 ]
 
@@ -66,19 +66,20 @@ function onResizeEnd() {
 
     <PanelHeader title="Information" closable @close="ui.closeInfoPanel()" />
 
-    <!-- Tab Bar -->
-    <div class="flex border-b border-terminal-border shrink-0">
+    <!-- Tab Bar: iOS segmented control -->
+    <div class="px-2.5 py-2 border-b border-terminal-border shrink-0">
+    <div class="ios-seg flex">
       <button
         v-for="tab in tabs"
         :key="tab.id"
-        class="flex-1 px-2 py-1.5 text-[10px] uppercase tracking-wider font-semibold transition-all duration-100 cursor-pointer"
-        :class="ui.activeInfoTab === tab.id
-          ? 'text-accent border-b-2 border-accent bg-accent/5'
-          : 'text-terminal-text-dim hover:text-terminal-text hover:bg-terminal-surface-alt/50 border-b-2 border-transparent'"
+        class="seg-item flex-1 cursor-pointer"
+        :class="ui.activeInfoTab === tab.id ? 'on' : ''"
+        :aria-pressed="ui.activeInfoTab === tab.id"
         @click="ui.setInfoTab(tab.id)"
       >
         {{ tab.label }}
       </button>
+    </div>
     </div>
 
     <!-- Tab Content -->
@@ -91,3 +92,10 @@ function onResizeEnd() {
     </div>
   </div>
 </template>
+
+<style scoped>
+.ios-seg { gap: 2px; padding: 2px; border-radius: 9px; background: rgb(var(--c-surface-alt) / 0.8); }
+.seg-item { padding: 4px 4px; border-radius: 7px; font-size: 12px; color: rgb(var(--c-text)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.seg-item.on { background: rgb(var(--c-surface)); font-weight: 600; box-shadow: 0 1px 3px rgb(0 0 0 / 0.12), 0 0 0 0.5px rgb(0 0 0 / 0.04); }
+:root:not([data-theme="light"]) .seg-item.on { background: rgb(99 99 102); }
+</style>

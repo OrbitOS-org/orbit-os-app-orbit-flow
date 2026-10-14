@@ -341,3 +341,41 @@ export function getTokens(nodeType: string): NodeTokens {
   if (theme.value !== 'light') return TOKENS[category]
   return (LIGHT_TOKENS[category] ??= lightTokens(TOKENS[category]))
 }
+
+// ── Node fill colours (Node-RED style) ─────────────────────────────
+// Nodes are drawn as a pastel block with dark text, the same in both
+// themes, so a node keeps its colour wherever it appears (palette,
+// workspace, help). The colours follow Node-RED's where Node-RED has the
+// node, so people who know it recognise them.
+const NODE_FILL: Record<string, string> = {
+  inject: '#a6bbcf',
+  debug: '#87a980',
+  catch: '#e49191',
+  status: '#94c1d0',
+  'link-in': '#dddddd', 'link-out': '#dddddd', 'link-call': '#dddddd',
+  function: '#fdd0a2', 'function-expr': '#fdd0a2', 'function-go': '#fdd0a2',
+  change: '#e2d96e', switch: '#e2d96e',
+  template: '#f3b567',
+  delay: '#e6e0f8', statemachine: '#e6e0f8', 'context-watch': '#e6e0f8',
+  json: '#debd5c', xml: '#debd5c', csv: '#debd5c', 'csv-out': '#debd5c',
+  'mqtt-in': '#d8bfd8', 'mqtt-out': '#d8bfd8', 'mqtt-request': '#d8bfd8',
+  'http-in': '#e7e7ae', 'http-request': '#e7e7ae', 'http-response': '#e7e7ae',
+  'tcp-in': '#c0c0c0', 'tcp-out': '#c0c0c0', 'tcp-request': '#c0c0c0',
+  'udp-in': '#c0c0c0', 'udp-out': '#c0c0c0',
+  'modbus-read': '#e9967a', 'modbus-write': '#e9967a', 'modbus-parser': '#e9967a',
+  'opcua-read': '#9fd4d9', 'opcua-subscribe': '#9fd4d9', 'opcua-write': '#9fd4d9',
+  's7-read': '#b5cde8', 's7-write': '#b5cde8', 's7-parser': '#b5cde8',
+  'gpio-read': '#c6dbef', 'gpio-write': '#c6dbef',
+  'i2c-transfer': '#c6dbef', 'spi-transfer': '#c6dbef',
+  'system-metrics': '#cfd4e6', 'device-identity': '#cfd4e6',
+  'mobile-notify': '#f0c3d4',
+  'file-read': '#deb887', 'file-out': '#deb887', 'file-watch': '#deb887',
+}
+
+/** Fill colour of a node type. */
+export function nodeFill(nodeType: string): string {
+  return NODE_FILL[nodeType] ?? '#d9d9de'
+}
+
+/** Text colour on a node fill: always dark, the fills are light. */
+export const NODE_INK = '#1c1c1e'

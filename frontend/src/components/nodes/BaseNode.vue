@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, useSlots } from "vue";
 import { Handle, Position } from "@vue-flow/core";
 import NodeIcon from "@/components/nodes/NodeIcon.vue";
 import AppTooltip from "@/components/ui/AppTooltip.vue";
-import { getTokens, STATUS_COLORS } from "@/components/nodes/tokens";
+import { nodeFill, NODE_INK, STATUS_COLORS } from "@/components/nodes/tokens";
 import { useFlowStore } from "@/stores/flowStore";
 
 export interface ActionButton {
@@ -63,8 +63,9 @@ function handleToggle() {
 }
 
 const flowStore = useFlowStore();
+const slots = useSlots();
 
-const t = computed(() => getTokens(props.nodeType));
+const fill = computed(() => nodeFill(props.nodeType));
 const typeLabel = computed(() => {
     const labels: Record<string, string> = {
         inject: "Inject",
@@ -97,11 +98,11 @@ const typeLabel = computed(() => {
         "file-read": "File Read",
         "file-out": "File Write",
         "file-watch": "File Watch",
-        "mobile-notify": "Mobile Notify",
+        "mobile-notify": "Mobile Notification",
         "gpio-read": "GPIO Read",
         "gpio-write": "GPIO Write",
         "system-metrics": "System Metrics",
-        "device-identity": "Device Identity",
+        "device-identity": "Device Info",
         "i2c-transfer": "I2C Transfer",
         "spi-transfer": "SPI Transfer",
     };
@@ -125,19 +126,26 @@ const statusColor = computed(() =>
     STATUS_COLORS[props.status?.fill ?? ''] ?? STATUS_COLORS.grey
 );
 
-const PORT_SPACING = 24;
+// Node-RED geometry: one row is 34 px high; each extra port adds 22 px.
+const ROW = 34;
+const PORT_STEP = 22;
 
 const maxPorts = computed(() => Math.max(props.inputs, props.outputs, 1));
-const nodeMinHeight = computed(() =>
-    `${(maxPorts.value + 1) * PORT_SPACING}px`,
+const hasSubline = computed(() => !hasCustomLabel.value && !!slots.body);
+const nodeHeight = computed(() =>
+    Math.max(hasSubline.value ? 44 : ROW, (maxPorts.value - 1) * PORT_STEP + ROW),
 );
+
+function portTop(i: number, count: number): string {
+    // Spread the ports evenly around the middle of the node.
+    const span = (count - 1) * PORT_STEP;
+    return `${nodeHeight.value / 2 - span / 2 + i * PORT_STEP}px`;
+}
 
 const inputHandles = computed(() =>
     Array.from({ length: props.inputs }, (_, i) => ({
         id: `input-${i}`,
-        style: {
-            top: `${(i + 1) * PORT_SPACING}px`,
-        },
+        style: { top: portTop(i, props.inputs) },
     })),
 );
 
@@ -145,172 +153,96 @@ const outputHandles = computed(() =>
     Array.from({ length: props.outputs }, (_, i) => ({
         id: `output-${i}`,
         title: props.outputLabels?.[i] ?? "",
-        style: {
-            top: `${(i + 1) * PORT_SPACING}px`,
-        },
+        style: { top: portTop(i, props.outputs) },
     })),
 );
 </script>
 
 <template>
-  <div
-    class="flex flex-col items-start gap-1.5"
-    :class="{ 'opacity-40': props.disabled }"
-  >
-    <!-- Row: action button + main node + toggle button -->
-    <div class="flex items-stretch">
-      <!-- Action button (optional, displayed left of the node) -->
-      <button
-        v-if="props.actionButton"
-        class="shrink-0 w-9 flex items-center justify-center transition-all duration-100 nopan nodrag"
-        :class="{ 'pointer-events-none': props.disabled }"
-        :disabled="props.disabled"
-        :style="{
-          background: actionActive ? t.accent + '22' : 'rgb(var(--c-surface))',
-          border: `1px solid ${actionActive ? t.accent : t.border}`,
-          borderRight: 'none',
-          borderRadius: '6px 0 0 6px',
-        }"
-        :title="props.actionButton.title ?? props.actionButton.label"
-        @click.stop="handleAction"
-        @dblclick.stop
-        @mousedown.stop
-        @pointerdown.stop
-      >
-        <span
-          class="text-[9px] font-bold tracking-widest transition-colors"
-          :style="{ color: actionActive ? t.accent : t.textSub }"
-          style="writing-mode: vertical-lr; text-orientation: mixed"
-        >{{ props.actionButton.label }}</span>
-      </button>
+  <div class="relative" :class="{ 'opacity-45': props.disabled }">
+    <!-- Action button (inject): a tab on the left, as in Node-RED -->
+    <button
+      v-if="props.actionButton"
+      class="node-tab left nopan nodrag"
+      :class="{ pressed: actionActive }"
+      :style="{ background: fill }"
+      :disabled="props.disabled"
+      :title="props.actionButton.title ?? props.actionButton.label"
+      :aria-label="props.actionButton.title ?? props.actionButton.label"
+      @click.stop="handleAction"
+      @dblclick.stop
+      @mousedown.stop
+      @pointerdown.stop
+    ><span /></button>
 
-      <!-- Main node body -->
-      <div
-        class="flow-node relative flex flex-col rounded-md min-w-[210px] select-none"
-        :class="{ selected: props.selected }"
-        :style="{
-          background: 'rgb(var(--c-surface))',
-          minHeight: nodeMinHeight,
-          border: `1px ${props.disabled ? 'dashed' : 'solid'} ${props.selected ? t.accent : t.border}`,
-          boxShadow: props.selected ? `0 0 0 1px ${t.accent}, 0 4px 20px ${t.accentGlow}` : 'none',
-          outline: isHighlighted ? `1px dashed ${t.accent}` : undefined,
-          outlineOffset: isHighlighted ? '-1px' : undefined,
-        }"
+    <!-- Main node body -->
+    <div
+      class="flow-node"
+      :class="{ selected: props.selected, highlighted: isHighlighted, dashed: props.disabled }"
+      :style="{ background: fill, color: NODE_INK, height: nodeHeight + 'px' }"
+    >
+      <Handle
+        v-for="h in inputHandles"
+        :key="h.id"
+        :id="h.id"
+        type="target"
+        :position="Position.Left"
+        :style="h.style"
+        class="node-port"
+      />
+      <AppTooltip
+        v-for="h in outputHandles"
+        :key="h.id"
+        :text="h.title"
+        side="right"
       >
-        <!-- Input Handles -->
         <Handle
-          v-for="h in inputHandles"
-          :key="h.id"
           :id="h.id"
-          type="target"
-          :position="Position.Left"
-          :style="{
-            ...h.style,
-            borderColor: selected ? t.accent : 'rgb(var(--c-text-dim))',
-            background: selected ? t.accent + '33' : 'rgb(var(--c-surface))',
-          }"
-          class="!w-2.5 !h-2.5 !rounded-full !border-2 transition-colors"
+          type="source"
+          :position="Position.Right"
+          :style="h.style"
+          class="node-port"
         />
+      </AppTooltip>
 
-        <!-- Output Handles -->
-        <AppTooltip
-          v-for="h in outputHandles"
-          :key="h.id"
-          :text="h.title"
-          side="right"
-        >
-          <Handle
-            :id="h.id"
-            type="source"
-            :position="Position.Right"
-            :style="{
-              ...h.style,
-              borderColor: selected ? t.accent : 'rgb(var(--c-text-dim))',
-              background: selected ? t.accent + '33' : 'rgb(var(--c-surface))',
-            }"
-            class="!w-2.5 !h-2.5 !rounded-full !border-2 transition-colors"
-          />
-        </AppTooltip>
-
-        <!-- Header: icon + typeLabel + badge + dirty -->
-        <div class="flex items-center gap-2 px-3 pt-2.5">
-          <slot name="icon">
-            <span :style="{ color: t.accent }"><NodeIcon :type="props.nodeType" /></span>
-          </slot>
-          <span
-            class="text-[11px] font-semibold tracking-wide truncate flex-1"
-            :style="{ color: t.accent }"
-          >
-            {{ typeLabel }}
-          </span>
-          <slot name="badge" />
-          <span
-            v-if="isDirty"
-            class="w-2 h-2 shrink-0 rounded-full"
-            style="background: rgb(var(--c-accent)); box-shadow: 0 0 4px rgb(var(--c-accent) / 0.5)"
-            title="Undeployed changes"
-          />
-        </div>
-
-        <!-- Body: custom label takes priority, otherwise slot content -->
-        <div
-          v-if="hasCustomLabel || $slots.body"
-          class="px-3 py-1 text-[10px] font-mono text-terminal-text/80"
-        >
-          <span v-if="hasCustomLabel">{{ props.label }}</span>
-          <slot v-else name="body" />
-        </div>
-
-        <!-- Actions (optional) -->
-        <div v-if="$slots.actions" class="px-3 pb-1">
-          <slot name="actions" />
-        </div>
-
-        <!-- Bottom accent line — pinned to the bottom even when min-height kicks in -->
-        <div class="h-[2px] rounded-b-md mt-auto" :style="{ background: t.accent }" />
+      <div class="node-icon">
+        <slot name="icon"><NodeIcon :type="props.nodeType" /></slot>
       </div>
 
-      <!-- Toggle button (optional, displayed right of the node) -->
-      <button
-        v-if="props.toggleButton"
-        class="shrink-0 w-9 flex items-center justify-center transition-all duration-100 nopan nodrag"
-        :class="{ 'pointer-events-none': props.disabled }"
-        :disabled="props.disabled"
-        :style="{
-          background: props.toggleState ? t.accent + '22' : 'rgb(var(--c-surface))',
-          border: `1px solid ${props.toggleState ? t.accent : t.border}`,
-          borderLeft: 'none',
-          borderRadius: '0 6px 6px 0',
-        }"
-        :title="props.toggleState ? 'Enabled — click to disable' : 'Disabled — click to enable'"
-        @click.stop="handleToggle"
-        @dblclick.stop
-        @mousedown.stop
-        @pointerdown.stop
-      >
-        <span
-          class="text-[9px] font-bold tracking-widest transition-colors"
-          :style="{ color: props.toggleState ? t.accent : t.textSub }"
-          style="writing-mode: vertical-lr; text-orientation: mixed"
-        >{{ props.toggleState ? 'ON' : 'OFF' }}</span>
-      </button>
+      <div class="node-text">
+        <div class="node-label">{{ hasCustomLabel ? props.label : typeLabel }}</div>
+        <div v-if="hasSubline" class="node-sub"><slot name="body" /></div>
+        <div v-if="$slots.actions" class="pt-0.5"><slot name="actions" /></div>
+      </div>
+      <slot name="badge" />
+
+      <span v-if="isDirty" class="node-dirty" title="Undeployed changes" />
     </div>
 
-    <!-- Status pill — lives outside the node body. Hidden for disabled nodes
-         since they don't run and can't have a live status. -->
+    <!-- Toggle button (debug): a tab on the right -->
+    <button
+      v-if="props.toggleButton"
+      class="node-tab right nopan nodrag"
+      :class="{ off: !props.toggleState }"
+      :style="{ background: props.toggleState ? fill : undefined }"
+      :disabled="props.disabled"
+      :title="props.toggleState ? 'On — click to turn off' : 'Off — click to turn on'"
+      :aria-label="props.toggleState ? 'Turn off' : 'Turn on'"
+      @click.stop="handleToggle"
+      @dblclick.stop
+      @mousedown.stop
+      @pointerdown.stop
+    ><span /></button>
+
+    <!-- Status, under the node as in Node-RED. Hidden for disabled nodes. -->
     <div
       v-if="props.status && props.status.fill && !props.disabled"
-      class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] ml-2"
-      :style="{
-        background: statusColor + '22',
-        color: statusColor,
-        border: `1px solid ${statusColor}55`,
-        whiteSpace: 'nowrap',
-      }"
+      class="node-status"
     >
       <span
-        class="w-1.5 h-1.5 rounded-full"
-        :style="{ background: statusColor, boxShadow: `0 0 4px ${statusColor}` }"
+        class="mark"
+        :class="props.status.shape === 'ring' ? 'ring' : ''"
+        :style="props.status.shape === 'ring' ? { borderColor: statusColor } : { background: statusColor }"
       />
       <span>{{ props.status.text ?? "" }}</span>
     </div>
@@ -319,6 +251,56 @@ const outputHandles = computed(() =>
 
 <style scoped>
 .flow-node {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    min-width: 140px;
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.16), 0 1px 2px rgb(0 0 0 / 0.08);
     transition: box-shadow 0.15s;
+    font-size: 13px;
+    font-weight: 500;
+    user-select: none;
 }
+.flow-node.dashed { box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.4); outline: 1px dashed rgb(0 0 0 / 0.35); outline-offset: -1px; }
+.flow-node.selected { box-shadow: 0 0 0 2.5px rgb(var(--c-accent)), 0 6px 16px rgb(0 0 0 / 0.18); }
+.flow-node.highlighted { outline: 2px dashed rgb(var(--c-accent)); outline-offset: 2px; }
+.node-icon {
+    width: 30px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    background: rgb(0 0 0 / 0.07);
+    border-right: 1px solid rgb(0 0 0 / 0.1);
+    border-radius: 8px 0 0 8px;
+    opacity: 0.85;
+}
+.node-icon :deep(svg) { width: 15px; height: 15px; }
+.node-text { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; padding: 4px 12px 4px 10px; }
+.node-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25; }
+.node-sub { font-size: 11px; font-weight: 400; opacity: 0.66; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+.node-dirty {
+    position: absolute; top: -4px; right: -4px; width: 9px; height: 9px; border-radius: 50%;
+    background: rgb(var(--c-accent)); box-shadow: 0 0 0 2px rgb(var(--c-bg));
+}
+.node-tab {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 18px; height: 24px; padding: 0; border: 0; cursor: pointer;
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.2);
+    display: grid; place-items: center;
+}
+.node-tab.left { left: -22px; border-radius: 6px 3px 3px 6px; }
+.node-tab.right { right: -22px; border-radius: 3px 6px 6px 3px; }
+.node-tab span { width: 8px; height: 8px; border-radius: 2px; background: rgb(0 0 0 / 0.25); }
+.node-tab.pressed { filter: brightness(0.85); }
+.node-tab.off { background: rgb(var(--c-surface)); }
+.node-tab.off span { background: rgb(var(--c-text-dim) / 0.5); }
+.node-tab:disabled { pointer-events: none; }
+.node-status {
+    position: absolute; left: 4px; top: calc(100% + 5px);
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; color: rgb(var(--c-text-dim)); white-space: nowrap;
+}
+.node-status .mark { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+.node-status .mark.ring { background: transparent; border: 2px solid; border-radius: 50%; }
 </style>

@@ -23,7 +23,7 @@ const hasAction = !!slots.action
     <div v-if="label || hasAction" class="flex items-center justify-between gap-2">
       <span
         v-if="label"
-        class="text-[10px] text-terminal-text-dim uppercase tracking-wider font-semibold"
+        class="text-[11px] text-terminal-text-dim font-medium"
       >
         {{ label }}
       </span>

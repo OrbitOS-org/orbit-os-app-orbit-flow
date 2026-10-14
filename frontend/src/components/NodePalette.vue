@@ -4,7 +4,7 @@ import { useApi } from '@/composables/useApi'
 import { useAuthStore } from '@/stores/authStore'
 import type { NodeCatalogEntry } from '@/types/flow'
 import NodeIcon from '@/components/nodes/NodeIcon.vue'
-import { getTokens } from '@/components/nodes/tokens'
+import { nodeFill, NODE_INK } from '@/components/nodes/tokens'
 
 const api = useApi()
 const auth = useAuthStore()
@@ -89,26 +89,15 @@ function onDragStart(event: DragEvent, node: NodeCatalogEntry): void {
 </script>
 
 <template>
-  <aside class="h-full bg-terminal-surface border-r border-terminal-border flex flex-col overflow-hidden select-none">
-    <!-- Panel Header -->
-    <div class="flex items-center justify-between px-4 py-2.5 border-b border-terminal-border shrink-0">
-      <span class="text-xs font-semibold uppercase tracking-wider text-terminal-text">Nodes</span>
-      <span class="text-[10px] text-terminal-text-dim font-mono tabular-nums">{{ nodes.length }}</span>
-    </div>
-
-    <!-- Search -->
-    <div class="px-3 py-2 border-b border-terminal-border shrink-0">
-      <div class="relative">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-terminal-text-dim/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+  <aside class="palette h-full border-r border-terminal-border flex flex-col overflow-hidden select-none">
+    <!-- Search, iOS style -->
+    <div class="px-2.5 pt-2.5 pb-1.5 shrink-0">
+      <label class="ios-search">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.2-4.2" />
         </svg>
-        <input
-          v-model="filterText"
-          type="text"
-          placeholder="Search nodes..."
-          class="terminal-input w-full text-[11px] py-1.5 pl-7"
-        />
-      </div>
+        <input v-model="filterText" type="text" placeholder="Search nodes" aria-label="Search nodes" />
+      </label>
     </div>
 
     <!-- Body -->
@@ -133,31 +122,27 @@ function onDragStart(event: DragEvent, node: NodeCatalogEntry): void {
         <div
           v-for="cat in categories"
           :key="cat.name"
-          class="border-b border-terminal-border"
         >
           <!-- Category Header -->
           <button
-            class="w-full flex items-center justify-between px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-terminal-text-dim hover:text-terminal-text hover:bg-terminal-surface-alt/50 transition-colors cursor-pointer"
+            class="palette-cat"
+            :aria-expanded="expandedCategories.has(cat.name) || !!filterText"
             @click="toggleCategory(cat.name)"
           >
-            <div class="flex items-center gap-1.5">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-3 h-3 transition-transform duration-150 shrink-0"
-                :class="expandedCategories.has(cat.name) || filterText ? 'rotate-90' : ''"
-                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-              <span>{{ CATEGORY_LABEL[cat.name] ?? cat.name }}</span>
-            </div>
-            <span class="text-[9px] font-mono text-terminal-text-dim/50 tabular-nums">
-              {{ cat.nodes.length }}
-            </span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-2.5 h-2.5 transition-transform duration-150 shrink-0"
+              :class="expandedCategories.has(cat.name) || filterText ? 'rotate-90' : ''"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+            <span>{{ CATEGORY_LABEL[cat.name] ?? cat.name }}</span>
+            <span class="count">{{ cat.nodes.length }}</span>
           </button>
 
           <!-- Nodes -->
-          <div v-show="expandedCategories.has(cat.name) || filterText" class="px-2.5 pb-2.5 flex flex-col gap-1.5">
+          <div v-show="expandedCategories.has(cat.name) || filterText" class="px-2.5 pb-2 flex flex-col gap-[5px]">
             <div
               v-for="node in cat.nodes"
               :key="node.type"
@@ -168,34 +153,15 @@ function onDragStart(event: DragEvent, node: NodeCatalogEntry): void {
               :title="auth.can('deploy') ? node.description : 'Read-only — sign in as editor or admin to add nodes'"
               @dragstart="onDragStart($event, node)"
             >
-              <!-- Mini node preview -->
+              <!-- The node as it looks in the workspace. Nodes with inputs
+                   only carry the icon on the right, as in Node-RED. -->
               <div
-                class="flex text-xs transition-all duration-100 group-hover:translate-x-0.5"
-                :style="{
-                  border: `1px solid ${getTokens(node.type).border}`,
-                  borderLeft: `3px solid ${getTokens(node.type).accent}`,
-                  borderRadius: '3px',
-                }"
+                class="palette-node"
+                :class="{ right: node.inputs > 0 && node.outputs === 0 }"
+                :style="{ background: nodeFill(node.type), color: NODE_INK }"
               >
-                <!-- Icon column -->
-                <div
-                  class="w-9 shrink-0 flex items-center justify-center"
-                  :style="{ background: getTokens(node.type).bgIcon, color: getTokens(node.type).accent }"
-                >
-                  <NodeIcon :type="node.type" />
-                </div>
-                <!-- Label -->
-                <div
-                  class="flex-1 min-w-0 flex items-center px-2 py-1.5"
-                  :style="{ background: getTokens(node.type).bgHdr }"
-                >
-                  <span
-                    class="text-[11px] font-medium tracking-wide truncate"
-                    :style="{ color: getTokens(node.type).accent }"
-                  >
-                    {{ node.label }}
-                  </span>
-                </div>
+                <div class="ic"><NodeIcon :type="node.type" /></div>
+                <div class="lb">{{ node.label }}</div>
               </div>
             </div>
           </div>
@@ -203,9 +169,40 @@ function onDragStart(event: DragEvent, node: NodeCatalogEntry): void {
       </template>
     </div>
 
-    <!-- Footer -->
-    <div class="px-3 py-2 border-t border-terminal-border text-[10px] text-terminal-text-dim/60 shrink-0">
-      {{ nodes.length }} node{{ nodes.length !== 1 ? 's' : '' }} registered
-    </div>
   </aside>
 </template>
+
+<style scoped>
+.palette { background: rgb(var(--c-surface)); }
+.ios-search {
+  display: flex; align-items: center; gap: 6px;
+  background: rgb(var(--c-surface-alt) / 0.8); border-radius: 10px; padding: 6px 9px;
+  color: rgb(var(--c-text-dim));
+}
+.ios-search input {
+  flex: 1; min-width: 0; border: 0; outline: none; background: transparent;
+  font-size: 13px; color: rgb(var(--c-text));
+}
+.ios-search input::placeholder { color: rgb(var(--c-text-dim) / 0.8); }
+.ios-search:focus-within { box-shadow: 0 0 0 2px rgb(var(--c-accent) / 0.5); }
+.palette-cat {
+  width: 100%; display: flex; align-items: center; gap: 6px;
+  padding: 10px 12px 6px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+  text-transform: uppercase; color: rgb(var(--c-text-dim)); cursor: pointer;
+}
+.palette-cat:hover { color: rgb(var(--c-text)); }
+.palette-cat .count { margin-left: auto; font-weight: 500; opacity: 0.6; font-variant-numeric: tabular-nums; }
+.palette-node {
+  display: flex; align-items: stretch; min-height: 30px; border-radius: 7px;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.14); font-size: 12.5px; font-weight: 500;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.group:hover .palette-node { transform: translateX(2px); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.2), 0 2px 6px rgb(0 0 0 / 0.1); }
+.palette-node .ic {
+  width: 28px; flex: none; display: grid; place-items: center;
+  background: rgb(0 0 0 / 0.07); border-right: 1px solid rgb(0 0 0 / 0.1); border-radius: 7px 0 0 7px; opacity: 0.85;
+}
+.palette-node .ic :deep(svg) { width: 14px; height: 14px; }
+.palette-node.right .ic { order: 2; border-right: 0; border-left: 1px solid rgb(0 0 0 / 0.1); border-radius: 0 7px 7px 0; }
+.palette-node .lb { flex: 1; min-width: 0; padding: 5px 10px; align-self: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+</style>

@@ -13,12 +13,12 @@ defineEmits<{
 
 <template>
   <div class="flex items-center justify-between px-4 py-2.5 border-b border-terminal-border shrink-0 bg-terminal-surface">
-    <span class="text-xs font-semibold uppercase tracking-wider text-terminal-text">{{ title }}</span>
+    <span class="text-[13px] font-semibold text-terminal-text-bright">{{ title }}</span>
     <div class="flex items-center gap-1">
       <slot name="actions" />
       <button
         v-if="closable"
-        class="w-6 h-6 flex items-center justify-center text-terminal-text-dim hover:text-terminal-text hover:bg-terminal-surface-alt rounded transition-all duration-100"
+        class="w-6 h-6 flex items-center justify-center text-terminal-text-dim hover:text-terminal-text bg-terminal-surface-alt/70 hover:bg-terminal-surface-alt rounded-full transition-all duration-100"
         title="Close panel"
         @click="$emit('close')"
       >

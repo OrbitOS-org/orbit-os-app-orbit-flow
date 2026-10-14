@@ -1,5 +1,5 @@
 <template>
-  <label class="text-[10px] text-terminal-text-dim uppercase tracking-wider block">
+  <label class="text-[11px] text-terminal-text-dim font-medium block">
     <slot />
   </label>
 </template>

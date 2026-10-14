@@ -20,24 +20,24 @@ const connectionDotColor = computed(() => uiStore.connectionStatusColor)
 
 const connectionLabel = computed(() => {
   switch (uiStore.connectionStatus) {
-    case 'connected':   return 'ONLINE'
-    case 'connecting':  return 'CONNECTING'
-    case 'disconnected': return 'OFFLINE'
+    case 'connected':   return 'Online'
+    case 'connecting':  return 'Connecting'
+    case 'disconnected': return 'Offline'
   }
 })
 
 const deployModeLabel: Record<DeployModeType, string> = {
-  nodes: 'DEPLOY',
-  flows: 'DEPLOY FLOWS',
-  full: 'FULL DEPLOY',
-  restart: 'RESTART',
+  nodes: 'Deploy',
+  flows: 'Deploy flows',
+  full: 'Full deploy',
+  restart: 'Restart',
 }
 
 const deployLabel = computed(() => {
   switch (uiStore.deployStatus) {
-    case 'deploying': return 'DEPLOYING'
-    case 'deployed':  return 'DEPLOYED'
-    case 'failed':    return 'FAILED'
+    case 'deploying': return 'Deploying'
+    case 'deployed':  return 'Deployed'
+    case 'failed':    return 'Failed'
     default:          return deployModeLabel[flowStore.deployMode]
   }
 })
@@ -76,7 +76,7 @@ function selectMode(mode: DeployModeType): void {
 
 <template>
   <header
-    class="flex items-center justify-between h-11 px-4 bg-terminal-surface border-b border-terminal-border select-none shrink-0"
+    class="ios-bar flex items-center justify-between h-12 px-4 border-b border-terminal-border select-none shrink-0 relative z-30"
   >
     <!-- Left: Logo / App Name -->
     <div class="flex items-center gap-3">
@@ -92,7 +92,7 @@ function selectMode(mode: DeployModeType): void {
 
       <div class="flex items-center gap-2">
         <AppMark class="w-[18px] h-[18px] text-accent" />
-        <span class="text-terminal-text-bright text-sm font-semibold tracking-wide">Orbit Flow</span>
+        <span class="text-terminal-text-bright text-[15px] font-semibold">Orbit Flow</span>
       </div>
 
       <span class="text-terminal-text-dim text-[10px] tracking-wider hidden sm:inline font-medium uppercase">
@@ -252,13 +252,13 @@ function selectMode(mode: DeployModeType): void {
         <div class="flex items-center">
           <!-- Main deploy button -->
           <button
-            class="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-all duration-150 rounded-l"
+            class="flex items-center gap-1.5 pl-3.5 pr-3 py-1.5 text-[13px] font-semibold transition-all duration-150 rounded-l-full"
             :disabled="deployDisabled"
             :class="{
               'opacity-50 cursor-not-allowed': deployDisabled,
-              'bg-status-success/15 border border-status-success/40 text-status-success': uiStore.deployStatus === 'deployed',
-              'bg-status-error/15 border border-status-error/40 text-status-error': uiStore.deployStatus === 'failed',
-              'bg-accent text-white border border-accent hover:bg-accent-dim': uiStore.deployStatus !== 'deployed' && uiStore.deployStatus !== 'failed',
+              'bg-status-success text-white': uiStore.deployStatus === 'deployed',
+              'bg-status-error text-white': uiStore.deployStatus === 'failed',
+              'bg-accent text-white hover:bg-accent-dim': uiStore.deployStatus !== 'deployed' && uiStore.deployStatus !== 'failed',
             }"
             title="Deploy flows"
             @click="handleDeploy"
@@ -304,13 +304,13 @@ function selectMode(mode: DeployModeType): void {
 
           <!-- Dropdown toggle -->
           <button
-            class="flex items-center px-1.5 py-1.5 transition-all duration-150 rounded-r border-l-0"
+            class="flex items-center pl-1.5 pr-2.5 py-1.5 transition-all duration-150 rounded-r-full border-l border-l-white/25"
             :disabled="deployDisabled"
             :class="{
               'opacity-50 cursor-not-allowed': deployDisabled,
-              'bg-status-success/15 border border-status-success/40 text-status-success': uiStore.deployStatus === 'deployed',
-              'bg-status-error/15 border border-status-error/40 text-status-error': uiStore.deployStatus === 'failed',
-              'bg-accent text-white border border-accent hover:bg-accent-dim': uiStore.deployStatus !== 'deployed' && uiStore.deployStatus !== 'failed',
+              'bg-status-success text-white': uiStore.deployStatus === 'deployed',
+              'bg-status-error text-white': uiStore.deployStatus === 'failed',
+              'bg-accent text-white hover:bg-accent-dim': uiStore.deployStatus !== 'deployed' && uiStore.deployStatus !== 'failed',
             }"
             title="Select deploy mode"
             @click.stop="showDeployMenu = !showDeployMenu"
@@ -324,7 +324,7 @@ function selectMode(mode: DeployModeType): void {
         <!-- Dropdown menu -->
         <div
           v-if="showDeployMenu"
-          class="absolute right-0 top-full mt-1.5 w-56 bg-terminal-surface border border-terminal-border rounded-md shadow-xl shadow-black/40 z-50 overflow-hidden"
+          class="ios-menu absolute right-0 top-full mt-2 w-60 z-50 overflow-hidden"
         >
           <button
             v-for="mode in deployModes"
@@ -344,5 +344,34 @@ function selectMode(mode: DeployModeType): void {
         </div>
       </div>
     </div>
+    <!-- iOS-style banner after a deploy -->
+    <Transition name="banner">
+      <div
+        v-if="uiStore.deployStatus === 'deployed' || uiStore.deployStatus === 'failed'"
+        class="ios-banner"
+        role="status"
+      >
+        <span class="mark" :class="uiStore.deployStatus === 'failed' ? 'bad' : ''">{{ uiStore.deployStatus === 'failed' ? '!' : '✓' }}</span>
+        <span>{{ uiStore.deployStatus === 'failed' ? 'Deploy failed — see the log' : 'Deployed' }}</span>
+      </div>
+    </Transition>
   </header>
 </template>
+
+<style scoped>
+.ios-banner {
+  position: fixed; left: 50%; top: 12px; transform: translateX(-50%); z-index: 60;
+  display: flex; align-items: center; gap: 10px; padding: 9px 16px 9px 10px;
+  background: var(--bar-bg); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border: 1px solid rgb(var(--c-border)); border-radius: 16px; font-size: 13px; font-weight: 500;
+  color: rgb(var(--c-text)); box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+}
+.ios-banner .mark {
+  width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center;
+  background: rgb(var(--c-success)); color: #fff; font-size: 13px; font-weight: 700;
+}
+.ios-banner .mark.bad { background: rgb(var(--c-error)); }
+.banner-enter-active, .banner-leave-active { transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2), opacity 0.25s; }
+.banner-enter-from, .banner-leave-to { transform: translate(-50%, -140%); opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .banner-enter-active, .banner-leave-active { transition: none; } }
+</style>

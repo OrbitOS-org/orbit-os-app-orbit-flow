@@ -31,12 +31,13 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['IBM Plex Mono', 'Consolas', 'Monaco', 'Courier New', 'monospace'],
+        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', 'Inter', 'system-ui', 'sans-serif'],
+        mono: ['"SF Mono"', 'ui-monospace', 'IBM Plex Mono', 'Menlo', 'Consolas', 'monospace'],
       },
       borderRadius: {
-        DEFAULT: '3px', none: '0px', sm: '2px', md: '4px',
-        lg: '6px', xl: '8px', '2xl': '12px', '3xl': '16px',
+        // iOS-like corners.
+        DEFAULT: '8px', none: '0px', sm: '6px', md: '8px',
+        lg: '10px', xl: '12px', '2xl': '14px', '3xl': '18px',
         full: '9999px',
       },
     },

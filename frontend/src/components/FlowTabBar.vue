@@ -54,20 +54,21 @@ function onDragEnd() {
 </script>
 
 <template>
-  <div class="flex items-end h-9 bg-terminal-surface border-b border-terminal-border select-none shrink-0 overflow-x-auto">
+  <div class="flex items-center gap-2 h-11 px-3 bg-terminal-surface border-b border-terminal-border select-none shrink-0 overflow-x-auto">
+    <div class="ios-seg">
     <!-- Flow Tabs -->
     <button
       v-for="(flow, idx) in flowStore.flows"
       :key="flow.id"
       draggable="true"
-      class="relative flex items-center gap-1.5 h-full px-3.5 text-xs whitespace-nowrap transition-colors duration-100 cursor-pointer border-b-2"
+      class="seg-item relative flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
       :class="[
         flow.id === flowStore.activeFlowId
-          ? 'bg-terminal-bg text-terminal-text border-b-accent font-medium'
-          : 'text-terminal-text-dim hover:text-terminal-text hover:bg-terminal-bg/40 border-b-transparent',
+          ? 'on'
+          : '',
         flow.disabled ? 'opacity-40' : '',
         dragIdx === idx ? 'opacity-30' : '',
-        dropIdx === idx && dragIdx !== idx ? 'border-l-2 border-l-accent' : '',
+        dropIdx === idx && dragIdx !== idx ? 'drop' : '',
       ]"
       @click="switchFlow(flow.id)"
       @dblclick="handleDblClick(flow.id)"
@@ -84,9 +85,11 @@ function onDragEnd() {
       />
     </button>
 
+    </div>
+
     <!-- Add Flow Button -->
     <button
-      class="flex items-center justify-center h-full px-3 text-terminal-text-dim hover:text-accent hover:bg-terminal-bg/30 transition-colors duration-100"
+      class="flex items-center justify-center w-7 h-7 shrink-0 rounded-full text-terminal-text-dim hover:text-accent bg-terminal-surface-alt/70 hover:bg-terminal-surface-alt transition-colors duration-100"
       title="New flow"
       @click="handleAddClick"
     >
@@ -96,3 +99,13 @@ function onDragEnd() {
     </button>
   </div>
 </template>
+
+<style scoped>
+/* iOS segmented control */
+.ios-seg { display: inline-flex; gap: 2px; padding: 2px; border-radius: 9px; background: rgb(var(--c-surface-alt) / 0.8); max-width: 100%; }
+.seg-item { padding: 4px 12px; border-radius: 7px; font-size: 13px; color: rgb(var(--c-text)); transition: background 0.15s; }
+.seg-item:hover:not(.on) { background: rgb(var(--c-surface) / 0.5); }
+.seg-item.on { background: rgb(var(--c-surface)); font-weight: 600; box-shadow: 0 1px 3px rgb(0 0 0 / 0.12), 0 0 0 0.5px rgb(0 0 0 / 0.04); }
+:root:not([data-theme="light"]) .seg-item.on { background: rgb(99 99 102); }
+.seg-item.drop { box-shadow: inset 2px 0 0 rgb(var(--c-accent)); }
+</style>

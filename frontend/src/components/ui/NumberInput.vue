@@ -42,12 +42,12 @@ function bump(delta: number) {
 
 <template>
   <div
-    class="flex items-stretch w-full bg-terminal-bg border focus-within:border-accent transition-colors"
-    :class="invalid ? 'border-status-error' : 'border-terminal-border'"
+    class="flex items-stretch w-full bg-terminal-surface-alt/70 rounded-lg border focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/25 transition-colors"
+    :class="invalid ? 'border-status-error' : 'border-transparent'"
   >
     <button
       type="button"
-      class="px-2 text-[10px] text-terminal-text-dim hover:text-terminal-text hover:bg-terminal-surface-alt/40 disabled:opacity-30 disabled:cursor-not-allowed transition-colors border-r border-terminal-border"
+      class="px-2 text-xs text-terminal-text-dim hover:text-terminal-text hover:bg-terminal-surface-alt/40 disabled:opacity-30 disabled:cursor-not-allowed transition-colors border-r border-terminal-border"
       :disabled="!canDecrement"
       @click="bump(-step)"
       tabindex="-1"
@@ -61,20 +61,20 @@ function bump(delta: number) {
       :max="max !== Infinity ? max : undefined"
       :step="step"
       :placeholder="placeholder"
-      class="flex-1 min-w-0 bg-transparent px-2 py-1 text-[10px] text-terminal-text outline-none placeholder:text-terminal-text-dim text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+      class="flex-1 min-w-0 bg-transparent px-2 py-1.5 text-xs text-terminal-text outline-none placeholder:text-terminal-text-dim text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
       @input="onInput"
     />
 
     <span
       v-if="unit"
-      class="flex items-center px-2 text-[10px] text-terminal-text-dim border-l border-terminal-border bg-terminal-surface-alt/30 shrink-0 select-none"
+      class="flex items-center px-2 text-xs text-terminal-text-dim border-l border-terminal-border/60 shrink-0 select-none"
     >
       {{ unit }}
     </span>
 
     <button
       type="button"
-      class="px-2 text-[10px] text-terminal-text-dim hover:text-terminal-text hover:bg-terminal-surface-alt/40 disabled:opacity-30 disabled:cursor-not-allowed transition-colors border-l border-terminal-border"
+      class="px-2 text-xs text-terminal-text-dim hover:text-terminal-text hover:bg-terminal-surface-alt/40 disabled:opacity-30 disabled:cursor-not-allowed transition-colors border-l border-terminal-border"
       :disabled="!canIncrement"
       @click="bump(step)"
       tabindex="-1"
