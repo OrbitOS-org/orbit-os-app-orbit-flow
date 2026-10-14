@@ -2,7 +2,7 @@
 // Licensed under the GNU Affero General Public License v3.0 or later.
 // See LICENSE file for details.
 
-// Package config provides configuration management for the LOOPZE runtime.
+// Package config provides configuration management for the Orbit Flow runtime.
 // It reads configuration from command-line flags and environment variables,
 // applying sensible defaults for standalone edge deployment.
 package config
@@ -18,10 +18,10 @@ import (
 	"time"
 )
 
-// Config holds the runtime configuration for the LOOPZE application.
+// Config holds the runtime configuration for the Orbit Flow application.
 type Config struct {
 	// Host is the address the HTTP server binds to (flag: --bind-host).
-	// Not to be confused with cmd/loopze/main.go's --host, which is the
+	// Not to be confused with cmd/orbit_flow/main.go's --host, which is the
 	// OrbitOS device IP used for the SDK connection.
 	Host string
 
@@ -72,7 +72,7 @@ type Config struct {
 	ShowVersion bool
 
 	// BasePath is the URL prefix the application is served under, e.g.
-	// "/loopze". Empty means the app is mounted at the root. When set, all
+	// "/orbit-flow". Empty means the app is mounted at the root. When set, all
 	// routes (API, /ws, frontend) live under this prefix and the embedded
 	// frontend is served with a matching <base href> so client-side
 	// routing and asset URLs resolve correctly behind a reverse proxy.
@@ -110,10 +110,10 @@ var (
 )
 
 const (
-	// defaultHost binds all interfaces: cmd/loopze registers this app with
+	// defaultHost binds all interfaces: cmd/orbit_flow registers this app with
 	// the OrbitOS launcher using ExposureMode_EXPOSURE_MODE_REDIRECT, so the
 	// browser is sent straight to <device-ip>:<port>/ instead of going
-	// through the portal's reverse proxy at /loopze — some things (the flow
+	// through the portal's reverse proxy at /orbit-flow — some things (the flow
 	// editor's WebSocket log/debug stream in particular) don't tolerate the
 	// proxied path prefix well. That means this HTTP server must itself be
 	// reachable from the LAN, not just from the device's loopback. Port
@@ -124,8 +124,8 @@ const (
 	defaultFlowFile        = "workspace.json"
 	defaultCredentialsFile = "credentials.json"
 	defaultUsersFile       = "users.json"
-	defaultKeyFile         = "loopze.key"
-	defaultSessionKeyFile  = "loopze.session.key"
+	defaultKeyFile         = "orbit-flow.key"
+	defaultSessionKeyFile  = "orbit-flow.session.key"
 	// -1: the embedded NATS server opens no network port. The app talks to it
 	// in-process, so nothing outside the app can connect to it. Set a port only
 	// to inspect it with external NATS tools.
@@ -135,7 +135,7 @@ const (
 	defaultSessionTTL    = 12 * time.Hour
 	defaultHTTPNodeRoot  = "/endpoint"
 
-	envPrefix = "LOOPZE_"
+	envPrefix = "ORBIT_FLOW_"
 )
 
 // Load reads configuration from command-line flags and environment variables.
@@ -146,7 +146,7 @@ func Load() *Config {
 	// Define command-line flags.
 	//
 	// Named "bind-host", not "host": on OrbitOS, "--host" is taken by
-	// cmd/loopze/main.go for the device IP (matching every other Orbit app's
+	// cmd/orbit_flow/main.go for the device IP (matching every other Orbit app's
 	// CLI convention) — reusing it here for the HTTP bind address caused a
 	// real footgun where "--host <device-ip>" silently tried to bind the
 	// web server to an address the machine doesn't own.
@@ -165,7 +165,7 @@ func Load() *Config {
 	flag.DurationVar(&cfg.SessionTTL, "session-ttl", defaultSessionTTL, "lifetime of an authenticated session (sliding window)")
 	flag.BoolVar(&cfg.ShowVersion, "version", false, "print version information and exit")
 	flag.BoolVar(&cfg.ShowVersion, "v", false, "print version information and exit (shorthand)")
-	flag.StringVar(&cfg.BasePath, "base-path", "", "URL prefix the app is served under (e.g. /loopze); empty for root")
+	flag.StringVar(&cfg.BasePath, "base-path", "", "URL prefix the app is served under (e.g. /orbit-flow); empty for root")
 	flag.StringVar(&cfg.HTTPNodeRoot, "http-node-root", defaultHTTPNodeRoot, "URL prefix for flow-defined HTTP endpoints (must not be empty or '/')")
 	var trustedProxies, trustedOrigins string
 	flag.StringVar(&trustedProxies, "trusted-proxies", "", "comma-separated CIDRs/IPs whose X-Forwarded-* headers are honoured")
@@ -242,7 +242,7 @@ func splitCSV(v string) []string {
 	return out
 }
 
-// applyEnvOverrides checks for LOOPZE_* environment variables and applies them
+// applyEnvOverrides checks for ORBIT_FLOW_* environment variables and applies them
 // when the corresponding flag was not explicitly provided on the command line.
 func applyEnvOverrides(cfg *Config) {
 	if v, ok := getenv("BIND_HOST"); ok && !flagProvided("bind-host") {
@@ -363,7 +363,7 @@ func (c *Config) ParseLogLevel() slog.Level {
 	}
 }
 
-// getenv looks up a LOOPZE_-prefixed environment variable.
+// getenv looks up an ORBIT_FLOW_-prefixed environment variable.
 func getenv(key string) (string, bool) {
 	return os.LookupEnv(envPrefix + key)
 }

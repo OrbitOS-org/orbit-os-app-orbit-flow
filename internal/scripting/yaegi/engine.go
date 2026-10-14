@@ -14,7 +14,7 @@
 //	func handle(payload any) any
 //	func handle(payload []map[string]any) []map[string]any
 //	func handle(payload []SomeStruct) any
-//	func handle(payload any, node loopzenode.Node)   // multi-output via node.Send
+//	func handle(payload any, node orbitflow.Node)   // multi-output via node.Send
 //
 // Buffer-shaped payloads (mqtt-in's []int wire format) are converted to []byte
 // when the user declares a []byte input, and back to []int on the return path
@@ -105,7 +105,7 @@ type Program struct {
 }
 
 // Compile installs the stdlib subset, registers the Node interface so user
-// code can `import "loopzenode"` and reference `loopzenode.Node`, evaluates the
+// code can `import "orbitflow"` and reference `orbitflow.Node`, evaluates the
 // user source, and reflects on `main.handle` to validate the signature.
 //
 // Compile failures cover: forbidden imports (refusal to resolve), syntax /
@@ -130,13 +130,13 @@ func (e *Engine) Compile(code string) (prog *Program, err error) {
 		return nil, fmt.Errorf("install symbols: %w", err)
 	}
 
-	// Expose the Node interface under import path "loopzenode".
+	// Expose the Node interface under import path "orbitflow".
 	if err := i.Use(interp.Exports{
-		"loopzenode/loopzenode": map[string]reflect.Value{
+		"orbitflow/orbitflow": map[string]reflect.Value{
 			"Node": reflect.ValueOf((*Node)(nil)),
 		},
 	}); err != nil {
-		return nil, fmt.Errorf("install loopzenode: %w", err)
+		return nil, fmt.Errorf("install orbitflow: %w", err)
 	}
 
 	if _, err := i.Eval(code); err != nil {
@@ -240,7 +240,7 @@ func coerceInput(payload any, want reflect.Type) (reflect.Value, error) {
 		return reflect.ValueOf(buf), nil
 	}
 
-	// []map[string]any — common LOOPZE payload shape, handle without JSON.
+	// []map[string]any — common Orbit Flow payload shape, handle without JSON.
 	if want.Kind() == reflect.Slice && want.Elem().Kind() == reflect.Map {
 		if v, ok := payload.([]map[string]any); ok {
 			return reflect.ValueOf(v), nil

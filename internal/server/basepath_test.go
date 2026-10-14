@@ -30,23 +30,23 @@ func TestIndexInjectorRoot(t *testing.T) {
 	if !strings.Contains(body, `<base href="/">`) {
 		t.Errorf("expected <base href=\"/\">, got: %s", body)
 	}
-	if !strings.Contains(body, `window.__LOOPZE_BASE__='/'`) {
-		t.Errorf("expected window.__LOOPZE_BASE__='/', got: %s", body)
+	if !strings.Contains(body, `window.__ORBIT_FLOW_BASE__='/'`) {
+		t.Errorf("expected window.__ORBIT_FLOW_BASE__='/', got: %s", body)
 	}
 }
 
 func TestIndexInjectorSubpath(t *testing.T) {
 	fsys := newFakeIndexFS(`<html><head><title>x</title></head></html>`)
-	inj, err := newIndexInjector(fsys, "/loopze")
+	inj, err := newIndexInjector(fsys, "/orbit-flow")
 	if err != nil {
 		t.Fatal(err)
 	}
 	body := string(inj.render())
-	if !strings.Contains(body, `<base href="/loopze/">`) {
-		t.Errorf("expected <base href=\"/loopze/\">, got: %s", body)
+	if !strings.Contains(body, `<base href="/orbit-flow/">`) {
+		t.Errorf("expected <base href=\"/orbit-flow/\">, got: %s", body)
 	}
-	if !strings.Contains(body, `window.__LOOPZE_BASE__='/loopze/'`) {
-		t.Errorf("expected window.__LOOPZE_BASE__='/loopze/', got: %s", body)
+	if !strings.Contains(body, `window.__ORBIT_FLOW_BASE__='/orbit-flow/'`) {
+		t.Errorf("expected window.__ORBIT_FLOW_BASE__='/orbit-flow/', got: %s", body)
 	}
 }
 
@@ -69,17 +69,17 @@ func TestIndexInjectorEscapesScriptCloseInPath(t *testing.T) {
 func TestStripBasePathRedirectsBareSegment(t *testing.T) {
 	called := false
 	inner := http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) { called = true })
-	mw := stripBasePath("/loopze")(inner)
+	mw := stripBasePath("/orbit-flow")(inner)
 
-	req := httptest.NewRequest(http.MethodGet, "/loopze", nil)
+	req := httptest.NewRequest(http.MethodGet, "/orbit-flow", nil)
 	rec := httptest.NewRecorder()
 	mw.ServeHTTP(rec, req)
 
 	if rec.Code != http.StatusMovedPermanently {
 		t.Fatalf("got %d, want 301", rec.Code)
 	}
-	if loc := rec.Header().Get("Location"); loc != "/loopze/" {
-		t.Errorf("redirect location: got %q, want %q", loc, "/loopze/")
+	if loc := rec.Header().Get("Location"); loc != "/orbit-flow/" {
+		t.Errorf("redirect location: got %q, want %q", loc, "/orbit-flow/")
 	}
 	if called {
 		t.Error("inner handler should not have been called on redirect")
@@ -89,9 +89,9 @@ func TestStripBasePathRedirectsBareSegment(t *testing.T) {
 func TestStripBasePathRewritesPath(t *testing.T) {
 	var seen string
 	inner := http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) { seen = r.URL.Path })
-	mw := stripBasePath("/loopze")(inner)
+	mw := stripBasePath("/orbit-flow")(inner)
 
-	req := httptest.NewRequest(http.MethodGet, "/loopze/api/v1/foo", nil)
+	req := httptest.NewRequest(http.MethodGet, "/orbit-flow/api/v1/foo", nil)
 	mw.ServeHTTP(httptest.NewRecorder(), req)
 
 	if seen != "/api/v1/foo" {
@@ -103,7 +103,7 @@ func TestStripBasePath404OutsidePrefix(t *testing.T) {
 	inner := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
-	mw := stripBasePath("/loopze")(inner)
+	mw := stripBasePath("/orbit-flow")(inner)
 
 	req := httptest.NewRequest(http.MethodGet, "/somewhere/else", nil)
 	rec := httptest.NewRecorder()

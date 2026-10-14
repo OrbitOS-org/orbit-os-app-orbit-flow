@@ -22,7 +22,7 @@ const hasOutput = computed(() => (props.data?.outputs ?? 0) > 0);
 
 <template>
   <div
-    class="loopze-link-node relative font-mono select-none flex items-center justify-center"
+    class="flow-link-node relative font-mono select-none flex items-center justify-center"
     :class="{ 'opacity-40': props.data?.disabled }"
     :style="{
       width: '48px',
@@ -87,7 +87,7 @@ const hasOutput = computed(() => (props.data?.outputs ?? 0) > 0);
 </template>
 
 <style scoped>
-.loopze-link-node {
+.flow-link-node {
   transition: box-shadow 0.15s;
 }
 </style>

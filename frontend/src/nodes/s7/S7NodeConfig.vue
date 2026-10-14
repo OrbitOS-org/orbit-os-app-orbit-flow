@@ -22,7 +22,7 @@ import {
 } from './enums'
 
 const flowStore = useFlowStore()
-const { updateNodeInternals } = useVueFlow('loopze-flow-editor')
+const { updateNodeInternals } = useVueFlow('orbit-flow-editor')
 const { options: plcOptions, openNewConfig, openEditConfig } = useConfigSelector('s7-plc')
 
 const node = computed(() => flowStore.selectedNode)

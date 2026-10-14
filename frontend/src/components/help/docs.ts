@@ -212,7 +212,7 @@ export const nodeHelpDocs: Record<string, NodeHelpDoc> = {
       },
       {
         title: 'Multi-output via node.Send',
-        config: 'package main\n\nimport "loopzenode"\n\nfunc handle(payload any, node loopzenode.Node) {\n    if v, ok := payload.(int); ok && v > 50 {\n        node.Send(0, payload)\n    } else {\n        node.Send(1, payload)\n    }\n}',
+        config: 'package main\n\nimport "orbitflow"\n\nfunc handle(payload any, node orbitflow.Node) {\n    if v, ok := payload.(int); ok && v > 50 {\n        node.Send(0, payload)\n    } else {\n        node.Send(1, payload)\n    }\n}',
         result: 'Routes high values to port 0, low values to port 1.',
       },
     ],
@@ -220,7 +220,7 @@ export const nodeHelpDocs: Record<string, NodeHelpDoc> = {
       'Allowed imports: bytes, encoding/{binary,base64,hex,json}, errors, fmt, math, math/big, math/bits, math/rand, regexp, sort, strconv, strings, time (no Sleep), unicode, unicode/utf8, unicode/utf16. Imports outside this list cause a compile error.',
       'For typed payloads, JSON tags drive the boundary conversion — make sure your struct fields have matching `json:"…"` tags.',
       '[]byte input maps to mqtt-in\'s buffer wire format ([]int) automatically; returning []byte converts back transparently.',
-      'loopzenode.Node also exposes Get/Set/Delete (node-scope), Flow{Get,Set,Delete}/FlowGetP (flow scope, P = persistent), and Global{Get,Set,Delete}/GlobalGetP (global scope).',
+      'orbitflow.Node also exposes Get/Set/Delete (node-scope), Flow{Get,Set,Delete}/FlowGetP (flow scope, P = persistent), and Global{Get,Set,Delete}/GlobalGetP (global scope).',
     ],
   },
 
@@ -370,7 +370,7 @@ export const nodeHelpDocs: Record<string, NodeHelpDoc> = {
       { key: 'topic',               desc: 'Request topic. Falls back to msg.topic when empty.' },
       { key: 'qos',                 desc: 'QoS for both the request publish and the response subscription.' },
       { key: 'retain',              desc: 'Retain flag on the request publish (rare to retain a request).' },
-      { key: 'responseTopicPrefix', desc: 'Prefix used to build the random response topic. Default: loopze/response. Full topic: <prefix>/<random>.' },
+      { key: 'responseTopicPrefix', desc: 'Prefix used to build the random response topic. Default: orbit-flow/response. Full topic: <prefix>/<random>.' },
       { key: 'timeout',             desc: 'How long to wait for the response, in seconds. 0 = no timeout.' },
       { key: 'timeoutMode',         desc: 'error (default) — emit a catchable error on timeout; passthrough — emit msg.timedOut=true on the regular output.' },
       { key: 'responseFormat',      desc: 'string (default) | json | buffer — how msg.payload is decoded for the response.' },

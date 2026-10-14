@@ -17,7 +17,7 @@ import (
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/credentials"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/flow"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/logbuffer"
-	loopzenats "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nats"
+	flownats "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nats"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/storage"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/ws"
 )
@@ -26,7 +26,7 @@ import (
 type Deps struct {
 	Engine    *flow.Engine
 	Storage   storage.Storage
-	Broker    *loopzenats.Broker
+	Broker    *flownats.Broker
 	Hub       *ws.Hub
 	LogBuffer *logbuffer.Buffer
 	Certs     *credentials.CertStore

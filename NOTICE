@@ -35,8 +35,10 @@ the history of the repository above. In summary:
 - the embedded NATS server opens no network port by default;
 - the page's port is chosen in the range Orbit OS reserves for app pages;
 - logs go to the Orbit OS system log;
+- the editor's typefaces ship inside the app (no requests to other servers);
 - renamed to Orbit Flow, with a new icon, a new colour palette and a light
-  theme in the editor.
+  theme in the editor; the old name is gone from cookies, data files,
+  environment variables and the Go function node API (`import "orbitflow"`).
 
 Files that came from LOOPZE keep the copyright notice of Dennis Bleul. Files
 written for Orbit Flow carry the copyright notice of Orbit OS. All of them are
@@ -53,3 +55,8 @@ and the upstream repositories of each dependency).
 
 The Orbit OS Go SDK (https://github.com/OrbitOS-org/orbit-os-sdk-go) is
 licensed under the Apache License 2.0.
+
+The editor bundles the typefaces Inter (Copyright 2016 The Inter Project
+Authors, https://github.com/rsms/inter) and IBM Plex Mono (Copyright 2017
+IBM Corp., https://github.com/IBM/plex), both licensed under the SIL Open
+Font License 1.1, so the page needs no internet access.

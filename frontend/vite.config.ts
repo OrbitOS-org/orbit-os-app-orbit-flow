@@ -28,7 +28,7 @@ export default defineConfig({
         ws: true,
       },
       // Flow-defined HTTP endpoints (http-in nodes). Matches the
-      // default LOOPZE_HTTP_NODE_ROOT. Operators running with a custom
+      // default ORBIT_FLOW_HTTP_NODE_ROOT. Operators running with a custom
       // prefix in production don't hit Vite — this is dev-only.
       '/endpoint': {
         target: 'http://localhost:1880',

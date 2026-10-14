@@ -17,7 +17,7 @@ import (
 // CookieName is the name of the session cookie set by the auth handlers
 // and read by Authenticate. It is exported so tests and the HTTP layer
 // can construct cookies without duplicating the literal.
-const CookieName = "loopze_session"
+const CookieName = "orbit_flow_session"
 
 // ctxKey is an unexported type used as the key for the user value in the
 // request context. Using a private type prevents collisions with keys
@@ -53,7 +53,7 @@ type Middleware struct {
 
 	// DevUser, if non-nil, replaces the cookie-based authentication: the
 	// user is injected into every request and the setup gate is skipped.
-	// Used by LOOPZE_DISABLE_AUTH for local development.
+	// Used by ORBIT_FLOW_DISABLE_AUTH for local development.
 	DevUser *User
 }
 

@@ -334,10 +334,10 @@ func TestChangeNode_NoRules(t *testing.T) {
 }
 
 func TestChangeNode_EnvVar(t *testing.T) {
-	t.Setenv("LOOPZE_TEST_VAR", "from-env")
+	t.Setenv("ORBIT_FLOW_TEST_VAR", "from-env")
 
 	n := newChangeNode(t, []map[string]any{
-		{"t": "set", "p": "payload", "pt": "msg", "to": "LOOPZE_TEST_VAR", "tot": "env"},
+		{"t": "set", "p": "payload", "pt": "msg", "to": "ORBIT_FLOW_TEST_VAR", "tot": "env"},
 	})
 
 	outputs, err := n.HandleMessage(changeMsg("original"))

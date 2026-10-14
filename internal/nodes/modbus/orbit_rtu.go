@@ -272,7 +272,7 @@ func crc16Modbus(data []byte) uint16 {
 	return crc
 }
 
-// uartParityFromString maps LOOPZE's "none|even|odd" config value to the
+// uartParityFromString maps Orbit Flow's "none|even|odd" config value to the
 // SDK's UartParity enum (replaces the old single-char goburrow/serial code).
 func uartParityFromString(s string) orbitclient.UartParity {
 	switch strings.ToLower(strings.TrimSpace(s)) {
@@ -285,7 +285,7 @@ func uartParityFromString(s string) orbitclient.UartParity {
 	}
 }
 
-// uartStopBitsFromInt maps LOOPZE's 1|2 config value to the SDK's
+// uartStopBitsFromInt maps Orbit Flow's 1|2 config value to the SDK's
 // UartStopBits enum.
 func uartStopBitsFromInt(n int) orbitclient.UartStopBits {
 	if n == 2 {

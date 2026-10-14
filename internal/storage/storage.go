@@ -4,7 +4,7 @@
 
 // Package storage provides persistence for flows and encrypted credentials.
 // The default implementation uses JSON files on the local filesystem,
-// matching the single-binary, zero-dependency philosophy of LOOPZE.
+// matching the single-binary, zero-dependency philosophy of Orbit Flow.
 package storage
 
 import (
@@ -216,7 +216,7 @@ func (fs *FileStorage) SaveWorkspace(ws flow.Workspace) error {
 //
 // Encryption details (handled by credentials.CredentialManager):
 //   - Algorithm: AES-256-GCM (authenticated encryption with associated data)
-//   - Key source: separate key file (loopze.key), auto-generated on first run
+//   - Key source: separate key file (orbit-flow.key), auto-generated on first run
 //   - Format: nonce (12 bytes) || ciphertext || GCM authentication tag (16 bytes)
 func (fs *FileStorage) LoadCredentials() ([]byte, error) {
 	fs.mu.RLock()
@@ -294,7 +294,7 @@ func (fs *FileStorage) SaveUsers(data []byte) error {
 func atomicWriteFile(path string, data []byte, perm os.FileMode) error {
 	dir := filepath.Dir(path)
 
-	tmp, err := os.CreateTemp(dir, ".loopze-tmp-*")
+	tmp, err := os.CreateTemp(dir, ".orbit-flow-tmp-*")
 	if err != nil {
 		return fmt.Errorf("failed to create temp file in %q: %w", dir, err)
 	}

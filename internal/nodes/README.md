@@ -45,7 +45,7 @@ Minimal skeleton:
 package nodes
 
 import (
-    "loopze/internal/flow"
+    "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/flow"
 )
 
 type BACnetReadNode struct {

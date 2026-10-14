@@ -15,7 +15,7 @@ import (
 // token. It is intentionally not HttpOnly so the SPA can read its value
 // and echo it back via the X-CSRF-Token header on state-changing
 // requests.
-const CSRFCookieName = "loopze_csrf"
+const CSRFCookieName = "orbit_flow_csrf"
 
 // CSRFHeaderName is the HTTP header the client must set on mutating
 // requests; its value must equal the cookie value. Same-origin browser

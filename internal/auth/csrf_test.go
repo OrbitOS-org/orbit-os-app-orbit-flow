@@ -38,10 +38,10 @@ func TestCSRFIssuesCookieOnFirstRequest(t *testing.T) {
 		}
 	}
 	if found == nil {
-		t.Fatal("expected loopze_csrf cookie to be set")
+		t.Fatal("expected orbit_flow_csrf cookie to be set")
 	}
 	if found.Value == "" {
-		t.Fatal("loopze_csrf cookie has empty value")
+		t.Fatal("orbit_flow_csrf cookie has empty value")
 	}
 	if found.HttpOnly {
 		t.Error("CSRF cookie must NOT be HttpOnly (SPA needs to read it)")

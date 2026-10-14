@@ -33,7 +33,7 @@ export function useStructuralProperty<T>(
   options: Options<T>,
 ): WritableComputedRef<T> {
   const flowStore = useFlowStore()
-  const { updateNodeInternals } = useVueFlow('loopze-flow-editor')
+  const { updateNodeInternals } = useVueFlow('orbit-flow-editor')
 
   return computed<T>({
     get: () => {

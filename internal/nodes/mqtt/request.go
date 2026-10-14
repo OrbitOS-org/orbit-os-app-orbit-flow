@@ -25,7 +25,7 @@ const (
 	mqttRequestTimeoutModeError       = "error"
 	mqttRequestTimeoutModePassthrough = "passthrough"
 
-	defaultMqttRequestPrefix  = "github.com/OrbitOS-org/orbit-os-app-orbit-flow/response"
+	defaultMqttRequestPrefix  = "orbit-flow/response"
 	defaultMqttRequestTimeout = 30 * time.Second
 )
 

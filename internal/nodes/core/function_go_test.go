@@ -142,9 +142,9 @@ func TestFunctionGoNode_NodeSend_MultiPort(t *testing.T) {
 	n, _ := newFunctionGoNode(t, `
 package main
 
-import "loopzenode"
+import "orbitflow"
 
-func handle(payload any, node loopzenode.Node) {
+func handle(payload any, node orbitflow.Node) {
 	if v, ok := payload.(int); ok && v > 50 {
 		node.Send(0, payload)
 	} else {
@@ -174,9 +174,9 @@ func TestFunctionGoNode_NodeContext(t *testing.T) {
 	n, _ := newFunctionGoNode(t, `
 package main
 
-import "loopzenode"
+import "orbitflow"
 
-func handle(payload any, node loopzenode.Node) any {
+func handle(payload any, node orbitflow.Node) any {
 	prev := node.Get("count")
 	if prev == nil {
 		prev = 0
@@ -222,9 +222,9 @@ func TestFunctionGoNode_VoidReturn_NoSend_NoOutput(t *testing.T) {
 	n, _ := newFunctionGoNode(t, `
 package main
 
-import "loopzenode"
+import "orbitflow"
 
-func handle(payload any, node loopzenode.Node) {
+func handle(payload any, node orbitflow.Node) {
 	// No send, no return — message dropped.
 	_ = payload
 }
@@ -306,7 +306,7 @@ func TestFunctionGoNode_NodeStatus(t *testing.T) {
 		ID:   "fgo-status",
 		Type: "function-go",
 		Properties: map[string]any{
-			"code":    "package main\n\nimport \"loopzenode\"\n\nfunc handle(payload any, node loopzenode.Node) any { node.Status(\"green\", \"ok\"); return payload }\n",
+			"code":    "package main\n\nimport \"orbitflow\"\n\nfunc handle(payload any, node orbitflow.Node) any { node.Status(\"green\", \"ok\"); return payload }\n",
 			"outputs": float64(1),
 		},
 	}
@@ -365,9 +365,9 @@ func TestFunctionGoNode_NodeLog(t *testing.T) {
 	n, capt := newFunctionGoNode(t, `
 package main
 
-import "loopzenode"
+import "orbitflow"
 
-func handle(payload any, node loopzenode.Node) any {
+func handle(payload any, node orbitflow.Node) any {
 	node.Log("hello from go")
 	return payload
 }

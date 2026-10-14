@@ -5,7 +5,7 @@
 // module adds completions for:
 //
 //   - the supported `handle` signatures (snippets)
-//   - loopzenode.Node interface methods (after `node.`)
+//   - orbitflow.Node interface methods (after `node.`)
 //   - allowed stdlib imports (after `import "`)
 //
 // Registered once on first use via registerGoCompletions(). Compile errors
@@ -23,7 +23,7 @@ interface MethodDoc {
   doc: string
 }
 
-// Methods on the loopzenode.Node interface — must stay in sync with
+// Methods on the orbitflow.Node interface — must stay in sync with
 // internal/scripting/yaegi/engine.go.
 const NODE_METHODS: MethodDoc[] = [
   { name: 'Send',         signature: 'Send(port int, msg any)',         insertText: 'Send(${1:0}, ${2:payload})',           detail: 'Send(port int, msg any)',                doc: 'Emit msg on output port. Use for multi-output.' },
@@ -63,7 +63,7 @@ const ALLOWED_IMPORTS = [
   'encoding/hex',
   'encoding/json',
   'errors',
-  'loopzenode',
+  'orbitflow',
   'fmt',
   'math',
   'math/big',
@@ -128,9 +128,9 @@ const HANDLE_TEMPLATES = [
   },
   {
     label: 'handle (with node — multi-output)',
-    detail: 'route via loopzenode.Node.Send',
+    detail: 'route via orbitflow.Node.Send',
     insertText: [
-      'func handle(payload any, node loopzenode.Node) {',
+      'func handle(payload any, node orbitflow.Node) {',
       '\tif ${1:cond} {',
       '\t\tnode.Send(0, payload)',
       '\t} else {',
@@ -174,7 +174,7 @@ export function registerGoCompletions(): void {
         endColumn: position.column,
       })
 
-      // After "node." → loopzenode.Node interface methods
+      // After "node." → orbitflow.Node interface methods
       if (/\bnode\.[\w]*$/.test(lineUntilPos)) {
         return {
           suggestions: NODE_METHODS.map(m => ({
@@ -222,7 +222,7 @@ export function registerGoCompletions(): void {
       suggestions.push({
         label: 'node',
         kind: monaco.languages.CompletionItemKind.Variable,
-        detail: 'loopzenode.Node — runtime API',
+        detail: 'orbitflow.Node — runtime API',
         insertText: 'node',
         range,
       })
@@ -243,10 +243,10 @@ export function registerGoCompletions(): void {
         range,
       })
       suggestions.push({
-        label: 'import "loopzenode"',
+        label: 'import "orbitflow"',
         kind: monaco.languages.CompletionItemKind.Snippet,
         detail: 'Runtime API (node.Send, node.Log, …)',
-        insertText: 'import "loopzenode"',
+        insertText: 'import "orbitflow"',
         range,
       })
 

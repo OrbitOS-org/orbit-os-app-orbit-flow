@@ -148,7 +148,7 @@ export interface GpioPinInfo {
 
 const BASE_URL = `${basePathNoSlash}/api/v1`
 
-const CSRF_COOKIE = 'loopze_csrf'
+const CSRF_COOKIE = 'orbit_flow_csrf'
 const CSRF_HEADER = 'X-CSRF-Token'
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 
@@ -167,7 +167,7 @@ async function request<T>(
     headers['Content-Type'] = 'application/json'
   }
 
-  // Double-submit-cookie CSRF: echo the loopze_csrf cookie back as a
+  // Double-submit-cookie CSRF: echo the orbit_flow_csrf cookie back as a
   // header on state-changing requests. The cookie is issued by the
   // backend on every API response, so by the time the SPA does its
   // first mutation it has already been set during /auth/status.

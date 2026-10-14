@@ -59,9 +59,9 @@ func TestMqttOut_EffectiveTopic(t *testing.T) {
 			topic:  "config/should/be/ignored",
 			msgFields: map[string]any{
 				"topic":         "msgtopic/should/be/ignored",
-				"responseTopic": "github.com/OrbitOS-org/orbit-os-app-orbit-flow/response/abc123",
+				"responseTopic": "orbit-flow/response/abc123",
 			},
-			want: "github.com/OrbitOS-org/orbit-os-app-orbit-flow/response/abc123",
+			want: "orbit-flow/response/abc123",
 		},
 		{
 			name:   "target=responseTopic, missing responseTopic → error",
@@ -189,10 +189,10 @@ func TestMqttRequest_BuildPublishProperties(t *testing.T) {
 	msg.Set("correlationData", []byte("ignored"))
 
 	correlation := []byte{0xDE, 0xAD, 0xBE, 0xEF}
-	props := n.buildPublishProperties(msg, "github.com/OrbitOS-org/orbit-os-app-orbit-flow/response/uniq", correlation)
+	props := n.buildPublishProperties(msg, "orbit-flow/response/uniq", correlation)
 
-	if props.ResponseTopic != "github.com/OrbitOS-org/orbit-os-app-orbit-flow/response/uniq" {
-		t.Errorf("ResponseTopic = %q, want %q", props.ResponseTopic, "github.com/OrbitOS-org/orbit-os-app-orbit-flow/response/uniq")
+	if props.ResponseTopic != "orbit-flow/response/uniq" {
+		t.Errorf("ResponseTopic = %q, want %q", props.ResponseTopic, "orbit-flow/response/uniq")
 	}
 	if !bytes.Equal(props.CorrelationData, correlation) {
 		t.Errorf("CorrelationData = %v, want %v", props.CorrelationData, correlation)
@@ -225,7 +225,7 @@ func TestMqttRequest_OnResponse_HappyPath(t *testing.T) {
 	broker := newOfflineBroker(t)
 
 	correlation := []byte{0x11, 0x22, 0x33, 0x44}
-	responseTopic := "github.com/OrbitOS-org/orbit-os-app-orbit-flow/response/x"
+	responseTopic := "orbit-flow/response/x"
 
 	var sent []*flow.Message
 	var sendMu sync.Mutex
@@ -329,12 +329,12 @@ func TestMqttRequest_OnResponse_WrongCorrelation(t *testing.T) {
 	}
 	node.pending[hex.EncodeToString(pendingKey)] = &mqttRequestInflight{
 		correlation:   pendingKey,
-		responseTopic: "github.com/OrbitOS-org/orbit-os-app-orbit-flow/response/x",
+		responseTopic: "orbit-flow/response/x",
 		inMsg:         flow.NewMessage(),
 	}
 
 	pub := &paho.Publish{
-		Topic:   "github.com/OrbitOS-org/orbit-os-app-orbit-flow/response/x",
+		Topic:   "orbit-flow/response/x",
 		Payload: []byte("noise"),
 		Properties: &paho.PublishProperties{
 			CorrelationData: []byte{0xDE, 0xAD}, // does not match pendingKey
@@ -375,7 +375,7 @@ func TestMqttRequest_OnResponse_NoCorrelationProperty(t *testing.T) {
 func TestMqttRequest_OnTimeout_ErrorMode(t *testing.T) {
 	broker := newOfflineBroker(t)
 	correlation := []byte{0xCA, 0xFE}
-	responseTopic := "github.com/OrbitOS-org/orbit-os-app-orbit-flow/response/y"
+	responseTopic := "orbit-flow/response/y"
 
 	var caught error
 	var caughtMsg *flow.Message
@@ -447,7 +447,7 @@ func TestMqttRequest_OnTimeout_Passthrough(t *testing.T) {
 	in.Set("payload", "preserved")
 	node.pending[hex.EncodeToString(correlation)] = &mqttRequestInflight{
 		correlation:   correlation,
-		responseTopic: "github.com/OrbitOS-org/orbit-os-app-orbit-flow/response/z",
+		responseTopic: "orbit-flow/response/z",
 		inMsg:         in,
 	}
 
@@ -488,7 +488,7 @@ func TestMqttRequest_FailAllInflight_ErrorMode(t *testing.T) {
 	}
 	for i, c := range [][]byte{{0x01}, {0x02}, {0x03}} {
 		_ = i
-		topic := "github.com/OrbitOS-org/orbit-os-app-orbit-flow/response/" + hex.EncodeToString(c)
+		topic := "orbit-flow/response/" + hex.EncodeToString(c)
 		_ = broker.Subscribe("req-1", topic, SubscribeOptions{}, func(*paho.Publish) {})
 		node.pending[hex.EncodeToString(c)] = &mqttRequestInflight{
 			correlation:   c,
@@ -595,14 +595,14 @@ func TestMqttRequest_Init_TimeoutMode(t *testing.T) {
 }
 
 // TestMqttRequest_Init_PrefixNormalization strips a trailing slash from the
-// configured prefix so the runtime never builds "github.com/OrbitOS-org/orbit-os-app-orbit-flow/response//<uuid>".
+// configured prefix so the runtime never builds "orbit-flow/response//<uuid>".
 func TestMqttRequest_Init_PrefixNormalization(t *testing.T) {
 	n := &MqttRequestNode{
 		config: flow.NodeConfig{
 			ID: "n1",
 			Properties: map[string]any{
 				"broker":              "broker-1",
-				"responseTopicPrefix": "github.com/OrbitOS-org/orbit-os-app-orbit-flow/response/",
+				"responseTopicPrefix": "orbit-flow/response/",
 			},
 		},
 		pending: make(map[string]*mqttRequestInflight),
@@ -610,8 +610,8 @@ func TestMqttRequest_Init_PrefixNormalization(t *testing.T) {
 	if err := n.Init(); err != nil {
 		t.Fatal(err)
 	}
-	if n.prefix != "github.com/OrbitOS-org/orbit-os-app-orbit-flow/response" {
-		t.Errorf("prefix = %q, want %q (trailing slash should be trimmed)", n.prefix, "github.com/OrbitOS-org/orbit-os-app-orbit-flow/response")
+	if n.prefix != "orbit-flow/response" {
+		t.Errorf("prefix = %q, want %q (trailing slash should be trimmed)", n.prefix, "orbit-flow/response")
 	}
 }
 

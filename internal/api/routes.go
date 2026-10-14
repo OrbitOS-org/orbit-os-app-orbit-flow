@@ -2,7 +2,7 @@
 // Licensed under the GNU Affero General Public License v3.0 or later.
 // See LICENSE file for details.
 
-// Package api defines the REST API routes and handlers for the LOOPZE runtime.
+// Package api defines the REST API routes and handlers for the Orbit Flow runtime.
 // All API endpoints are mounted under /api/v1/ and provide the interface
 // between the Vue 3 frontend editor and the Go backend engine.
 package api
@@ -13,7 +13,7 @@ import (
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/auth"
 )
 
-// RegisterRoutes mounts all LOOPZE API v1 route handlers onto the given router.
+// RegisterRoutes mounts all Orbit Flow API v1 route handlers onto the given router.
 // The Deps struct provides access to the flow engine, storage layer and
 // auth subsystem.
 //

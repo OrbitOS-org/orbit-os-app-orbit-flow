@@ -186,7 +186,7 @@ const outputHandles = computed(() =>
 
       <!-- Main node body -->
       <div
-        class="loopze-node relative flex flex-col rounded-md min-w-[210px] select-none"
+        class="flow-node relative flex flex-col rounded-md min-w-[210px] select-none"
         :class="{ selected: props.selected }"
         :style="{
           background: 'rgb(var(--c-surface))',
@@ -318,7 +318,7 @@ const outputHandles = computed(() =>
 </template>
 
 <style scoped>
-.loopze-node {
+.flow-node {
     transition: box-shadow 0.15s;
 }
 </style>

@@ -132,7 +132,7 @@ func NewMqttBroker(cfg flow.ConfigNode) (flow.ConfigInstance, error) {
 		if len(suffix) > 8 {
 			suffix = suffix[:8]
 		}
-		clientID = fmt.Sprintf("loopze-%s", suffix)
+		clientID = fmt.Sprintf("orbit-flow-%s", suffix)
 	}
 
 	protocolVersion, _ := props["protocolVersion"].(string)

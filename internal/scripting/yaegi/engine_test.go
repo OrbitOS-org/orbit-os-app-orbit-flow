@@ -232,9 +232,9 @@ func TestCompile_NodeArgument_MultiSend(t *testing.T) {
 	prog, err := engine.Compile(`
 package main
 
-import "loopzenode"
+import "orbitflow"
 
-func handle(payload any, node loopzenode.Node) {
+func handle(payload any, node orbitflow.Node) {
 	if v, ok := payload.(int); ok && v > 50 {
 		node.Send(0, payload)
 	} else {
@@ -269,9 +269,9 @@ func TestCompile_NodeArgument_Status(t *testing.T) {
 	prog, err := engine.Compile(`
 package main
 
-import "loopzenode"
+import "orbitflow"
 
-func handle(payload any, node loopzenode.Node) any {
+func handle(payload any, node orbitflow.Node) any {
 	node.Status("green", "ok")
 	return payload
 }
@@ -294,9 +294,9 @@ func TestCompile_NodeArgument_NodeContext(t *testing.T) {
 	prog, err := engine.Compile(`
 package main
 
-import "loopzenode"
+import "orbitflow"
 
-func handle(payload any, node loopzenode.Node) any {
+func handle(payload any, node orbitflow.Node) any {
 	prev := node.Get("count")
 	if prev == nil {
 		prev = 0
@@ -326,9 +326,9 @@ func TestCompile_VoidReturn_NoOutput(t *testing.T) {
 	prog, err := engine.Compile(`
 package main
 
-import "loopzenode"
+import "orbitflow"
 
-func handle(payload any, node loopzenode.Node) {
+func handle(payload any, node orbitflow.Node) {
 	node.Send(0, payload)
 }
 `)
@@ -445,9 +445,9 @@ func TestCompile_UndefinedSymbolDoesNotCrashHost(t *testing.T) {
 	_, err := engine.Compile(`
 package main
 
-import "loopzenode"
+import "orbitflow"
 
-var _ = loopzenode.Node(nil)
+var _ = orbitflow.Node(nil)
 
 func handle(payload any) any {
 	node.FlowSet("key", "value")

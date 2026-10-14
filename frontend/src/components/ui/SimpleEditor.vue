@@ -44,7 +44,7 @@ onMounted(() => {
   if (!container.value) return
 
   const ext = props.language === 'json' ? 'json' : 'js'
-  const uri = monaco.Uri.parse(`file:///loopze-sm-${props.language}-${Date.now()}.${ext}`)
+  const uri = monaco.Uri.parse(`file:///orbit-flow-sm-${props.language}-${Date.now()}.${ext}`)
   const model = monaco.editor.createModel(wrap(props.modelValue), props.language, uri)
 
   editor.value = monaco.editor.create(container.value, {
@@ -113,7 +113,7 @@ onMounted(() => {
         if (change.range.startLineNumber <= PREFIX_LINES ||
             change.range.startLineNumber >= model.getLineCount()) {
           internalUpdate = true
-          ed.trigger('loopze', 'undo', null)
+          ed.trigger('orbit-flow', 'undo', null)
           internalUpdate = false
           return
         }

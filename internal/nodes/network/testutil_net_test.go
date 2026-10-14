@@ -71,7 +71,7 @@ func generateSelfSignedCert(t *testing.T) ([]byte, tls.Certificate, *x509.CertPo
 	}
 	template := &x509.Certificate{
 		SerialNumber: big.NewInt(1),
-		Subject:      pkix.Name{CommonName: "loopze-test"},
+		Subject:      pkix.Name{CommonName: "orbit-flow-test"},
 		NotBefore:    time.Now().Add(-time.Hour),
 		NotAfter:     time.Now().Add(24 * time.Hour),
 		KeyUsage:     x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,

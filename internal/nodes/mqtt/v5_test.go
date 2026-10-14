@@ -468,7 +468,7 @@ func TestMqttOut_MergeV5PublishProperties_WithDefaults(t *testing.T) {
 
 	defaults := func() *MqttOutNode {
 		return &MqttOutNode{
-			defaultUserProperties: map[string]string{"app": "loopze", "shared": "config"},
+			defaultUserProperties: map[string]string{"app": "orbit-flow", "shared": "config"},
 			defaultContentType:    "application/json",
 			defaultResponseTopic:  "default/reply",
 			defaultMessageExpiry:  &expiry,
@@ -493,8 +493,8 @@ func TestMqttOut_MergeV5PublishProperties_WithDefaults(t *testing.T) {
 		if props.PayloadFormat == nil || *props.PayloadFormat != 1 {
 			t.Errorf("PayloadFormat = %v, want 1", props.PayloadFormat)
 		}
-		if got := props.User.Get("app"); got != "loopze" {
-			t.Errorf("User[app] = %q, want loopze", got)
+		if got := props.User.Get("app"); got != "orbit-flow" {
+			t.Errorf("User[app] = %q, want orbit-flow", got)
 		}
 	})
 
@@ -517,7 +517,7 @@ func TestMqttOut_MergeV5PublishProperties_WithDefaults(t *testing.T) {
 	t.Run("user properties merge — msg overrides matching keys, non-overlapping survive", func(t *testing.T) {
 		msg := flow.NewMessage()
 		msg.Set("userProperties", map[string]string{
-			"app":     "override",     // overrides default "loopze"
+			"app":     "override",     // overrides default "orbit-flow"
 			"request": "msg-specific", // new key from msg
 		})
 		props := defaults().mergeV5PublishProperties(msg)

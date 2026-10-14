@@ -11,11 +11,11 @@ func TestNormalizeBasePath(t *testing.T) {
 		"":              "",
 		"/":             "",
 		" ":             "",
-		"loopze":        "/loopze",
-		"/loopze":       "/loopze",
-		"/loopze/":      "/loopze",
-		"/loopze/sub/":  "/loopze/sub",
-		"  /loopze  ":   "/loopze",
+		"orbit-flow":        "/orbit-flow",
+		"/orbit-flow":       "/orbit-flow",
+		"/orbit-flow/":      "/orbit-flow",
+		"/orbit-flow/sub/":  "/orbit-flow/sub",
+		"  /orbit-flow  ":   "/orbit-flow",
 	}
 	for in, want := range tests {
 		if got := NormalizeBasePath(in); got != want {

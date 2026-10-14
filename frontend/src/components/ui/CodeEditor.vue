@@ -2,7 +2,7 @@
 import { ref, watch, onMounted, onUnmounted, shallowRef } from 'vue'
 import '@/lib/monaco/setup-workers'
 import * as monaco from 'monaco-editor'
-import { loopzeTypeDefinitions } from '@/lib/monaco/loopze-types'
+import { functionNodeTypeDefinitions } from '@/lib/monaco/function-node-types'
 import { registerExprLanguage } from '@/lib/monaco/expr-language'
 import { registerGoCompletions } from '@/lib/monaco/go-language'
 import { editorTheme } from '@/lib/monaco/theme'
@@ -62,8 +62,8 @@ function configureMonaco() {
 
     // Add the function node API type definitions
     ts.javascriptDefaults.addExtraLib(
-      loopzeTypeDefinitions,
-      'ts:loopze-runtime.d.ts'
+      functionNodeTypeDefinitions,
+      'ts:function-node-runtime.d.ts'
     )
   }
 }
@@ -108,7 +108,7 @@ onMounted(() => {
   // sees `return` as valid. Other languages are used as-is.
   const ext = FILE_EXT[props.language] ?? 'txt'
   const uri = monaco.Uri.parse(
-    `file:///loopze-${props.language}-${Date.now()}.${ext}`,
+    `file:///orbit-flow-${props.language}-${Date.now()}.${ext}`,
   )
   const model = monaco.editor.createModel(wrap(props.modelValue), props.language, uri)
 
@@ -179,7 +179,7 @@ onMounted(() => {
             change.range.startLineNumber >= model.getLineCount()) {
           // Undo wrapper modifications
           internalUpdate = true
-          ed.trigger('loopze', 'undo', null)
+          ed.trigger('orbit-flow', 'undo', null)
           internalUpdate = false
           return
         }

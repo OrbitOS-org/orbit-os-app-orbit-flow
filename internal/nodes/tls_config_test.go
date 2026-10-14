@@ -59,7 +59,7 @@ func generateTestPair(t *testing.T, cn string, notBefore, notAfter time.Time) (c
 func newTestCertStore(t *testing.T) *credentials.CertStore {
 	t.Helper()
 	dir := t.TempDir()
-	cm := credentials.NewCredentialManager(filepath.Join(dir, "loopze.key"))
+	cm := credentials.NewCredentialManager(filepath.Join(dir, "orbit-flow.key"))
 	if err := cm.EnsureKeyFile(); err != nil {
 		t.Fatalf("EnsureKeyFile: %v", err)
 	}

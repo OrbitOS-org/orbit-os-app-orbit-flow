@@ -60,7 +60,7 @@ func generateCertPEM(t *testing.T, cn string) (certPEM, keyPEM string) {
 func attachCertStore(t *testing.T, ts *testServer) *credentials.CertStore {
 	t.Helper()
 	dir := t.TempDir()
-	cm := credentials.NewCredentialManager(filepath.Join(dir, "loopze.key"))
+	cm := credentials.NewCredentialManager(filepath.Join(dir, "orbit-flow.key"))
 	if err := cm.EnsureKeyFile(); err != nil {
 		t.Fatalf("EnsureKeyFile: %v", err)
 	}

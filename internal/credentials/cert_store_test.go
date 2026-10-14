@@ -52,7 +52,7 @@ func (m *memStorage) SaveCredentials(b []byte) error {
 func newTestStore(t *testing.T) (*CertStore, *memStorage) {
 	t.Helper()
 	dir := t.TempDir()
-	cm := NewCredentialManager(filepath.Join(dir, "loopze.key"))
+	cm := NewCredentialManager(filepath.Join(dir, "orbit-flow.key"))
 	if err := cm.EnsureKeyFile(); err != nil {
 		t.Fatalf("EnsureKeyFile: %v", err)
 	}

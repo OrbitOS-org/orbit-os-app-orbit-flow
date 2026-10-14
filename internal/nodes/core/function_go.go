@@ -23,7 +23,7 @@ import (
 //	func handle(payload any) any
 //	func handle(payload []map[string]any) []map[string]any
 //	func handle(payload []SomeStruct) any                  // typed, JSON boundary
-//	func handle(payload any, node loopzenode.Node)          // multi-output via node.Send
+//	func handle(payload any, node orbitflow.Node)          // multi-output via node.Send
 //
 // See internal/scripting/yaegi for the full Node interface and supported
 // stdlib subset.

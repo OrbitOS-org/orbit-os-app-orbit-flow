@@ -9,7 +9,7 @@ import "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes"
 // init registers the core node group — the protocol-agnostic building
 // blocks every flow uses (inject, debug, function, change, switch, …).
 // This group is the only one that should not be disabled on a typical
-// LOOPZE installation.
+// Orbit Flow installation.
 func init() {
 	nodes.RegisterGroup(nodes.Group{
 		Name:        "core",

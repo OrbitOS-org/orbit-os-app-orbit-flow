@@ -45,7 +45,7 @@ func (s *Server) printWelcomeBanner(w io.Writer, addr string) {
 
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "  ────────────────────────────────────────────────────────────")
-	fmt.Fprintf(w, "%s✓ LOOPZE %s is ready\n", indent, config.Version)
+	fmt.Fprintf(w, "%s✓ Orbit Flow %s is ready\n", indent, config.Version)
 	fmt.Fprintln(w)
 	for _, r := range rows {
 		fmt.Fprintf(w, "%s%-*s  %s\n", indent, labelWidth, r.label, r.value)
@@ -75,7 +75,7 @@ func (s *Server) welcomeNotes() []string {
 	}
 
 	if s.authMW != nil && s.authMW.DevUser != nil {
-		notes = append(notes, "⚠ Authentication is bypassed (LOOPZE_AUTH_DISABLE). Do not use in production.")
+		notes = append(notes, "⚠ Authentication is bypassed (ORBIT_FLOW_AUTH_DISABLE). Do not use in production.")
 	}
 
 	return notes

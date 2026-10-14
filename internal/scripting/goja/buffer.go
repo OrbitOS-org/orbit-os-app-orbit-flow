@@ -2,7 +2,7 @@
 // Licensed under the GNU Affero General Public License v3.0 or later.
 // See LICENSE file for details.
 
-// Package goja contains the Goja-specific bridge between LOOPZE's flow.Message
+// Package goja contains the Goja-specific bridge between Orbit Flow's flow.Message
 // world and JavaScript. The most substantial piece is the Node.js-compatible
 // Buffer API exposed to user scripts — extracted here so the function-node
 // implementation in internal/nodes stays focused on lifecycle and dispatch.

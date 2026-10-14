@@ -2,7 +2,7 @@
 // Licensed under the GNU Affero General Public License v3.0 or later.
 // See LICENSE file for details.
 
-// Package server provides the core HTTP server for the LOOPZE application.
+// Package server provides the core HTTP server for the Orbit Flow application.
 // It wires together the Chi router, REST API routes, WebSocket endpoint,
 // and the embedded Vue 3 frontend into a single, cohesive server.
 package server
@@ -28,7 +28,7 @@ import (
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/credentials"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/flow"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/logbuffer"
-	loopzenats "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nats"
+	flownats "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nats"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/storage"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/ws"
@@ -41,7 +41,7 @@ const (
 	ShutdownTimeout = 15 * time.Second
 )
 
-// Server is the main HTTP server for LOOPZE. It holds the Chi router,
+// Server is the main HTTP server for Orbit Flow. It holds the Chi router,
 // application configuration, the flow runtime engine, and the WebSocket hub.
 type Server struct {
 	// router is the Chi multiplexer that handles all HTTP routing.
@@ -64,7 +64,7 @@ type Server struct {
 	hub *ws.Hub
 
 	// broker is the embedded NATS server with JetStream for persistence and messaging.
-	broker *loopzenats.Broker
+	broker *flownats.Broker
 
 	// store is the persistent storage for flows and credentials.
 	store storage.Storage
@@ -106,7 +106,7 @@ type Server struct {
 // array and no log events are broadcast.
 func New(cfg *config.Config, logBuffer *logbuffer.Buffer) (*Server, error) {
 	// Start the embedded NATS broker with JetStream before anything else.
-	broker, err := loopzenats.New(loopzenats.Config{
+	broker, err := flownats.New(flownats.Config{
 		DataDir: cfg.DataDir,
 		Port:    cfg.NATSPort,
 	})
@@ -175,7 +175,7 @@ func New(cfg *config.Config, logBuffer *logbuffer.Buffer) (*Server, error) {
 		Sessions: sessions,
 	}
 	if cfg.AuthDisable {
-		slog.Warn("⚠ LOOPZE_AUTH_DISABLE is set — authentication is bypassed; do NOT use in production")
+		slog.Warn("⚠ ORBIT_FLOW_AUTH_DISABLE is set — authentication is bypassed; do NOT use in production")
 		authMW.DevUser = &auth.User{
 			ID:           "dev-bypass",
 			Username:     "dev",
@@ -319,7 +319,7 @@ func (s *Server) setupRoutes() {
 	deps.Throttle = auth.NewLoginThrottle(nil)
 	s.router.Route("/api/v1", func(r chi.Router) {
 		r.Use(middleware.SetHeader("Content-Type", "application/json"))
-		// Double-submit-cookie CSRF: issues loopze_csrf cookie on every
+		// Double-submit-cookie CSRF: issues orbit_flow_csrf cookie on every
 		// request and rejects state-changing requests without a matching
 		// X-CSRF-Token header.
 		r.Use(auth.CSRF())
@@ -340,7 +340,7 @@ func (s *Server) setupRoutes() {
 
 // wsAuthFunc returns the AuthFunc the WebSocket hub uses to validate
 // upgrade requests. It honours the same dev-bypass that the HTTP
-// middleware uses, so LOOPZE_AUTH_DISABLE turns off WS auth too.
+// middleware uses, so ORBIT_FLOW_AUTH_DISABLE turns off WS auth too.
 func (s *Server) wsAuthFunc() ws.AuthFunc {
 	return func(r *http.Request) (string, error) {
 		if s.authMW.DevUser != nil {
@@ -438,8 +438,8 @@ func (s *Server) Start() error {
 		slog.Error("failed to setup global context KV", "error", err)
 	} else {
 		s.engine.SetContextStores(
-			loopzenats.NewKVContextStore(memKV),
-			loopzenats.NewKVContextStore(persKV),
+			flownats.NewKVContextStore(memKV),
+			flownats.NewKVContextStore(persKV),
 		)
 	}
 
@@ -451,7 +451,7 @@ func (s *Server) Start() error {
 			slog.Error("failed to create flow context KV", "flow_id", flowID, "error", err)
 			return nil, nil
 		}
-		return loopzenats.NewKVContextStore(memKV), loopzenats.NewKVContextStore(persKV)
+		return flownats.NewKVContextStore(memKV), flownats.NewKVContextStore(persKV)
 	})
 
 	// Wire engine's debug publish to NATS.
@@ -519,7 +519,7 @@ func (s *Server) Start() error {
 		}
 	}
 
-	slog.Info("loopze server starting",
+	slog.Info("Orbit Flow server starting",
 		"host", s.cfg.Host,
 		"port", s.cfg.Port,
 		"data_dir", s.cfg.DataDir,
@@ -538,7 +538,7 @@ func (s *Server) Start() error {
 			return fmt.Errorf("server: listen failed: %w", err)
 		}
 	}
-	slog.Info("loopze server listening", "address", listener.Addr().String())
+	slog.Info("Orbit Flow server listening", "address", listener.Addr().String())
 
 	s.printWelcomeBanner(os.Stdout, listener.Addr().String())
 
@@ -553,7 +553,7 @@ func (s *Server) Start() error {
 // to complete within the given context deadline. It also stops the flow engine
 // and the WebSocket hub.
 func (s *Server) Shutdown(ctx context.Context) error {
-	slog.Info("loopze server shutting down…")
+	slog.Info("Orbit Flow server shutting down…")
 
 	// Stop the flow engine first to prevent new messages.
 	if err := s.engine.Stop(); err != nil {
@@ -570,7 +570,7 @@ func (s *Server) Shutdown(ctx context.Context) error {
 		s.broker.Shutdown()
 	}
 
-	slog.Info("loopze server stopped")
+	slog.Info("Orbit Flow server stopped")
 	return nil
 }
 
@@ -590,13 +590,13 @@ func (s *Server) Engine() *flow.Engine {
 }
 
 // Broker returns the embedded NATS broker.
-func (s *Server) Broker() *loopzenats.Broker {
+func (s *Server) Broker() *flownats.Broker {
 	return s.broker
 }
 
 // registerNodes applies all node groups that have self-registered via their
 // subpackage's init(). Each subpackage in internal/nodes/<group>/ calls
-// nodes.RegisterGroup from its init.go; the blank imports in cmd/loopze/groups.go
+// nodes.RegisterGroup from its init.go; the blank imports in cmd/orbit_flow/groups.go
 // pull these init() functions into the binary at compile time.
 //
 // Pass an empty GroupSelection to enable every bundled group; a future

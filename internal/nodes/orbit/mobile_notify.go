@@ -21,7 +21,7 @@ import (
 // phone via MobileNotificationManager.Send — no API keys to manage, since
 // the call is forwarded through the Gravity runtime to the Settings app,
 // which holds the FCM credentials. The notification title is set by the
-// runtime itself ("<device name> · LOOPZE"); this node only controls the
+// runtime itself ("<device name> · Orbit Flow"); this node only controls the
 // body and a few optional delivery hints.
 //
 // Sink node: 1 input, 1 output (pass-through on success, carrying

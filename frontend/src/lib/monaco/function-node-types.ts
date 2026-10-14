@@ -1,11 +1,11 @@
 /**
- * TypeScript declaration for the LOOPZE Function Node runtime.
+ * TypeScript declaration for the Orbit Flow Function Node runtime.
  * These type definitions are injected into Monaco's JavaScript language service
- * so that the editor provides IntelliSense for the LOOPZE API.
+ * so that the editor provides IntelliSense for the Orbit Flow API.
  */
-export const loopzeTypeDefinitions = `
+export const functionNodeTypeDefinitions = `
 /** The incoming message object. */
-interface LoopzeMessage {
+interface FlowMessage {
   /** The message payload (any type). */
   payload?: any;
   /** Message topic string. */
@@ -19,7 +19,7 @@ interface LoopzeMessage {
 }
 
 /** Node API for sending messages, logging, and setting status. */
-interface LoopzeNodeAPI {
+interface FlowNodeAPI {
   /**
    * Send message(s) to output ports.
    * Pass a single message object to send on port 0,
@@ -27,7 +27,7 @@ interface LoopzeNodeAPI {
    * @example node.send({ payload: "hello" })
    * @example node.send([{ payload: "port0" }, { payload: "port1" }])
    */
-  send(msg: LoopzeMessage | Array<LoopzeMessage | null>): void;
+  send(msg: FlowMessage | Array<FlowMessage | null>): void;
   /** Log a debug message. */
   log(value: any): void;
   /** Log a warning message. */
@@ -62,7 +62,7 @@ interface LoopzeNodeAPI {
 }
 
 /** Key-value context store. */
-interface LoopzeContextStore {
+interface FlowContextStore {
   /**
    * Read a value from the context store.
    * @param key The key to look up.
@@ -90,7 +90,7 @@ interface LoopzeContextStore {
 }
 
 /** A byte buffer for binary data manipulation (Node.js Buffer compatible). */
-interface LoopzeBuffer {
+interface FlowBuffer {
   /** Number of bytes in the buffer. */
   readonly length: number;
 
@@ -148,11 +148,11 @@ interface LoopzeBuffer {
 
   // ── Swap ──
   /** Swap byte order in 16-bit pairs. */
-  swap16(): LoopzeBuffer;
+  swap16(): FlowBuffer;
   /** Swap byte order in 32-bit groups. */
-  swap32(): LoopzeBuffer;
+  swap32(): FlowBuffer;
   /** Swap byte order in 64-bit groups. */
-  swap64(): LoopzeBuffer;
+  swap64(): FlowBuffer;
 
   // ── Conversion ──
   /**
@@ -163,18 +163,18 @@ interface LoopzeBuffer {
   /** Return buffer as byte-value array, e.g. [72, 101, 108]. */
   toJSON(): number[];
   /** Return a copy of bytes from start to end. */
-  slice(start: number, end?: number): LoopzeBuffer;
+  slice(start: number, end?: number): FlowBuffer;
   /** Copy bytes into target buffer. Returns number of bytes copied. */
-  copy(target: LoopzeBuffer, targetStart?: number, sourceStart?: number, sourceEnd?: number): number;
+  copy(target: FlowBuffer, targetStart?: number, sourceStart?: number, sourceEnd?: number): number;
 }
 
 /** Static methods for creating Buffer instances. */
-interface LoopzeBufferConstructor {
+interface FlowBufferConstructor {
   /**
    * Create a zero-filled buffer of the given size.
    * @example Buffer.alloc(8)
    */
-  alloc(size: number): LoopzeBuffer;
+  alloc(size: number): FlowBuffer;
   /**
    * Create a buffer from data.
    * @example Buffer.from([0x48, 0x65, 0x6C])
@@ -182,19 +182,19 @@ interface LoopzeBufferConstructor {
    * @example Buffer.from("48656c6c6f", "hex")
    * @example Buffer.from("SGVsbG8=", "base64")
    */
-  from(data: number[] | string, encoding?: 'hex' | 'base64'): LoopzeBuffer;
+  from(data: number[] | string, encoding?: 'hex' | 'base64'): FlowBuffer;
   /** Concatenate multiple buffers into one. */
-  concat(list: LoopzeBuffer[]): LoopzeBuffer;
+  concat(list: FlowBuffer[]): FlowBuffer;
 }
 
 /** The incoming message. */
-declare var msg: LoopzeMessage;
+declare var msg: FlowMessage;
 /** Node API: send messages, log, set status. */
-declare var node: LoopzeNodeAPI;
+declare var node: FlowNodeAPI;
 /** Global context store — shared across all flows. */
-declare var global: LoopzeContextStore;
+declare var global: FlowContextStore;
 /** Flow-scoped context store — shared within the current flow. */
-declare var flow: LoopzeContextStore;
+declare var flow: FlowContextStore;
 /** Buffer API for byte manipulation (Node.js compatible). */
-declare var Buffer: LoopzeBufferConstructor;
+declare var Buffer: FlowBufferConstructor;
 `

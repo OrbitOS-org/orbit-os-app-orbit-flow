@@ -17,7 +17,7 @@ func TestBuildBrowserURL(t *testing.T) {
 		{"wildcard rewrites to localhost", "0.0.0.0:1880", "", "http://localhost:1880/"},
 		{"empty host rewrites to localhost", ":1880", "", "http://localhost:1880/"},
 		{"ipv6 wildcard rewrites to localhost", "[::]:1880", "", "http://localhost:1880/"},
-		{"with base path", "0.0.0.0:1880", "/loopze", "http://localhost:1880/loopze/"},
+		{"with base path", "0.0.0.0:1880", "/orbit-flow", "http://localhost:1880/orbit-flow/"},
 		{"hostname binding preserved", "broker.example.com:8443", "", "http://broker.example.com:8443/"},
 	}
 	for _, c := range cases {

@@ -68,8 +68,8 @@ function setCertSource(next: CertSource) {
     certRef.value = ''
   }
 }
-const applicationUri = ref('urn:loopze:client')
-const applicationName = ref('LOOPZE OPC UA Client')
+const applicationUri = ref('urn:orbit-flow:client')
+const applicationName = ref('Orbit Flow OPC UA Client')
 const sessionTimeout = ref(60000)
 const requestTimeout = ref(5000)
 const keepaliveInterval = ref(10000)

@@ -263,19 +263,19 @@ func TestS7PLC_ConfigTypeInfoExposesType(t *testing.T) {
 	}
 }
 
-// ─── Integration tests (require LOOPZE_S7_TEST_HOST against a live demo PLC) ─
+// ─── Integration tests (require ORBIT_FLOW_S7_TEST_HOST against a live demo PLC) ─
 
 // requireDemoPLC builds and starts an S7PLC pointing at the demo server, or
-// skips the test if LOOPZE_S7_TEST_HOST is not set. Caller must Stop() the
+// skips the test if ORBIT_FLOW_S7_TEST_HOST is not set. Caller must Stop() the
 // returned PLC.
 func requireDemoPLC(t *testing.T) *S7PLC {
 	t.Helper()
-	host := os.Getenv("LOOPZE_S7_TEST_HOST")
+	host := os.Getenv("ORBIT_FLOW_S7_TEST_HOST")
 	if host == "" {
-		t.Skip("LOOPZE_S7_TEST_HOST not set; run `make demo-s7` and re-run with the env var")
+		t.Skip("ORBIT_FLOW_S7_TEST_HOST not set; run `make demo-s7` and re-run with the env var")
 	}
 	port := s7DefaultPort
-	if p := os.Getenv("LOOPZE_S7_TEST_PORT"); p != "" {
+	if p := os.Getenv("ORBIT_FLOW_S7_TEST_PORT"); p != "" {
 		if n, err := strconv.Atoi(p); err == nil {
 			port = n
 		}
@@ -540,12 +540,12 @@ func TestS7TestConnect_RejectsMissingHost(t *testing.T) {
 }
 
 func TestS7TestConnect_Demo(t *testing.T) {
-	host := os.Getenv("LOOPZE_S7_TEST_HOST")
+	host := os.Getenv("ORBIT_FLOW_S7_TEST_HOST")
 	if host == "" {
-		t.Skip("LOOPZE_S7_TEST_HOST not set; run `make demo-s7` and re-run with the env var")
+		t.Skip("ORBIT_FLOW_S7_TEST_HOST not set; run `make demo-s7` and re-run with the env var")
 	}
 	port := s7DefaultPort
-	if p := os.Getenv("LOOPZE_S7_TEST_PORT"); p != "" {
+	if p := os.Getenv("ORBIT_FLOW_S7_TEST_PORT"); p != "" {
 		if n, err := strconv.Atoi(p); err == nil {
 			port = n
 		}

@@ -17,9 +17,9 @@ import (
 // the test. Centralised so all OPC UA E2E tests share the same gating logic.
 func opcuaTestEndpoint(t *testing.T) string {
 	t.Helper()
-	endpoint := os.Getenv("LOOPZE_OPCUA_TEST_ENDPOINT")
+	endpoint := os.Getenv("ORBIT_FLOW_OPCUA_TEST_ENDPOINT")
 	if endpoint == "" {
-		t.Skip("set LOOPZE_OPCUA_TEST_ENDPOINT to run (e.g. opc.tcp://localhost:4840)")
+		t.Skip("set ORBIT_FLOW_OPCUA_TEST_ENDPOINT to run (e.g. opc.tcp://localhost:4840)")
 	}
 	return endpoint
 }

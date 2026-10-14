@@ -1,17 +1,17 @@
 // Runtime configuration injected by the Go backend at index.html render
 // time. Lets a single build be served at "/" or under any subpath
 // without rebuilding the frontend. The backend stamps a <base href>
-// into the document and sets window.__LOOPZE_BASE__ to the matching
-// value (always with a trailing slash, e.g. "/" or "/loopze/").
+// into the document and sets window.__ORBIT_FLOW_BASE__ to the matching
+// value (always with a trailing slash, e.g. "/" or "/orbit-flow/").
 
 declare global {
   interface Window {
-    __LOOPZE_BASE__?: string
+    __ORBIT_FLOW_BASE__?: string
   }
 }
 
 function readBase(): string {
-  const injected = typeof window !== 'undefined' ? window.__LOOPZE_BASE__ : ''
+  const injected = typeof window !== 'undefined' ? window.__ORBIT_FLOW_BASE__ : ''
   if (injected && injected.length > 0) return injected
   // Fallback: derive from <base href> if present, else assume root.
   if (typeof document !== 'undefined' && document.baseURI) {
@@ -24,7 +24,7 @@ function readBase(): string {
   return '/'
 }
 
-/** Always with a trailing slash, e.g. "/" or "/loopze/". */
+/** Always with a trailing slash, e.g. "/" or "/orbit-flow/". */
 export const basePath: string = readBase()
 
 /** Without trailing slash; used to build absolute paths like

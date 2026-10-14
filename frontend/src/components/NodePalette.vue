@@ -73,7 +73,7 @@ function onDragStart(event: DragEvent, node: NodeCatalogEntry): void {
   }
   if (!event.dataTransfer) return
   event.dataTransfer.setData(
-    'application/loopze-node',
+    'application/flow-node',
     JSON.stringify({
       type: node.type,
       inputs: node.inputs,

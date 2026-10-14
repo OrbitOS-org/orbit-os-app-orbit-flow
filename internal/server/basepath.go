@@ -14,9 +14,9 @@ import (
 )
 
 // indexInjector wraps an embedded index.html so it is served with a
-// runtime-configured <base href> and a window.__LOOPZE_BASE__ global.
+// runtime-configured <base href> and a window.__ORBIT_FLOW_BASE__ global.
 // This lets a single binary be mounted at the root or at a subpath
-// (e.g. /loopze) without rebuilding the frontend.
+// (e.g. /orbit-flow) without rebuilding the frontend.
 type indexInjector struct {
 	raw      []byte
 	basePath string // "" or "/segment"
@@ -59,7 +59,7 @@ func (i *indexInjector) render() []byte {
 
 	inject := []byte(
 		`<base href="` + escaped + `">` +
-			`<script>window.__LOOPZE_BASE__=` + jsVal + `;</script>`,
+			`<script>window.__ORBIT_FLOW_BASE__=` + jsVal + `;</script>`,
 	)
 
 	out := bytes.Replace(i.raw, []byte("<head>"), append([]byte("<head>"), inject...), 1)

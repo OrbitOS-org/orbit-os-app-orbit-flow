@@ -50,7 +50,7 @@ func (m *memCertStorage) SaveCredentials(b []byte) error {
 func newMigrationStore(t *testing.T) *credentials.CertStore {
 	t.Helper()
 	dir := t.TempDir()
-	cm := credentials.NewCredentialManager(filepath.Join(dir, "loopze.key"))
+	cm := credentials.NewCredentialManager(filepath.Join(dir, "orbit-flow.key"))
 	if err := cm.EnsureKeyFile(); err != nil {
 		t.Fatal(err)
 	}

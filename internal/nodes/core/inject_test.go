@@ -180,13 +180,13 @@ func TestInjectPayloadBool(t *testing.T) {
 }
 
 func TestInjectPayloadEnv(t *testing.T) {
-	os.Setenv("LOOPZE_TEST_INJECT", "env-value")
-	defer os.Unsetenv("LOOPZE_TEST_INJECT")
+	os.Setenv("ORBIT_FLOW_TEST_INJECT", "env-value")
+	defer os.Unsetenv("ORBIT_FLOW_TEST_INJECT")
 
 	c, node := startInject(t, map[string]any{
 		"once": true,
 		"props": makeProps(
-			map[string]any{"p": "payload", "vt": "env", "v": "LOOPZE_TEST_INJECT"},
+			map[string]any{"p": "payload", "vt": "env", "v": "ORBIT_FLOW_TEST_INJECT"},
 		),
 	})
 	defer node.Stop()

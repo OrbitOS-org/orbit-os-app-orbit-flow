@@ -56,7 +56,7 @@ const {
     findNode,
     getSelectedNodes,
     viewport,
-} = useVueFlow("loopze-flow-editor");
+} = useVueFlow("orbit-flow-editor");
 
 const zoomPercent = computed(() => Math.round(viewport.value.zoom * 100));
 
@@ -109,7 +109,7 @@ function onDrop(event: DragEvent): void {
 
     if (!event.dataTransfer) return;
 
-    const rawData = event.dataTransfer.getData("application/loopze-node");
+    const rawData = event.dataTransfer.getData("application/flow-node");
     if (!rawData) return;
 
     let nodeData: {
@@ -274,7 +274,7 @@ onMounted(async () => {
         @mousemove="onMouseMove"
     >
         <VueFlow
-            id="loopze-flow-editor"
+            id="orbit-flow-editor"
             v-model:nodes="flowStore.nodes"
             v-model:edges="flowStore.edges"
             class="w-full h-full"

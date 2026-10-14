@@ -9,7 +9,7 @@ package filesystem
 import "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes"
 
 // init registers the filesystem node group with the central registry hub.
-// The blank import in cmd/loopze/groups.go triggers this side effect.
+// The blank import in cmd/orbit_flow/groups.go triggers this side effect.
 func init() {
 	nodes.RegisterGroup(nodes.Group{
 		Name:        "filesystem",

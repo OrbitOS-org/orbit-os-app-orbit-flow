@@ -23,11 +23,11 @@ import (
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/flow"
 )
 
-// init turns on gopcua's verbose debug logging when LOOPZE_OPCUA_DEBUG=1 is
+// init turns on gopcua's verbose debug logging when ORBIT_FLOW_OPCUA_DEBUG=1 is
 // set in the environment. The library prints to stderr; combined with our
 // own slog Debug level it gives a full request/response trace per session.
 func init() {
-	if os.Getenv("LOOPZE_OPCUA_DEBUG") != "" {
+	if os.Getenv("ORBIT_FLOW_OPCUA_DEBUG") != "" {
 		debug.Enable = true
 	}
 }
@@ -38,7 +38,7 @@ func init() {
 //
 // The underlying gopcua client owns the reconnect loop (AutoReconnect=true).
 // We subscribe to its state-change channel to translate ConnState into the
-// LOOPZE status colour scheme and to broadcast it to every registered node.
+// Orbit Flow status colour scheme and to broadcast it to every registered node.
 //
 // Implements flow.ConfigInstance.
 type OpcuaServer struct {
@@ -141,11 +141,11 @@ func NewOpcuaServer(cfg flow.ConfigNode) (flow.ConfigInstance, error) {
 
 	applicationURI, _ := props["applicationUri"].(string)
 	if applicationURI == "" {
-		applicationURI = "urn:loopze:client"
+		applicationURI = "urn:orbit-flow:client"
 	}
 	applicationName, _ := props["applicationName"].(string)
 	if applicationName == "" {
-		applicationName = "LOOPZE OPC UA Client"
+		applicationName = "Orbit Flow OPC UA Client"
 	}
 
 	sessionTimeout := 60 * time.Second
@@ -218,8 +218,8 @@ func OpcuaServerConfigTypeInfo() flow.ConfigTypeInfo {
 			"password":          "",
 			"clientCertFile":    "",
 			"clientKeyFile":     "",
-			"applicationUri":    "urn:loopze:client",
-			"applicationName":   "LOOPZE OPC UA Client",
+			"applicationUri":    "urn:orbit-flow:client",
+			"applicationName":   "Orbit Flow OPC UA Client",
 			"sessionTimeout":    60000,
 			"requestTimeout":    5000,
 			"keepaliveInterval": 10000,
@@ -359,7 +359,7 @@ func (s *OpcuaServer) loadCertMaterialLocked() (certDER []byte, key *rsa.Private
 	return certDER, key, nil
 }
 
-// securityModeFromString turns the LOOPZE config string ("None",
+// securityModeFromString turns the Orbit Flow config string ("None",
 // "Sign", "SignAndEncrypt") into the gopcua enum used for endpoint
 // matching.
 func securityModeFromString(mode string) ua.MessageSecurityMode {
@@ -440,7 +440,7 @@ func decodePEMRSAKey(pemData []byte) (*rsa.PrivateKey, error) {
 
 // Start opens the OPC UA connection asynchronously: the gopcua client owns
 // the reconnect loop; we run a goroutine that translates ConnState into the
-// LOOPZE status colour scheme and fires reconnect callbacks for nodes that
+// Orbit Flow status colour scheme and fires reconnect callbacks for nodes that
 // need to recreate server-side state.
 func (s *OpcuaServer) Start() error {
 	s.mu.Lock()
@@ -625,7 +625,7 @@ func (s *OpcuaServer) setStatusLocked(fill, text string) {
 	}
 }
 
-// mapConnState turns a gopcua ConnState into a LOOPZE (fill, text) pair.
+// mapConnState turns a gopcua ConnState into a Orbit Flow (fill, text) pair.
 func mapConnState(state opcua.ConnState) (string, string) {
 	switch state {
 	case opcua.Connected:

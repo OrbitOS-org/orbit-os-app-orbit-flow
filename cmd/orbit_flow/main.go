@@ -92,7 +92,7 @@ func main() {
 	// (internal/config), so the two cannot be mistaken for one another.
 	deviceHost := flag.String("host", "192.168.1.100", "Orbit OS device IP address (development machine only)")
 
-	// config.Load() defines LOOPZE's own flags (--bind-host, --port,
+	// config.Load() defines Orbit Flow's own flags (--bind-host, --port,
 	// --data-dir, ...) and calls flag.Parse() itself, so the device --host
 	// flag must be registered above, before this call.
 	cfg := config.Load()

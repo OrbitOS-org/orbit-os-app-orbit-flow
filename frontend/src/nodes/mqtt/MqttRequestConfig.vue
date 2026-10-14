@@ -22,7 +22,7 @@ const broker = useNodeProperty<string>('broker', '')
 const topic = useNodeProperty<string>('topic', '')
 const qos = useNodeProperty<number>('qos', 0)
 const retain = useNodeProperty<boolean>('retain', false)
-const responseTopicPrefix = useNodeProperty<string>('responseTopicPrefix', 'loopze/response')
+const responseTopicPrefix = useNodeProperty<string>('responseTopicPrefix', 'orbit-flow/response')
 const timeout = useNodeProperty<number>('timeout', 30)
 const timeoutMode = useNodeProperty<string>('timeoutMode', 'error')
 const responseFormat = useNodeProperty<string>('responseFormat', 'string')
@@ -71,7 +71,7 @@ const defaultPayloadFormat = useNodeProperty<number>('defaultPayloadFormat', 0)
     <FormField label="Response topic prefix" hint="Full topic: <prefix>/<random-uuid>">
       <FormInput
         v-model="responseTopicPrefix"
-        placeholder="loopze/response"
+        placeholder="orbit-flow/response"
         mono
       />
     </FormField>

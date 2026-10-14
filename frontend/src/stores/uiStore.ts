@@ -9,7 +9,7 @@ export type LogsLimit = 100 | 200 | 500 | 1000
 const ALLOWED_LOGS_LIMITS = [100, 200, 500, 1000] as const
 
 function loadLogsLimit(): LogsLimit {
-  const raw = parseInt(localStorage.getItem('loopze-logs-limit') ?? '200', 10)
+  const raw = parseInt(localStorage.getItem('orbit-flow-logs-limit') ?? '200', 10)
   return (ALLOWED_LOGS_LIMITS as readonly number[]).includes(raw) ? (raw as LogsLimit) : 200
 }
 export type PropertiesContext =
@@ -28,10 +28,10 @@ export const useUiStore = defineStore('ui', () => {
   const infoPanelWidth = ref<number>(320)
   const activeInfoTab = ref<InfoTab>('debug')
   const contextAutoRefresh = ref<boolean>(
-    localStorage.getItem('loopze-context-auto-refresh') === 'true',
+    localStorage.getItem('orbit-flow-context-auto-refresh') === 'true',
   )
   const stateMachineAutoRefresh = ref<boolean>(
-    localStorage.getItem('loopze-state-machine-auto-refresh') === 'true',
+    localStorage.getItem('orbit-flow-state-machine-auto-refresh') === 'true',
   )
   const selectedStateMachineFlowID = ref<string | null>(null)
   const selectedStateMachineNodeID = ref<string | null>(null)
@@ -113,12 +113,12 @@ export const useUiStore = defineStore('ui', () => {
 
   function setContextAutoRefresh(v: boolean) {
     contextAutoRefresh.value = v
-    localStorage.setItem('loopze-context-auto-refresh', v ? 'true' : 'false')
+    localStorage.setItem('orbit-flow-context-auto-refresh', v ? 'true' : 'false')
   }
 
   function setStateMachineAutoRefresh(v: boolean) {
     stateMachineAutoRefresh.value = v
-    localStorage.setItem('loopze-state-machine-auto-refresh', v ? 'true' : 'false')
+    localStorage.setItem('orbit-flow-state-machine-auto-refresh', v ? 'true' : 'false')
   }
 
   function setSelectedStateMachineNodeID(id: string | null) {
@@ -148,7 +148,7 @@ export const useUiStore = defineStore('ui', () => {
 
   function setLogsLimit(n: LogsLimit) {
     logsLimit.value = n
-    localStorage.setItem('loopze-logs-limit', String(n))
+    localStorage.setItem('orbit-flow-logs-limit', String(n))
   }
 
   function setDeployStatus(status: DeployStatus) {

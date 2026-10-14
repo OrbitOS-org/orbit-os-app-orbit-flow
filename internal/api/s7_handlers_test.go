@@ -74,12 +74,12 @@ func TestS7TestConnectionHandler_BadHost(t *testing.T) {
 }
 
 func TestS7TestConnectionHandler_Demo(t *testing.T) {
-	host := os.Getenv("LOOPZE_S7_TEST_HOST")
+	host := os.Getenv("ORBIT_FLOW_S7_TEST_HOST")
 	if host == "" {
-		t.Skip("LOOPZE_S7_TEST_HOST not set; run `make demo-s7` and re-run with the env var")
+		t.Skip("ORBIT_FLOW_S7_TEST_HOST not set; run `make demo-s7` and re-run with the env var")
 	}
 	port := 102
-	if p := os.Getenv("LOOPZE_S7_TEST_PORT"); p != "" {
+	if p := os.Getenv("ORBIT_FLOW_S7_TEST_PORT"); p != "" {
 		if n, err := strconv.Atoi(p); err == nil {
 			port = n
 		}

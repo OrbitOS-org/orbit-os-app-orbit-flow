@@ -2,7 +2,7 @@
 // Licensed under the GNU Affero General Public License v3.0 or later.
 // See LICENSE file for details.
 
-// This file controls which node groups are bundled into the LOOPZE binary.
+// This file controls which node groups are bundled into the Orbit Flow binary.
 // Each blank import triggers the subpackage's init() — which calls
 // nodes.RegisterGroup — so the server can apply (and optionally disable)
 // the group at startup via runtime config.

@@ -2,7 +2,7 @@
 // Licensed under the GNU Affero General Public License v3.0 or later.
 // See LICENSE file for details.
 
-// Package nats provides an embedded NATS server with JetStream for the LOOPZE
+// Package nats provides an embedded NATS server with JetStream for the Orbit Flow
 // runtime. It is used for debug message persistence (streams), shared state
 // (KV stores), and future fleet communication — but NOT for internal
 // node-to-node message routing (which uses Go channels).
@@ -46,7 +46,7 @@ func New(cfg Config) (*Broker, error) {
 	storeDir := filepath.Join(cfg.DataDir, "jetstream")
 
 	opts := &server.Options{
-		ServerName: "loopze-embedded",
+		ServerName: "orbit-flow",
 		Port:       cfg.Port,
 		DontListen: cfg.Port == -1,
 		NoSigs:     true,
@@ -336,7 +336,7 @@ func (s *slogAdapter) Noticef(format string, v ...any) {
 	if isJetStreamBanner(msg) {
 		return
 	}
-	// NATS notices are operational chatter, not LOOPZE-level info — route them
+	// NATS notices are operational chatter, not app-level info — route them
 	// to debug so they only surface when the user runs with -log-level=debug.
 	slog.Debug(msg, "component", "nats")
 }

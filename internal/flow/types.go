@@ -2,7 +2,7 @@
 // Licensed under the GNU Affero General Public License v3.0 or later.
 // See LICENSE file for details.
 
-// Package flow implements the LOOPZE flow runtime engine and core types.
+// Package flow implements the Orbit Flow flow runtime engine and core types.
 package flow
 
 import (
@@ -15,7 +15,7 @@ import (
 )
 
 // Flow represents a single flow (tab) containing a set of interconnected nodes.
-// Each flow is an independent unit of execution within the LOOPZE runtime.
+// Each flow is an independent unit of execution within the Orbit Flow runtime.
 type Flow struct {
 	// ID is the unique identifier for this flow.
 	ID string `json:"id"`
