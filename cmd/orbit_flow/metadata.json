@@ -1,7 +1,7 @@
 {
   "name": "Orbit Flow",
   "slug": "orbit-flow",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Visual flow editor for industrial automation: Modbus, OPC UA, S7 and MQTT, with the device's own I/O",
   "entry_point": "orbit_flow",
   "permissions": [
