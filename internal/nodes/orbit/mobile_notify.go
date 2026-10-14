@@ -131,8 +131,8 @@ func (n *MobileNotifyNode) statusError(label string) {
 func MobileNotifyTypeInfo() flow.NodeTypeInfo {
 	return flow.NodeTypeInfo{
 		Type:        "mobile-notify",
-		Category:    "orbit",
-		Label:       "Mobile Notify",
+		Category:    "cloud",
+		Label:       "Mobile Notification",
 		Description: "Send a push notification to the OrbitOS device owner's phone",
 		Icon:        "mobile-notify",
 		Defaults: map[string]any{

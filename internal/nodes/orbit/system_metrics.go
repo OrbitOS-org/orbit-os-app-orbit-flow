@@ -136,7 +136,7 @@ func metricsPayload(m *systemv26.MetricsInfo) map[string]any {
 func SystemMetricsTypeInfo() flow.NodeTypeInfo {
 	return flow.NodeTypeInfo{
 		Type:        "system-metrics",
-		Category:    "orbit",
+		Category:    "device",
 		Label:       "System Metrics",
 		Description: "Reports live CPU, memory, temperature and disk usage for this OrbitOS device",
 		Icon:        "system-metrics",

@@ -711,7 +711,7 @@ func buildOpMask(events []string) (fsnotify.Op, error) {
 func FileWatchTypeInfo() flow.NodeTypeInfo {
 	return flow.NodeTypeInfo{
 		Type:        "file-watch",
-		Category:    "filesystem",
+		Category:    "storage",
 		Label:       "File Watch",
 		Description: "Watch a file or folder for changes (metadata only)",
 		Icon:        "folder-in",

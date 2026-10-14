@@ -154,8 +154,8 @@ func strFn(f func() (string, error)) func() (any, error) {
 func DeviceIdentityTypeInfo() flow.NodeTypeInfo {
 	return flow.NodeTypeInfo{
 		Type:        "device-identity",
-		Category:    "orbit",
-		Label:       "Device Identity",
+		Category:    "device",
+		Label:       "Device Info",
 		Description: "Reports this OrbitOS device's name, serial number, hardware and OS info (cached after first read)",
 		Icon:        "device-identity",
 		Defaults:    map[string]any{},

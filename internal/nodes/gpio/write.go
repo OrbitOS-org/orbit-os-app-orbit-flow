@@ -183,7 +183,7 @@ func truthy(v any) bool {
 func GpioWriteTypeInfo() flow.NodeTypeInfo {
 	return flow.NodeTypeInfo{
 		Type:        "gpio-write",
-		Category:    "orbit",
+		Category:    "hardware",
 		Label:       "GPIO Write",
 		Description: "Drives a configured GPIO pin from msg.payload, or a fixed on/off/toggle action",
 		Icon:        "gpio-write",

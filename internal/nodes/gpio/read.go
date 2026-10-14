@@ -104,7 +104,7 @@ func (n *GpioReadNode) statusError(label string) {
 func GpioReadTypeInfo() flow.NodeTypeInfo {
 	return flow.NodeTypeInfo{
 		Type:        "gpio-read",
-		Category:    "orbit",
+		Category:    "hardware",
 		Label:       "GPIO Read",
 		Description: "Reads the current level of a configured GPIO pin",
 		Icon:        "gpio-read",

@@ -33,7 +33,10 @@ const filteredNodes = computed(() => {
   )
 })
 
-const CATEGORY_ORDER = ['common', 'network', 'industrial', 'function', 'parser', 'storage', 'other']
+const CATEGORY_ORDER = ['common', 'function', 'network', 'industrial', 'hardware', 'device', 'cloud', 'parser', 'storage', 'other']
+
+// Names shown in the palette; the key is the node's category.
+const CATEGORY_LABEL: Record<string, string> = { cloud: 'Cloud Services' }
 
 const categories = computed(() => {
   const map = new Map<string, NodeCatalogEntry[]>()
@@ -146,7 +149,7 @@ function onDragStart(event: DragEvent, node: NodeCatalogEntry): void {
               >
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
               </svg>
-              <span>{{ cat.name }}</span>
+              <span>{{ CATEGORY_LABEL[cat.name] ?? cat.name }}</span>
             </div>
             <span class="text-[9px] font-mono text-terminal-text-dim/50 tabular-nums">
               {{ cat.nodes.length }}

@@ -145,7 +145,7 @@ func (n *I2CTransferNode) statusError(label string) {
 func I2CTransferTypeInfo() flow.NodeTypeInfo {
 	return flow.NodeTypeInfo{
 		Type:        "i2c-transfer",
-		Category:    "orbit",
+		Category:    "hardware",
 		Label:       "I2C Transfer",
 		Description: "Writes and/or reads bytes on a configured I2C bus",
 		Icon:        "i2c-transfer",

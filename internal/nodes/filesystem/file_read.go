@@ -243,7 +243,7 @@ func (n *FileReadNode) statusError(label string) {
 func FileReadTypeInfo() flow.NodeTypeInfo {
 	return flow.NodeTypeInfo{
 		Type:        "file-read",
-		Category:    "filesystem",
+		Category:    "storage",
 		Label:       "File Read",
 		Description: "Read file content (one-shot or incremental tail)",
 		Icon:        "file-in",

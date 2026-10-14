@@ -192,7 +192,7 @@ func humanSize(b int) string {
 func FileOutTypeInfo() flow.NodeTypeInfo {
 	return flow.NodeTypeInfo{
 		Type:        "file-out",
-		Category:    "filesystem",
+		Category:    "storage",
 		Label:       "File Write",
 		Description: "Write or append payload to a file",
 		Icon:        "file-out",

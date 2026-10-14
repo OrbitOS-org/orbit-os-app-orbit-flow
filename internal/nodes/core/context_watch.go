@@ -225,7 +225,7 @@ func (n *ContextWatchNode) handleEntry(entry jetstream.KeyValueEntry) {
 func ContextWatchTypeInfo() flow.NodeTypeInfo {
 	return flow.NodeTypeInfo{
 		Type:        "context-watch",
-		Category:    "context",
+		Category:    "function",
 		Label:       "Context Watch",
 		Description: "Watches for changes in context stores and emits change events",
 		Icon:        "mdi-eye",

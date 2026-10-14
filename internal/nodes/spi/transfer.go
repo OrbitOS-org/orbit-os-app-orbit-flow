@@ -134,7 +134,7 @@ func (n *SpiTransferNode) statusError(label string) {
 func SpiTransferTypeInfo() flow.NodeTypeInfo {
 	return flow.NodeTypeInfo{
 		Type:        "spi-transfer",
-		Category:    "orbit",
+		Category:    "hardware",
 		Label:       "SPI Transfer",
 		Description: "Writes and/or reads bytes on a configured SPI device (full-duplex)",
 		Icon:        "spi-transfer",
