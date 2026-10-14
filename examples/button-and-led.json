@@ -1,0 +1,146 @@
+{
+  "name": "Button and LED",
+  "description": "A button on one GPIO switches an LED on another.",
+  "category": "Device",
+  "order": 8,
+  "needs": "2 GPIO pins",
+  "flows": [
+    {
+      "id": "ex-button-and-led",
+      "type": "tab",
+      "label": "Button and LED",
+      "info": "The button pin is read 4 times a second; when its state changes, the LED pin follows it. Before deploying, open the two GPIO pin connections and choose the chip and line where your button and LED are wired. Use a resistor with the LED.",
+      "nodes": [
+        {
+          "id": "ex-button-and-led-n1",
+          "type": "inject",
+          "name": "every 250 ms",
+          "x": 100,
+          "y": 120,
+          "z": "ex-button-and-led",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-button-and-led-n2"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 250,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "rfc3339",
+                "vt": "date"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-button-and-led-n2",
+          "type": "gpio-read",
+          "name": "read button",
+          "x": 300,
+          "y": 120,
+          "z": "ex-button-and-led",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-button-and-led-n3"
+            ]
+          ],
+          "config": {
+            "pin": "ex-button-and-led-c1"
+          }
+        },
+        {
+          "id": "ex-button-and-led-n3",
+          "type": "function",
+          "name": "only on change",
+          "x": 500,
+          "y": 120,
+          "z": "ex-button-and-led",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-button-and-led-n4"
+            ]
+          ],
+          "config": {
+            "func": "if (msg.payload === flow.get('last')) return null;\nflow.set('last', msg.payload);\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-button-and-led-n4",
+          "type": "gpio-write",
+          "name": "LED",
+          "x": 700,
+          "y": 120,
+          "z": "ex-button-and-led",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            []
+          ],
+          "config": {
+            "action": "payload",
+            "pin": "ex-button-and-led-c2"
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-button-and-led-n1-w0--n2",
+          "sourceNode": "ex-button-and-led-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-button-and-led-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-button-and-led-n2-w0--n3",
+          "sourceNode": "ex-button-and-led-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-button-and-led-n3",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-button-and-led-n3-w0--n4",
+          "sourceNode": "ex-button-and-led-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-button-and-led-n4",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": [
+    {
+      "id": "ex-button-and-led-c1",
+      "type": "gpio-pin",
+      "name": "Button",
+      "config": {
+        "chip": 0,
+        "direction": "input",
+        "line": 17,
+        "name": "Button"
+      }
+    },
+    {
+      "id": "ex-button-and-led-c2",
+      "type": "gpio-pin",
+      "name": "LED",
+      "config": {
+        "chip": 0,
+        "direction": "output",
+        "line": 27,
+        "name": "LED"
+      }
+    }
+  ]
+}

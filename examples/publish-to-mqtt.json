@@ -1,0 +1,132 @@
+{
+  "name": "Publish to MQTT",
+  "description": "Publishes the device metrics to an MQTT broker.",
+  "category": "Data",
+  "order": 17,
+  "needs": "MQTT broker",
+  "flows": [
+    {
+      "id": "ex-publish-to-mqtt",
+      "type": "tab",
+      "label": "Publish to MQTT",
+      "info": "Every 30 seconds the device metrics are published as JSON on the topic orbit-os/device/metrics. The connection points to a broker on the device itself (localhost:1883), for example the Moquette app from the Orbit OS Store; change the host for another broker.",
+      "nodes": [
+        {
+          "id": "ex-publish-to-mqtt-n1",
+          "type": "inject",
+          "name": "every 30 s",
+          "x": 100,
+          "y": 120,
+          "z": "ex-publish-to-mqtt",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-publish-to-mqtt-n2"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 30000,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "rfc3339",
+                "vt": "date"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-publish-to-mqtt-n2",
+          "type": "system-metrics",
+          "name": "device metrics",
+          "x": 300,
+          "y": 120,
+          "z": "ex-publish-to-mqtt",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-publish-to-mqtt-n3"
+            ]
+          ],
+          "config": {}
+        },
+        {
+          "id": "ex-publish-to-mqtt-n3",
+          "type": "mqtt-out",
+          "name": "orbit-os/device/metrics",
+          "x": 520,
+          "y": 120,
+          "z": "ex-publish-to-mqtt",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "broker": "ex-publish-to-mqtt-c1",
+            "defaultContentType": "",
+            "defaultMessageExpiry": 0,
+            "defaultPayloadFormat": 0,
+            "defaultResponseTopic": "",
+            "defaultUserProperties": {},
+            "qos": 0,
+            "retain": false,
+            "target": "topic",
+            "topic": "orbit-os/device/metrics"
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-publish-to-mqtt-n1-w0--n2",
+          "sourceNode": "ex-publish-to-mqtt-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-publish-to-mqtt-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-publish-to-mqtt-n2-w0--n3",
+          "sourceNode": "ex-publish-to-mqtt-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-publish-to-mqtt-n3",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": [
+    {
+      "id": "ex-publish-to-mqtt-c1",
+      "type": "mqtt-broker",
+      "name": "MQTT broker on this device",
+      "config": {
+        "cleanStart": true,
+        "clientId": "",
+        "host": "localhost",
+        "keepalive": 60,
+        "lastWillDelayInterval": 0,
+        "lastWillPayload": "",
+        "lastWillQoS": 0,
+        "lastWillRetain": false,
+        "lastWillTopic": "",
+        "onConnectPayload": "",
+        "onConnectQoS": 0,
+        "onConnectRetain": false,
+        "onConnectTopic": "",
+        "onDisconnectPayload": "",
+        "onDisconnectQoS": 0,
+        "onDisconnectRetain": false,
+        "onDisconnectTopic": "",
+        "password": "",
+        "port": 1883,
+        "protocolVersion": "5",
+        "sessionExpiry": 0,
+        "useTLS": false,
+        "username": ""
+      }
+    }
+  ]
+}

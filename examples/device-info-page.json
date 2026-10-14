@@ -1,0 +1,213 @@
+{
+  "name": "Device info page",
+  "description": "A /status web page with the device name, version and metrics.",
+  "category": "Device",
+  "order": 7,
+  "flows": [
+    {
+      "id": "ex-device-info-page",
+      "type": "tab",
+      "label": "Device info page",
+      "info": "Open http://<device>:<port>/endpoint/status in a browser (the port is the one of this editor). The flow reads the device information and its metrics through the Orbit OS API and answers with a JSON page. If a reading fails, the Catch node answers with error 503 instead of leaving the page waiting. Useful for monitoring tools that poll a URL.",
+      "nodes": [
+        {
+          "id": "ex-device-info-page-n1",
+          "type": "http-in",
+          "name": "GET /status",
+          "x": 100,
+          "y": 140,
+          "z": "ex-device-info-page",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-device-info-page-n2"
+            ]
+          ],
+          "config": {
+            "bodyParse": "auto",
+            "maxBodyBytes": 1048576,
+            "method": "GET",
+            "path": "/status",
+            "responseTimeout": 30
+          }
+        },
+        {
+          "id": "ex-device-info-page-n2",
+          "type": "device-identity",
+          "name": "device info",
+          "x": 300,
+          "y": 140,
+          "z": "ex-device-info-page",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-device-info-page-n3"
+            ]
+          ],
+          "config": {}
+        },
+        {
+          "id": "ex-device-info-page-n3",
+          "type": "function",
+          "name": "keep info",
+          "x": 500,
+          "y": 140,
+          "z": "ex-device-info-page",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-device-info-page-n4"
+            ]
+          ],
+          "config": {
+            "func": "msg.device = msg.payload;\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-device-info-page-n4",
+          "type": "system-metrics",
+          "name": "device metrics",
+          "x": 700,
+          "y": 140,
+          "z": "ex-device-info-page",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-device-info-page-n5"
+            ]
+          ],
+          "config": {}
+        },
+        {
+          "id": "ex-device-info-page-n5",
+          "type": "function",
+          "name": "build the answer",
+          "x": 900,
+          "y": 140,
+          "z": "ex-device-info-page",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-device-info-page-n6"
+            ]
+          ],
+          "config": {
+            "func": "const d = msg.device, m = msg.payload;\nmsg.payload = {\n  device: d.deviceName, model: d.hardwareModel, orbitOs: d.osVersion,\n  cpuPercent: m.cpuUsagePercent, memoryPercent: m.memoryUsagePercent,\n  temperatureC: m.socTemperatureC, uptimeSeconds: m.uptimeSeconds,\n};\nmsg.headers = { 'Content-Type': 'application/json' };\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-device-info-page-n6",
+          "type": "http-response",
+          "name": "answer",
+          "x": 1110,
+          "y": 140,
+          "z": "ex-device-info-page",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "headers": {},
+            "statusCode": 200
+          }
+        },
+        {
+          "id": "ex-device-info-page-n7",
+          "type": "catch",
+          "name": "if reading fails",
+          "x": 100,
+          "y": 240,
+          "z": "ex-device-info-page",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-device-info-page-n8"
+            ]
+          ],
+          "config": {
+            "scope": "flow",
+            "targetNodes": []
+          }
+        },
+        {
+          "id": "ex-device-info-page-n8",
+          "type": "function",
+          "name": "503 answer",
+          "x": 330,
+          "y": 240,
+          "z": "ex-device-info-page",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-device-info-page-n6"
+            ]
+          ],
+          "config": {
+            "func": "msg.statusCode = 503;\nmsg.payload = { error: msg._error && msg._error.message };\nmsg.headers = { 'Content-Type': 'application/json' };\nreturn msg;",
+            "outputs": 1
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-device-info-page-n1-w0--n2",
+          "sourceNode": "ex-device-info-page-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-device-info-page-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-device-info-page-n2-w0--n3",
+          "sourceNode": "ex-device-info-page-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-device-info-page-n3",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-device-info-page-n3-w0--n4",
+          "sourceNode": "ex-device-info-page-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-device-info-page-n4",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-device-info-page-n4-w0--n5",
+          "sourceNode": "ex-device-info-page-n4",
+          "sourcePort": 0,
+          "targetNode": "ex-device-info-page-n5",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-device-info-page-n5-w0--n6",
+          "sourceNode": "ex-device-info-page-n5",
+          "sourcePort": 0,
+          "targetNode": "ex-device-info-page-n6",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-device-info-page-n7-w0--n8",
+          "sourceNode": "ex-device-info-page-n7",
+          "sourcePort": 0,
+          "targetNode": "ex-device-info-page-n8",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-device-info-page-n8-w0--n6",
+          "sourceNode": "ex-device-info-page-n8",
+          "sourcePort": 0,
+          "targetNode": "ex-device-info-page-n6",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": []
+}

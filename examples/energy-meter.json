@@ -1,0 +1,202 @@
+{
+  "name": "Energy meter",
+  "description": "Reads voltage, current and power from an Eastron SDM meter.",
+  "category": "Industrial",
+  "order": 13,
+  "needs": "Energy meter, RS-485",
+  "flows": [
+    {
+      "id": "ex-energy-meter",
+      "type": "tab",
+      "label": "Energy meter",
+      "info": "Reads an Eastron SDM120 or SDM230 meter every 10 seconds over Modbus RTU: voltage (register 0), current (6) and active power (12), each a 32-bit float in the input registers. The meter is expected at unit 1, 9600 baud, 8N1 — set your values in the Modbus connection. The Function node joins the three readings into one message.",
+      "nodes": [
+        {
+          "id": "ex-energy-meter-n1",
+          "type": "function",
+          "name": "join readings",
+          "x": 380,
+          "y": 160,
+          "z": "ex-energy-meter",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-energy-meter-n5"
+            ]
+          ],
+          "config": {
+            "func": "const r = flow.get('meter') || {};\nr[msg.topic] = Math.round(msg.payload * 100) / 100;\nflow.set('meter', r);\nif (Object.keys(r).length < 3) return null;\nmsg.payload = { ...r };\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-energy-meter-n2",
+          "type": "modbus-read",
+          "name": "voltage (V)",
+          "x": 120,
+          "y": 80,
+          "z": "ex-energy-meter",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-energy-meter-n1"
+            ]
+          ],
+          "config": {
+            "address": 0,
+            "byteOrder": "bigEndian",
+            "dataType": "float32",
+            "emitOnChange": false,
+            "emitOnError": true,
+            "fc": 4,
+            "mode": "static",
+            "offset": 0,
+            "pollInterval": 10000,
+            "quantity": 2,
+            "scale": 1,
+            "server": "ex-energy-meter-c1",
+            "unitId": 1,
+            "wordOrder": "bigEndian",
+            "topicTemplate": "voltage"
+          }
+        },
+        {
+          "id": "ex-energy-meter-n3",
+          "type": "modbus-read",
+          "name": "current (A)",
+          "x": 120,
+          "y": 160,
+          "z": "ex-energy-meter",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-energy-meter-n1"
+            ]
+          ],
+          "config": {
+            "address": 6,
+            "byteOrder": "bigEndian",
+            "dataType": "float32",
+            "emitOnChange": false,
+            "emitOnError": true,
+            "fc": 4,
+            "mode": "static",
+            "offset": 0,
+            "pollInterval": 10000,
+            "quantity": 2,
+            "scale": 1,
+            "server": "ex-energy-meter-c1",
+            "unitId": 1,
+            "wordOrder": "bigEndian",
+            "topicTemplate": "current"
+          }
+        },
+        {
+          "id": "ex-energy-meter-n4",
+          "type": "modbus-read",
+          "name": "power (W)",
+          "x": 120,
+          "y": 240,
+          "z": "ex-energy-meter",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-energy-meter-n1"
+            ]
+          ],
+          "config": {
+            "address": 12,
+            "byteOrder": "bigEndian",
+            "dataType": "float32",
+            "emitOnChange": false,
+            "emitOnError": true,
+            "fc": 4,
+            "mode": "static",
+            "offset": 0,
+            "pollInterval": 10000,
+            "quantity": 2,
+            "scale": 1,
+            "server": "ex-energy-meter-c1",
+            "unitId": 1,
+            "wordOrder": "bigEndian",
+            "topicTemplate": "power"
+          }
+        },
+        {
+          "id": "ex-energy-meter-n5",
+          "type": "debug",
+          "name": "meter",
+          "x": 600,
+          "y": 160,
+          "z": "ex-energy-meter",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-energy-meter-n1-w0--n5",
+          "sourceNode": "ex-energy-meter-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-energy-meter-n5",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-energy-meter-n2-w0--n1",
+          "sourceNode": "ex-energy-meter-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-energy-meter-n1",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-energy-meter-n3-w0--n1",
+          "sourceNode": "ex-energy-meter-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-energy-meter-n1",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-energy-meter-n4-w0--n1",
+          "sourceNode": "ex-energy-meter-n4",
+          "sourcePort": 0,
+          "targetNode": "ex-energy-meter-n1",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": [
+    {
+      "id": "ex-energy-meter-c1",
+      "type": "modbus-server",
+      "name": "RS-485 · energy meter",
+      "config": {
+        "baudRate": 9600,
+        "dataBits": 8,
+        "defaultUnitId": 1,
+        "host": "localhost",
+        "idleTimeout": 60,
+        "parity": "none",
+        "port": 502,
+        "reconnectBackoff": 5,
+        "serialPort": "ttyS1",
+        "stopBits": 1,
+        "timeout": 1000,
+        "transport": "rtu"
+      }
+    }
+  ]
+}

@@ -1,0 +1,152 @@
+{
+  "name": "Modbus TCP read",
+  "description": "Reads registers from an inverter, meter or PLC and scales them.",
+  "category": "Industrial",
+  "order": 12,
+  "needs": "Modbus TCP device",
+  "flows": [
+    {
+      "id": "ex-modbus-tcp-read",
+      "type": "tab",
+      "label": "Modbus TCP read",
+      "info": "Every 5 seconds the Modbus Read node reads 2 holding registers starting at address 0 from a Modbus TCP device and the Modbus Parser turns them into named values. Set the address of your device in the Modbus connection, and the register map (address, type, scale) in the Read and Parser nodes from its manual.",
+      "nodes": [
+        {
+          "id": "ex-modbus-tcp-read-n1",
+          "type": "modbus-read",
+          "name": "registers 0–1",
+          "x": 100,
+          "y": 120,
+          "z": "ex-modbus-tcp-read",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-modbus-tcp-read-n2"
+            ]
+          ],
+          "config": {
+            "address": 0,
+            "byteOrder": "bigEndian",
+            "dataType": "raw",
+            "emitOnChange": false,
+            "emitOnError": true,
+            "fc": 3,
+            "mode": "static",
+            "offset": 0,
+            "pollInterval": 5000,
+            "quantity": 2,
+            "scale": 1,
+            "server": "ex-modbus-tcp-read-c1",
+            "unitId": 1,
+            "wordOrder": "bigEndian"
+          }
+        },
+        {
+          "id": "ex-modbus-tcp-read-n2",
+          "type": "modbus-parser",
+          "name": "named values",
+          "x": 320,
+          "y": 120,
+          "z": "ex-modbus-tcp-read",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-modbus-tcp-read-n3"
+            ]
+          ],
+          "config": {
+            "action": "auto",
+            "byteOrder": "bigEndian",
+            "encodeFrom": "payload",
+            "layout": [
+              {
+                "id": "f1",
+                "offset": 0,
+                "name": "power",
+                "type": "int16",
+                "length": 0,
+                "byteOrder": "",
+                "wordOrder": "",
+                "scale": 1,
+                "offsetValue": 0,
+                "unit": "W"
+              },
+              {
+                "id": "f2",
+                "offset": 1,
+                "name": "temperature",
+                "type": "int16",
+                "length": 0,
+                "byteOrder": "",
+                "wordOrder": "",
+                "scale": 0.1,
+                "offsetValue": 0,
+                "unit": "°C"
+              }
+            ],
+            "parseFrom": "payload",
+            "wordOrder": "bigEndian"
+          }
+        },
+        {
+          "id": "ex-modbus-tcp-read-n3",
+          "type": "debug",
+          "name": "values",
+          "x": 540,
+          "y": 120,
+          "z": "ex-modbus-tcp-read",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-modbus-tcp-read-n1-w0--n2",
+          "sourceNode": "ex-modbus-tcp-read-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-modbus-tcp-read-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-modbus-tcp-read-n2-w0--n3",
+          "sourceNode": "ex-modbus-tcp-read-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-modbus-tcp-read-n3",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": [
+    {
+      "id": "ex-modbus-tcp-read-c1",
+      "type": "modbus-server",
+      "name": "Modbus TCP device",
+      "config": {
+        "baudRate": 9600,
+        "dataBits": 8,
+        "defaultUnitId": 1,
+        "host": "192.168.1.100",
+        "idleTimeout": 60,
+        "parity": "none",
+        "port": 502,
+        "reconnectBackoff": 5,
+        "serialPort": "",
+        "stopBits": 1,
+        "timeout": 1000,
+        "transport": "tcp"
+      }
+    }
+  ]
+}

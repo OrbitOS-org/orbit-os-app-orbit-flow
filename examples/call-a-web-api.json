@@ -1,0 +1,133 @@
+{
+  "name": "Call a web API",
+  "description": "Reads a weather forecast and decides from it.",
+  "category": "Data",
+  "order": 21,
+  "needs": "Internet",
+  "flows": [
+    {
+      "id": "ex-call-a-web-api",
+      "type": "tab",
+      "label": "Call a web API",
+      "info": "Every hour the flow asks the free Open-Meteo service for today's rain probability and decides \"rain likely\" or \"dry\". Change latitude and longitude in the URL of the HTTP Request node to your place.",
+      "nodes": [
+        {
+          "id": "ex-call-a-web-api-n1",
+          "type": "inject",
+          "name": "every hour",
+          "x": 100,
+          "y": 120,
+          "z": "ex-call-a-web-api",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-call-a-web-api-n2"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 3600000,
+            "mode": "interval",
+            "once": true,
+            "props": [
+              {
+                "p": "payload",
+                "v": "rfc3339",
+                "vt": "date"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-call-a-web-api-n2",
+          "type": "http-request",
+          "name": "Open-Meteo forecast",
+          "x": 300,
+          "y": 120,
+          "z": "ex-call-a-web-api",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-call-a-web-api-n3"
+            ]
+          ],
+          "config": {
+            "bodyEncoding": "auto",
+            "errorMode": "passthrough",
+            "followRedirects": true,
+            "headers": {},
+            "method": "GET",
+            "responseFormat": "json",
+            "timeout": 20,
+            "tlsInsecure": false,
+            "url": "https://api.open-meteo.com/v1/forecast?latitude=38.72&longitude=-9.14&hourly=precipitation_probability&forecast_days=1&timezone=auto"
+          }
+        },
+        {
+          "id": "ex-call-a-web-api-n3",
+          "type": "function",
+          "name": "rain likely?",
+          "x": 520,
+          "y": 120,
+          "z": "ex-call-a-web-api",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-call-a-web-api-n4"
+            ]
+          ],
+          "config": {
+            "func": "const p = (msg.payload.hourly && msg.payload.hourly.precipitation_probability) || [];\nconst max = p.length ? Math.max(...p) : 0;\nmsg.payload = { maxRainProbability: max, decision: max >= 60 ? 'rain likely' : 'dry' };\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-call-a-web-api-n4",
+          "type": "debug",
+          "name": "decision",
+          "x": 740,
+          "y": 120,
+          "z": "ex-call-a-web-api",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-call-a-web-api-n1-w0--n2",
+          "sourceNode": "ex-call-a-web-api-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-call-a-web-api-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-call-a-web-api-n2-w0--n3",
+          "sourceNode": "ex-call-a-web-api-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-call-a-web-api-n3",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-call-a-web-api-n3-w0--n4",
+          "sourceNode": "ex-call-a-web-api-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-call-a-web-api-n4",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": []
+}

@@ -1,0 +1,244 @@
+{
+  "name": "MQTT command to relay",
+  "description": "An on/off MQTT message switches relay 1 of an EBYTE board.",
+  "category": "Data",
+  "order": 18,
+  "needs": "MQTT broker, EBYTE board",
+  "flows": [
+    {
+      "id": "ex-mqtt-command-to-relay",
+      "type": "tab",
+      "label": "MQTT command to relay",
+      "info": "Send \"on\" or \"off\" to the topic orbit-os/relay1/set and relay 1 of the EBYTE board follows. Any other text is ignored. Set the broker in the MQTT connection and the serial port, baud rate and unit ID of the board in the Modbus connection.",
+      "nodes": [
+        {
+          "id": "ex-mqtt-command-to-relay-n1",
+          "type": "mqtt-in",
+          "name": "orbit-os/relay1/set",
+          "x": 100,
+          "y": 140,
+          "z": "ex-mqtt-command-to-relay",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-mqtt-command-to-relay-n2"
+            ]
+          ],
+          "config": {
+            "broker": "ex-mqtt-command-to-relay-c1",
+            "mode": "static",
+            "noLocal": false,
+            "outputFormat": "string",
+            "qos": 1,
+            "retainAsPublished": false,
+            "retainHandling": 0,
+            "subscribeUserProperties": {},
+            "subscriptionIdentifier": 0,
+            "topic": "orbit-os/relay1/set"
+          }
+        },
+        {
+          "id": "ex-mqtt-command-to-relay-n2",
+          "type": "switch",
+          "name": "on or off?",
+          "x": 320,
+          "y": 140,
+          "z": "ex-mqtt-command-to-relay",
+          "inputs": 1,
+          "outputs": 2,
+          "wires": [
+            [
+              "ex-mqtt-command-to-relay-n3"
+            ],
+            [
+              "ex-mqtt-command-to-relay-n4"
+            ]
+          ],
+          "config": {
+            "checkall": false,
+            "property": "payload",
+            "propertyType": "msg",
+            "rules": [
+              {
+                "id": "r1",
+                "t": "eq",
+                "v": "on",
+                "vt": "str"
+              },
+              {
+                "id": "r2",
+                "t": "eq",
+                "v": "off",
+                "vt": "str"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-mqtt-command-to-relay-n3",
+          "type": "change",
+          "name": "true",
+          "x": 520,
+          "y": 100,
+          "z": "ex-mqtt-command-to-relay",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-mqtt-command-to-relay-n5"
+            ]
+          ],
+          "config": {
+            "rules": [
+              {
+                "p": "payload",
+                "pt": "msg",
+                "t": "set",
+                "to": "true",
+                "tot": "bool"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-mqtt-command-to-relay-n4",
+          "type": "change",
+          "name": "false",
+          "x": 520,
+          "y": 180,
+          "z": "ex-mqtt-command-to-relay",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-mqtt-command-to-relay-n5"
+            ]
+          ],
+          "config": {
+            "rules": [
+              {
+                "p": "payload",
+                "pt": "msg",
+                "t": "set",
+                "to": "false",
+                "tot": "bool"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-mqtt-command-to-relay-n5",
+          "type": "modbus-write",
+          "name": "relay 1 (coil 0)",
+          "x": 720,
+          "y": 140,
+          "z": "ex-mqtt-command-to-relay",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "address": 0,
+            "byteOrder": "bigEndian",
+            "dataType": "raw",
+            "emitAck": false,
+            "fc": 5,
+            "offset": 0,
+            "scale": 1,
+            "server": "ex-mqtt-command-to-relay-c2",
+            "unitId": 32,
+            "wordOrder": "bigEndian"
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-mqtt-command-to-relay-n1-w0--n2",
+          "sourceNode": "ex-mqtt-command-to-relay-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-mqtt-command-to-relay-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-mqtt-command-to-relay-n2-w0--n3",
+          "sourceNode": "ex-mqtt-command-to-relay-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-mqtt-command-to-relay-n3",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-mqtt-command-to-relay-n2-w1--n4",
+          "sourceNode": "ex-mqtt-command-to-relay-n2",
+          "sourcePort": 1,
+          "targetNode": "ex-mqtt-command-to-relay-n4",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-mqtt-command-to-relay-n3-w0--n5",
+          "sourceNode": "ex-mqtt-command-to-relay-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-mqtt-command-to-relay-n5",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-mqtt-command-to-relay-n4-w0--n5",
+          "sourceNode": "ex-mqtt-command-to-relay-n4",
+          "sourcePort": 0,
+          "targetNode": "ex-mqtt-command-to-relay-n5",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": [
+    {
+      "id": "ex-mqtt-command-to-relay-c1",
+      "type": "mqtt-broker",
+      "name": "MQTT broker on this device",
+      "config": {
+        "cleanStart": true,
+        "clientId": "",
+        "host": "localhost",
+        "keepalive": 60,
+        "lastWillDelayInterval": 0,
+        "lastWillPayload": "",
+        "lastWillQoS": 0,
+        "lastWillRetain": false,
+        "lastWillTopic": "",
+        "onConnectPayload": "",
+        "onConnectQoS": 0,
+        "onConnectRetain": false,
+        "onConnectTopic": "",
+        "onDisconnectPayload": "",
+        "onDisconnectQoS": 0,
+        "onDisconnectRetain": false,
+        "onDisconnectTopic": "",
+        "password": "",
+        "port": 1883,
+        "protocolVersion": "5",
+        "sessionExpiry": 0,
+        "useTLS": false,
+        "username": ""
+      }
+    },
+    {
+      "id": "ex-mqtt-command-to-relay-c2",
+      "type": "modbus-server",
+      "name": "RS-485 #2 (ttyS2) · EBYTE 4DI+4DO · unit 32",
+      "config": {
+        "baudRate": 115200,
+        "dataBits": 8,
+        "defaultUnitId": 32,
+        "host": "localhost",
+        "idleTimeout": 60,
+        "parity": "none",
+        "port": 502,
+        "reconnectBackoff": 5,
+        "serialPort": "ttyS2",
+        "stopBits": 1,
+        "timeout": 1000,
+        "transport": "rtu"
+      }
+    }
+  ]
+}

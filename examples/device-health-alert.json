@@ -1,0 +1,151 @@
+{
+  "name": "Device health alert",
+  "description": "Sends a phone notification when temperature or memory go over a limit.",
+  "category": "Device",
+  "order": 6,
+  "needs": "Phone with the Orbit OS app",
+  "flows": [
+    {
+      "id": "ex-device-health-alert",
+      "type": "tab",
+      "label": "Device health alert",
+      "info": "Every 30 seconds the System Metrics node reads the device. The Function node checks the processor temperature (over 75 °C) and the memory in use (over 90 %), and sends one notification when a limit is crossed and another when things are back to normal, never one per reading. Notifications go to the phones linked to this device through the Orbit OS app. Change the limits at the top of the Function node.",
+      "nodes": [
+        {
+          "id": "ex-device-health-alert-n1",
+          "type": "inject",
+          "name": "every 30 s",
+          "x": 100,
+          "y": 140,
+          "z": "ex-device-health-alert",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-device-health-alert-n2"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 30000,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "rfc3339",
+                "vt": "date"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-device-health-alert-n2",
+          "type": "system-metrics",
+          "name": "device metrics",
+          "x": 300,
+          "y": 140,
+          "z": "ex-device-health-alert",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-device-health-alert-n3"
+            ]
+          ],
+          "config": {}
+        },
+        {
+          "id": "ex-device-health-alert-n3",
+          "type": "function",
+          "name": "over the limit?",
+          "x": 520,
+          "y": 140,
+          "z": "ex-device-health-alert",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-device-health-alert-n4"
+            ]
+          ],
+          "config": {
+            "func": "const TEMP_C = 75, MEMORY_PCT = 90;\nconst p = msg.payload;\nconst alarm = p.socTemperatureC > TEMP_C || p.memoryUsagePercent > MEMORY_PCT;\nconst was = flow.get('alarm') || false;\nnode.status(alarm ? 'red' : 'green', `${Math.round(p.socTemperatureC)} °C · ${Math.round(p.memoryUsagePercent)} % memory`);\nif (alarm === was) return null;\nflow.set('alarm', alarm);\nmsg.payload = alarm\n  ? `Device is running hot: ${p.socTemperatureC.toFixed(1)} °C, ${p.memoryUsagePercent.toFixed(0)} % memory in use`\n  : 'Device back to normal';\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-device-health-alert-n4",
+          "type": "mobile-notify",
+          "name": "notify phone",
+          "x": 760,
+          "y": 140,
+          "z": "ex-device-health-alert",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-device-health-alert-n5"
+            ]
+          ],
+          "config": {
+            "body": "",
+            "collapseKey": "",
+            "imageUrl": "",
+            "ttlSeconds": 0
+          }
+        },
+        {
+          "id": "ex-device-health-alert-n5",
+          "type": "debug",
+          "name": "notification sent",
+          "x": 980,
+          "y": 140,
+          "z": "ex-device-health-alert",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-device-health-alert-n1-w0--n2",
+          "sourceNode": "ex-device-health-alert-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-device-health-alert-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-device-health-alert-n2-w0--n3",
+          "sourceNode": "ex-device-health-alert-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-device-health-alert-n3",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-device-health-alert-n3-w0--n4",
+          "sourceNode": "ex-device-health-alert-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-device-health-alert-n4",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-device-health-alert-n4-w0--n5",
+          "sourceNode": "ex-device-health-alert-n4",
+          "sourcePort": 0,
+          "targetNode": "ex-device-health-alert-n5",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": []
+}

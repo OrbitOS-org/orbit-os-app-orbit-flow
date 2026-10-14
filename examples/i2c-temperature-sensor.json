@@ -1,0 +1,141 @@
+{
+  "name": "I²C temperature sensor",
+  "description": "Reads a TMP102 or LM75 sensor every 10 s.",
+  "category": "Device",
+  "order": 9,
+  "needs": "I²C sensor (TMP102 or LM75)",
+  "flows": [
+    {
+      "id": "ex-i2c-temperature-sensor",
+      "type": "tab",
+      "label": "I²C temperature sensor",
+      "info": "Every 10 seconds the I²C Transfer node writes the register number 0x00 to the sensor at address 0x48 and reads 2 bytes back; the Function node turns them into °C. Set the I²C bus of your device in the I²C bus connection, and change the address if your sensor uses another one (0x48 to 0x4B).",
+      "nodes": [
+        {
+          "id": "ex-i2c-temperature-sensor-n1",
+          "type": "inject",
+          "name": "every 10 s",
+          "x": 100,
+          "y": 120,
+          "z": "ex-i2c-temperature-sensor",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-i2c-temperature-sensor-n2"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 10000,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "rfc3339",
+                "vt": "date"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-i2c-temperature-sensor-n2",
+          "type": "i2c-transfer",
+          "name": "read temperature",
+          "x": 310,
+          "y": 120,
+          "z": "ex-i2c-temperature-sensor",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-i2c-temperature-sensor-n3"
+            ]
+          ],
+          "config": {
+            "address": 72,
+            "bus": "ex-i2c-temperature-sensor-c1",
+            "readLength": 2,
+            "writeData": "00"
+          }
+        },
+        {
+          "id": "ex-i2c-temperature-sensor-n3",
+          "type": "function",
+          "name": "to °C",
+          "x": 520,
+          "y": 120,
+          "z": "ex-i2c-temperature-sensor",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-i2c-temperature-sensor-n4"
+            ]
+          ],
+          "config": {
+            "func": "// TMP102: 12-bit value in the top bits, 0.0625 °C per step\nconst b = msg.payload;\nlet raw = ((b[0] << 8) | b[1]) >> 4;\nif (raw & 0x800) raw -= 4096;\nmsg.payload = raw * 0.0625;\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-i2c-temperature-sensor-n4",
+          "type": "debug",
+          "name": "temperature °C",
+          "x": 720,
+          "y": 120,
+          "z": "ex-i2c-temperature-sensor",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-i2c-temperature-sensor-n1-w0--n2",
+          "sourceNode": "ex-i2c-temperature-sensor-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-i2c-temperature-sensor-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-i2c-temperature-sensor-n2-w0--n3",
+          "sourceNode": "ex-i2c-temperature-sensor-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-i2c-temperature-sensor-n3",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-i2c-temperature-sensor-n3-w0--n4",
+          "sourceNode": "ex-i2c-temperature-sensor-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-i2c-temperature-sensor-n4",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": [
+    {
+      "id": "ex-i2c-temperature-sensor-c1",
+      "type": "i2c-bus",
+      "name": "I²C bus 1",
+      "config": {
+        "bus": 1,
+        "clockHz": 100000,
+        "clockStretching": false,
+        "name": "I²C bus 1",
+        "tenBitAddr": false
+      }
+    }
+  ]
+}

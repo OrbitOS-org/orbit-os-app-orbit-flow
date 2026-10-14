@@ -68,7 +68,14 @@ func validatePath(p, jail string) (string, error) {
 		return "", fmt.Errorf("path is empty")
 	}
 	if !filepath.IsAbs(p) {
-		return "", fmt.Errorf("path %q is not absolute", p)
+		// On Orbit OS a relative path is taken from the app's data folder
+		// (e.g. "logs/readings.csv"), so flows and examples work on any
+		// device without knowing where that folder is.
+		base := mandatoryWorkdir()
+		if base == "" {
+			return "", fmt.Errorf("path %q is not absolute", p)
+		}
+		p = filepath.Join(base, p)
 	}
 	clean := filepath.Clean(p)
 	if enforced := effectiveJail(jail); enforced != "" {

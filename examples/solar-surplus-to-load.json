@@ -1,0 +1,173 @@
+{
+  "name": "Solar surplus to load",
+  "description": "Switches a load on when the solar installation has surplus (SolaStat).",
+  "category": "Projects",
+  "order": 23,
+  "needs": "Inverter or meter, EBYTE board",
+  "flows": [
+    {
+      "id": "ex-solar-surplus-to-load",
+      "type": "tab",
+      "label": "Solar surplus to load",
+      "info": "Every 10 seconds the grid power is read from the inverter or meter over Modbus TCP (negative = exporting). When more than 1500 W are exported, the load on relay 1 turns on; when export drops below 300 W, or power is imported, it turns off. It never switches more often than every 2 minutes. Set the register of your device in the Read node and its address in the connection. This is the idea behind SolaStat.",
+      "nodes": [
+        {
+          "id": "ex-solar-surplus-to-load-n1",
+          "type": "modbus-read",
+          "name": "grid power (W)",
+          "x": 120,
+          "y": 140,
+          "z": "ex-solar-surplus-to-load",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-solar-surplus-to-load-n2"
+            ]
+          ],
+          "config": {
+            "address": 0,
+            "byteOrder": "bigEndian",
+            "dataType": "int32",
+            "emitOnChange": false,
+            "emitOnError": true,
+            "fc": 3,
+            "mode": "static",
+            "offset": 0,
+            "pollInterval": 10000,
+            "quantity": 2,
+            "scale": 1,
+            "server": "ex-solar-surplus-to-load-c1",
+            "unitId": 1,
+            "wordOrder": "bigEndian"
+          }
+        },
+        {
+          "id": "ex-solar-surplus-to-load-n2",
+          "type": "function",
+          "name": "surplus?",
+          "x": 360,
+          "y": 140,
+          "z": "ex-solar-surplus-to-load",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-solar-surplus-to-load-n3",
+              "ex-solar-surplus-to-load-n4"
+            ]
+          ],
+          "config": {
+            "func": "const ON_EXPORT_W = 1500, OFF_EXPORT_W = 300, MIN_GAP_MS = 120000;\nconst grid = Number(msg.payload); // negative = exporting\nconst on = flow.get('on') || false;\nconst last = flow.get('changedAt') || 0;\nlet want = on;\nif (!on && -grid > ON_EXPORT_W) want = true;\nif (on && -grid < OFF_EXPORT_W) want = false;\nnode.status(want ? 'green' : 'grey', `${grid} W · load ${want ? 'on' : 'off'}`);\nif (want === on || Date.now() - last < MIN_GAP_MS) return null;\nflow.set('on', want);\nflow.set('changedAt', Date.now());\nmsg.payload = want;\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-solar-surplus-to-load-n3",
+          "type": "modbus-write",
+          "name": "load (relay 1)",
+          "x": 600,
+          "y": 140,
+          "z": "ex-solar-surplus-to-load",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "address": 0,
+            "byteOrder": "bigEndian",
+            "dataType": "raw",
+            "emitAck": false,
+            "fc": 5,
+            "offset": 0,
+            "scale": 1,
+            "server": "ex-solar-surplus-to-load-c2",
+            "unitId": 32,
+            "wordOrder": "bigEndian"
+          }
+        },
+        {
+          "id": "ex-solar-surplus-to-load-n4",
+          "type": "debug",
+          "name": "load",
+          "x": 600,
+          "y": 220,
+          "z": "ex-solar-surplus-to-load",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-solar-surplus-to-load-n1-w0--n2",
+          "sourceNode": "ex-solar-surplus-to-load-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-solar-surplus-to-load-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-solar-surplus-to-load-n2-w0--n3",
+          "sourceNode": "ex-solar-surplus-to-load-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-solar-surplus-to-load-n3",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-solar-surplus-to-load-n2-w0--n4",
+          "sourceNode": "ex-solar-surplus-to-load-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-solar-surplus-to-load-n4",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": [
+    {
+      "id": "ex-solar-surplus-to-load-c1",
+      "type": "modbus-server",
+      "name": "Inverter or meter (Modbus TCP)",
+      "config": {
+        "baudRate": 9600,
+        "dataBits": 8,
+        "defaultUnitId": 1,
+        "host": "192.168.1.110",
+        "idleTimeout": 60,
+        "parity": "none",
+        "port": 502,
+        "reconnectBackoff": 5,
+        "serialPort": "",
+        "stopBits": 1,
+        "timeout": 1000,
+        "transport": "tcp"
+      }
+    },
+    {
+      "id": "ex-solar-surplus-to-load-c2",
+      "type": "modbus-server",
+      "name": "RS-485 #2 (ttyS2) · EBYTE 4DI+4DO · unit 32",
+      "config": {
+        "baudRate": 115200,
+        "dataBits": 8,
+        "defaultUnitId": 32,
+        "host": "localhost",
+        "idleTimeout": 60,
+        "parity": "none",
+        "port": 502,
+        "reconnectBackoff": 5,
+        "serialPort": "ttyS2",
+        "stopBits": 1,
+        "timeout": 1000,
+        "transport": "rtu"
+      }
+    }
+  ]
+}

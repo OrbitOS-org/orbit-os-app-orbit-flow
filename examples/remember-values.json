@@ -1,0 +1,146 @@
+{
+  "name": "Remember values",
+  "description": "Counts messages and keeps the highest reading in the context.",
+  "category": "Getting started",
+  "order": 4,
+  "flows": [
+    {
+      "id": "ex-remember-values",
+      "type": "tab",
+      "label": "Remember values",
+      "info": "A simulated temperature arrives every 2 seconds. The Function node counts the readings and keeps the highest one in the flow context, which survives between messages. The Context Watch node reports every change of the global key \"maxTemperature\". Open the Context tab on the right to see the stored values.",
+      "nodes": [
+        {
+          "id": "ex-remember-values-n1",
+          "type": "inject",
+          "name": "every 2 s",
+          "x": 100,
+          "y": 120,
+          "z": "ex-remember-values",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-remember-values-n2"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 2000,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "rfc3339",
+                "vt": "date"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-remember-values-n2",
+          "type": "function",
+          "name": "count and keep max",
+          "x": 330,
+          "y": 120,
+          "z": "ex-remember-values",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-remember-values-n3"
+            ]
+          ],
+          "config": {
+            "func": "const t = Math.round((20 + Math.random() * 10) * 10) / 10;\nconst count = (flow.get('count') || 0) + 1;\nflow.set('count', count);\nconst max = Math.max(global.get('maxTemperature') || -Infinity, t);\nglobal.set('maxTemperature', max);\nmsg.payload = { temperature: t, count: count, max: max };\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-remember-values-n3",
+          "type": "debug",
+          "name": "reading",
+          "x": 570,
+          "y": 120,
+          "z": "ex-remember-values",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        },
+        {
+          "id": "ex-remember-values-n4",
+          "type": "context-watch",
+          "name": "watch maxTemperature",
+          "x": 330,
+          "y": 220,
+          "z": "ex-remember-values",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-remember-values-n5"
+            ]
+          ],
+          "config": {
+            "emitDeletes": false,
+            "keyPattern": "maxTemperature",
+            "scope": "global",
+            "storage": "memory"
+          }
+        },
+        {
+          "id": "ex-remember-values-n5",
+          "type": "debug",
+          "name": "new maximum",
+          "x": 570,
+          "y": 220,
+          "z": "ex-remember-values",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-remember-values-n1-w0--n2",
+          "sourceNode": "ex-remember-values-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-remember-values-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-remember-values-n2-w0--n3",
+          "sourceNode": "ex-remember-values-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-remember-values-n3",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-remember-values-n4-w0--n5",
+          "sourceNode": "ex-remember-values-n4",
+          "sourcePort": 0,
+          "targetNode": "ex-remember-values-n5",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": []
+}

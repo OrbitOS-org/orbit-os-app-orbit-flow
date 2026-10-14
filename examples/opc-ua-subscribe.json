@@ -1,0 +1,116 @@
+{
+  "name": "OPC UA subscribe",
+  "description": "Subscribes to variables on an OPC UA server.",
+  "category": "Industrial",
+  "order": 14,
+  "needs": "OPC UA server",
+  "flows": [
+    {
+      "id": "ex-opc-ua-subscribe",
+      "type": "tab",
+      "label": "OPC UA subscribe",
+      "info": "Subscribes to two variables on an OPC UA server and sends a message each time one of them changes. Set the endpoint of your server in the OPC UA connection, and the node IDs of your variables in the Subscribe node (use Browse in the connection to find them).",
+      "nodes": [
+        {
+          "id": "ex-opc-ua-subscribe-n1",
+          "type": "opcua-subscribe",
+          "name": "temperature and pressure",
+          "x": 120,
+          "y": 120,
+          "z": "ex-opc-ua-subscribe",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-opc-ua-subscribe-n2"
+            ]
+          ],
+          "config": {
+            "keepAliveCount": 10,
+            "lifetimeCount": 60,
+            "mode": "static",
+            "monitoredItems": [
+              {
+                "nodeId": "ns=2;s=Temperature",
+                "name": "temperature",
+                "samplingInterval": 1000,
+                "queueSize": 1,
+                "discardOldest": true,
+                "deadband": {
+                  "type": "none",
+                  "value": 0
+                }
+              },
+              {
+                "nodeId": "ns=2;s=Pressure",
+                "name": "pressure",
+                "samplingInterval": 1000,
+                "queueSize": 1,
+                "discardOldest": true,
+                "deadband": {
+                  "type": "none",
+                  "value": 0
+                }
+              }
+            ],
+            "outputShape": "per-item",
+            "priority": 0,
+            "publishingInterval": 500,
+            "server": "ex-opc-ua-subscribe-c1"
+          }
+        },
+        {
+          "id": "ex-opc-ua-subscribe-n2",
+          "type": "debug",
+          "name": "changes",
+          "x": 380,
+          "y": 120,
+          "z": "ex-opc-ua-subscribe",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-opc-ua-subscribe-n1-w0--n2",
+          "sourceNode": "ex-opc-ua-subscribe-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-opc-ua-subscribe-n2",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": [
+    {
+      "id": "ex-opc-ua-subscribe-c1",
+      "type": "opcua-server",
+      "name": "OPC UA server",
+      "config": {
+        "applicationName": "Orbit Flow OPC UA Client",
+        "applicationUri": "urn:orbit-flow:client",
+        "authMode": "anonymous",
+        "clientCertFile": "",
+        "clientKeyFile": "",
+        "endpointUrl": "opc.tcp://192.168.1.50:4840",
+        "keepaliveInterval": 10000,
+        "password": "",
+        "requestTimeout": 5000,
+        "securityMode": "None",
+        "securityPolicy": "None",
+        "serverCertTrust": "pinned",
+        "sessionTimeout": 60000,
+        "username": ""
+      }
+    }
+  ]
+}

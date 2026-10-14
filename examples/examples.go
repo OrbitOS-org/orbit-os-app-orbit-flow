@@ -5,10 +5,10 @@
 // Package examples holds the example flows that ship inside the app. Each
 // example is one JSON file in this folder:
 //
-//	{ "name": "...", "description": "...", "category": "...", "needs": "...",
+//	{ "name": "...", "description": "...", "category": "...", "order": 1, "needs": "...",
 //	  "flows": [...], "configs": [...] }
 //
-// category is one of Categories. needs names the hardware or service the
+// category is one of Categories; order places the example inside it. needs names the hardware or service the
 // example needs to run ("EBYTE board, RS-485"); leave it empty when it runs
 // on any device.
 //
@@ -43,9 +43,10 @@ type Summary struct {
 	Description string `json:"description"`
 	Category    string `json:"category"`
 	Needs       string `json:"needs,omitempty"`
+	Order       int    `json:"order,omitempty"`
 }
 
-// List returns the examples, sorted by name.
+// List returns the examples in their order, then by name.
 func List() ([]Summary, error) {
 	entries, err := fs.ReadDir(files, ".")
 	if err != nil {
@@ -65,7 +66,12 @@ func List() ([]Summary, error) {
 		s.ID = id
 		out = append(out, s)
 	}
-	sort.Slice(out, func(i, j int) bool { return out[i].Name < out[j].Name })
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].Order != out[j].Order {
+			return out[i].Order < out[j].Order
+		}
+		return out[i].Name < out[j].Name
+	})
 	return out, nil
 }
 

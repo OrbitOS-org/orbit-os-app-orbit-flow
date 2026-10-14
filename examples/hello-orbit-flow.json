@@ -1,0 +1,106 @@
+{
+  "name": "Hello, Orbit Flow",
+  "description": "Injects a message every 5 s, changes it and shows it in Debug.",
+  "category": "Getting started",
+  "order": 1,
+  "flows": [
+    {
+      "id": "ex-hello-orbit-flow",
+      "type": "tab",
+      "label": "Hello, Orbit Flow",
+      "info": "Your first flow. Every 5 seconds the Inject node sends a message, the Change node replaces its payload with a greeting, and the Debug node shows it in the Debug tab on the right. Press the button on the left of Inject to send one at once.",
+      "nodes": [
+        {
+          "id": "ex-hello-orbit-flow-n1",
+          "type": "inject",
+          "name": "every 5 s",
+          "x": 100,
+          "y": 100,
+          "z": "ex-hello-orbit-flow",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-hello-orbit-flow-n2"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 5000,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "rfc3339",
+                "vt": "date"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-hello-orbit-flow-n2",
+          "type": "change",
+          "name": "set greeting",
+          "x": 320,
+          "y": 100,
+          "z": "ex-hello-orbit-flow",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-hello-orbit-flow-n3"
+            ]
+          ],
+          "config": {
+            "rules": [
+              {
+                "p": "payload",
+                "pt": "msg",
+                "t": "set",
+                "to": "Hello from Orbit Flow!",
+                "tot": "str"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-hello-orbit-flow-n3",
+          "type": "debug",
+          "name": "greeting",
+          "x": 540,
+          "y": 100,
+          "z": "ex-hello-orbit-flow",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-hello-orbit-flow-n1-w0--n2",
+          "sourceNode": "ex-hello-orbit-flow-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-hello-orbit-flow-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-hello-orbit-flow-n2-w0--n3",
+          "sourceNode": "ex-hello-orbit-flow-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-hello-orbit-flow-n3",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": []
+}

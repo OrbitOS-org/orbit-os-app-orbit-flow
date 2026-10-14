@@ -1,0 +1,116 @@
+{
+  "name": "Catch errors",
+  "description": "A node fails on purpose and a Catch node logs the error.",
+  "category": "Getting started",
+  "order": 5,
+  "flows": [
+    {
+      "id": "ex-catch-errors",
+      "type": "tab",
+      "label": "Catch errors",
+      "info": "Every 10 seconds the Function node throws an error, as a sensor that does not answer would. The Catch node picks up errors from any node in this flow and sends them on with the error in msg._error (its message and the node it came from), so you can log them, retry or raise an alarm.",
+      "nodes": [
+        {
+          "id": "ex-catch-errors-n1",
+          "type": "inject",
+          "name": "every 10 s",
+          "x": 100,
+          "y": 100,
+          "z": "ex-catch-errors",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-catch-errors-n2"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 10000,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "rfc3339",
+                "vt": "date"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-catch-errors-n2",
+          "type": "function",
+          "name": "read sensor (fails)",
+          "x": 320,
+          "y": 100,
+          "z": "ex-catch-errors",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            []
+          ],
+          "config": {
+            "func": "throw new Error('Sensor did not answer');",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-catch-errors-n3",
+          "type": "catch",
+          "name": "catch errors in this flow",
+          "x": 100,
+          "y": 200,
+          "z": "ex-catch-errors",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-catch-errors-n4"
+            ]
+          ],
+          "config": {
+            "scope": "flow",
+            "targetNodes": []
+          }
+        },
+        {
+          "id": "ex-catch-errors-n4",
+          "type": "debug",
+          "name": "error",
+          "x": 340,
+          "y": 200,
+          "z": "ex-catch-errors",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "_error",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-catch-errors-n1-w0--n2",
+          "sourceNode": "ex-catch-errors-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-catch-errors-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-catch-errors-n3-w0--n4",
+          "sourceNode": "ex-catch-errors-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-catch-errors-n4",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": []
+}

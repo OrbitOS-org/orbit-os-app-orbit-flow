@@ -1,0 +1,141 @@
+{
+  "name": "REST API for a value",
+  "description": "GET /api/temperature returns the last reading as JSON.",
+  "category": "Data",
+  "order": 20,
+  "flows": [
+    {
+      "id": "ex-rest-api-for-a-value",
+      "type": "tab",
+      "label": "REST API for a value",
+      "info": "A reading (simulated here) is stored every 5 seconds. Any program can then ask for it at http://<device>:<port>/endpoint/api/temperature and gets the last value and its time as JSON.",
+      "nodes": [
+        {
+          "id": "ex-rest-api-for-a-value-n1",
+          "type": "inject",
+          "name": "every 5 s",
+          "x": 100,
+          "y": 80,
+          "z": "ex-rest-api-for-a-value",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-rest-api-for-a-value-n2"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 5000,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "rfc3339",
+                "vt": "date"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-rest-api-for-a-value-n2",
+          "type": "function",
+          "name": "store reading",
+          "x": 300,
+          "y": 80,
+          "z": "ex-rest-api-for-a-value",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            []
+          ],
+          "config": {
+            "func": "flow.set('temperature', { value: Math.round((20 + Math.random() * 5) * 10) / 10, time: new Date().toISOString() });\nreturn null;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-rest-api-for-a-value-n3",
+          "type": "http-in",
+          "name": "GET /api/temperature",
+          "x": 100,
+          "y": 180,
+          "z": "ex-rest-api-for-a-value",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-rest-api-for-a-value-n4"
+            ]
+          ],
+          "config": {
+            "bodyParse": "auto",
+            "maxBodyBytes": 1048576,
+            "method": "GET",
+            "path": "/api/temperature",
+            "responseTimeout": 30
+          }
+        },
+        {
+          "id": "ex-rest-api-for-a-value-n4",
+          "type": "function",
+          "name": "last reading",
+          "x": 330,
+          "y": 180,
+          "z": "ex-rest-api-for-a-value",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-rest-api-for-a-value-n5"
+            ]
+          ],
+          "config": {
+            "func": "msg.payload = flow.get('temperature') || { value: null };\nmsg.headers = { 'Content-Type': 'application/json' };\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-rest-api-for-a-value-n5",
+          "type": "http-response",
+          "name": "answer",
+          "x": 550,
+          "y": 180,
+          "z": "ex-rest-api-for-a-value",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "headers": {},
+            "statusCode": 200
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-rest-api-for-a-value-n1-w0--n2",
+          "sourceNode": "ex-rest-api-for-a-value-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-rest-api-for-a-value-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-rest-api-for-a-value-n3-w0--n4",
+          "sourceNode": "ex-rest-api-for-a-value-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-rest-api-for-a-value-n4",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-rest-api-for-a-value-n4-w0--n5",
+          "sourceNode": "ex-rest-api-for-a-value-n4",
+          "sourcePort": 0,
+          "targetNode": "ex-rest-api-for-a-value-n5",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": []
+}

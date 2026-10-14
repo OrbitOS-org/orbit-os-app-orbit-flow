@@ -1,0 +1,255 @@
+{
+  "name": "Machine state machine",
+  "description": "Stopped, starting, running and fault, driven by messages.",
+  "category": "Industrial",
+  "order": 16,
+  "flows": [
+    {
+      "id": "ex-machine-state-machine",
+      "type": "tab",
+      "label": "Machine state machine",
+      "info": "A machine modelled as a state machine. Press the buttons on the Inject nodes to send events: START moves from stopped to starting, and after 3 seconds it is running; FAULT goes to fault from any state; RESET returns to stopped; STOP stops it. Every state change goes to the first output, so you can switch outputs or raise alarms from here.",
+      "nodes": [
+        {
+          "id": "ex-machine-state-machine-n1",
+          "type": "statemachine",
+          "name": "machine",
+          "x": 360,
+          "y": 200,
+          "z": "ex-machine-state-machine",
+          "inputs": 1,
+          "outputs": 2,
+          "wires": [
+            [
+              "ex-machine-state-machine-n6"
+            ],
+            [
+              "ex-machine-state-machine-n7"
+            ]
+          ],
+          "config": {
+            "actions": "return {\n  countStart: function(ctx, event) {\n    ctx.starts = (ctx.starts || 0) + 1;\n  },\n  log: function(ctx, event) {\n    node.log('state changed');\n  },\n  alarm: function(ctx, event) {\n    node.send({ topic: 'alarm', payload: 'Machine fault' });\n  }\n}",
+            "guards": "return {}",
+            "machine": "{\"id\": \"machine\", \"initial\": \"stopped\", \"context\": {\"starts\": 0}, \"states\": {\"stopped\": {\"onEntry\": [\"log\"], \"on\": {\"START\": {\"target\": \"starting\", \"actions\": [\"countStart\"]}, \"FAULT\": \"fault\"}}, \"starting\": {\"onEntry\": [\"log\"], \"after\": {\"3000\": \"running\"}, \"on\": {\"STOP\": \"stopped\", \"FAULT\": \"fault\"}}, \"running\": {\"onEntry\": [\"log\"], \"on\": {\"STOP\": \"stopped\", \"FAULT\": \"fault\"}}, \"fault\": {\"onEntry\": [\"log\", \"alarm\"], \"on\": {\"RESET\": \"stopped\"}}}}",
+            "persist": false
+          }
+        },
+        {
+          "id": "ex-machine-state-machine-n2",
+          "type": "inject",
+          "name": "START",
+          "x": 120,
+          "y": 80,
+          "z": "ex-machine-state-machine",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-machine-state-machine-n1"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 0,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "{}",
+                "vt": "json"
+              },
+              {
+                "p": "topic",
+                "v": "START",
+                "vt": "str"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-machine-state-machine-n3",
+          "type": "inject",
+          "name": "STOP",
+          "x": 120,
+          "y": 150,
+          "z": "ex-machine-state-machine",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-machine-state-machine-n1"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 0,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "{}",
+                "vt": "json"
+              },
+              {
+                "p": "topic",
+                "v": "STOP",
+                "vt": "str"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-machine-state-machine-n4",
+          "type": "inject",
+          "name": "FAULT",
+          "x": 120,
+          "y": 220,
+          "z": "ex-machine-state-machine",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-machine-state-machine-n1"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 0,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "{}",
+                "vt": "json"
+              },
+              {
+                "p": "topic",
+                "v": "FAULT",
+                "vt": "str"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-machine-state-machine-n5",
+          "type": "inject",
+          "name": "RESET",
+          "x": 120,
+          "y": 290,
+          "z": "ex-machine-state-machine",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-machine-state-machine-n1"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 0,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "{}",
+                "vt": "json"
+              },
+              {
+                "p": "topic",
+                "v": "RESET",
+                "vt": "str"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-machine-state-machine-n6",
+          "type": "debug",
+          "name": "state",
+          "x": 600,
+          "y": 170,
+          "z": "ex-machine-state-machine",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        },
+        {
+          "id": "ex-machine-state-machine-n7",
+          "type": "debug",
+          "name": "alarm",
+          "x": 600,
+          "y": 240,
+          "z": "ex-machine-state-machine",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-machine-state-machine-n1-w0--n6",
+          "sourceNode": "ex-machine-state-machine-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-machine-state-machine-n6",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-machine-state-machine-n1-w1--n7",
+          "sourceNode": "ex-machine-state-machine-n1",
+          "sourcePort": 1,
+          "targetNode": "ex-machine-state-machine-n7",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-machine-state-machine-n2-w0--n1",
+          "sourceNode": "ex-machine-state-machine-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-machine-state-machine-n1",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-machine-state-machine-n3-w0--n1",
+          "sourceNode": "ex-machine-state-machine-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-machine-state-machine-n1",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-machine-state-machine-n4-w0--n1",
+          "sourceNode": "ex-machine-state-machine-n4",
+          "sourcePort": 0,
+          "targetNode": "ex-machine-state-machine-n1",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-machine-state-machine-n5-w0--n1",
+          "sourceNode": "ex-machine-state-machine-n5",
+          "sourcePort": 0,
+          "targetNode": "ex-machine-state-machine-n1",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": []
+}

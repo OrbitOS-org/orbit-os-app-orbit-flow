@@ -1,0 +1,104 @@
+{
+  "name": "Siemens S7 read",
+  "description": "Reads values from a data block of an S7-1200/1500 PLC.",
+  "category": "Industrial",
+  "order": 15,
+  "needs": "Siemens PLC",
+  "flows": [
+    {
+      "id": "ex-siemens-s7-read",
+      "type": "tab",
+      "label": "Siemens S7 read",
+      "info": "Reads three values from data block 1 of a Siemens S7-1200 or S7-1500 every 2 seconds and sends them only when they change. In TIA Portal, the data block must not use optimized block access, and PUT/GET must be allowed. Set the address of your PLC in the S7 connection and your addresses in the Read node.",
+      "nodes": [
+        {
+          "id": "ex-siemens-s7-read-n1",
+          "type": "s7-read",
+          "name": "DB1 values",
+          "x": 120,
+          "y": 120,
+          "z": "ex-siemens-s7-read",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-siemens-s7-read-n2"
+            ]
+          ],
+          "config": {
+            "emitOnChange": true,
+            "emitOnError": false,
+            "mode": "static",
+            "outputShape": "",
+            "plc": "ex-siemens-s7-read-c1",
+            "pollInterval": 2000,
+            "topicTemplate": "",
+            "variables": [
+              {
+                "name": "speed",
+                "address": "DB1.DBD0",
+                "dataType": "real"
+              },
+              {
+                "name": "count",
+                "address": "DB1.DBW4",
+                "dataType": "int"
+              },
+              {
+                "name": "running",
+                "address": "DB1.DBX6.0",
+                "dataType": "bool"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-siemens-s7-read-n2",
+          "type": "debug",
+          "name": "PLC values",
+          "x": 360,
+          "y": 120,
+          "z": "ex-siemens-s7-read",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-siemens-s7-read-n1-w0--n2",
+          "sourceNode": "ex-siemens-s7-read-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-siemens-s7-read-n2",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": [
+    {
+      "id": "ex-siemens-s7-read-c1",
+      "type": "s7-plc",
+      "name": "S7-1200",
+      "config": {
+        "connection": "s7-1200-1500",
+        "host": "192.168.1.60",
+        "idleTimeout": 60,
+        "pduSize": 480,
+        "port": 102,
+        "rack": 0,
+        "reconnectBackoff": 5,
+        "slot": 1,
+        "timeout": 2000
+      }
+    }
+  ]
+}

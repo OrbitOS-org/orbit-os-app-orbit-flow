@@ -96,9 +96,7 @@ func (n *HTTPResponseNode) HandleMessage(msg *flow.Message) ([][]*flow.Message, 
 	}
 
 	statusCode := n.statusCode
-	if v, ok := msg.Get("statusCode").(float64); ok {
-		statusCode = int(v)
-	} else if v, ok := msg.Get("statusCode").(int); ok {
+	if v, ok := statusCodeOf(msg.Get("statusCode")); ok {
 		statusCode = v
 	}
 
@@ -317,4 +315,33 @@ func HTTPResponseTypeInfo() flow.NodeTypeInfo {
 		Inputs:  1,
 		Outputs: 0,
 	}
+}
+
+// statusCodeOf reads msg.statusCode in any numeric form it can arrive in:
+// a JavaScript function node sets whole numbers as int64, JSON gives
+// float64, Go code may use int. Codes outside 100-599 are ignored.
+func statusCodeOf(v any) (int, bool) {
+	var code int
+	switch x := v.(type) {
+	case int:
+		code = x
+	case int32:
+		code = int(x)
+	case int64:
+		code = int(x)
+	case float64:
+		code = int(x)
+	case float32:
+		code = int(x)
+	case string:
+		if _, err := fmt.Sscanf(x, "%d", &code); err != nil {
+			return 0, false
+		}
+	default:
+		return 0, false
+	}
+	if code < 100 || code > 599 {
+		return 0, false
+	}
+	return code, true
 }

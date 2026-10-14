@@ -394,3 +394,22 @@ func TestValidatePath_MandatoryWorkdir_AllowsPathInside(t *testing.T) {
 		t.Errorf("validatePath = %q, want %q", got, target)
 	}
 }
+
+// On Orbit OS (a workdir is set) a relative path is taken from the app's
+// data folder, and ".." still cannot leave it.
+func TestResolvePath_RelativeToWorkdir(t *testing.T) {
+	dir := t.TempDir()
+	SetWorkdir(dir)
+	t.Cleanup(func() { SetWorkdir("") })
+
+	got, err := resolvePath("logs/readings.csv", nil, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := filepath.Join(dir, "logs", "readings.csv"); got != want {
+		t.Errorf("path = %q, want %q", got, want)
+	}
+	if _, err := resolvePath("../outside.txt", nil, ""); err == nil {
+		t.Error("a relative path left the data folder")
+	}
+}

@@ -1,0 +1,303 @@
+{
+  "name": "Irrigation by schedule and weather",
+  "description": "Waters on a schedule and skips the cycle when rain is coming (Sprinqua).",
+  "category": "Projects",
+  "order": 22,
+  "needs": "EBYTE board, internet",
+  "flows": [
+    {
+      "id": "ex-irrigation-schedule-and-weather",
+      "type": "tab",
+      "label": "Irrigation by schedule and weather",
+      "info": "Every day at 06:00 the flow checks the rain forecast. If rain is unlikely, it opens the valve on relay 1 of the EBYTE board for 10 minutes and closes it again; if rain is likely, it skips the cycle. \"Water now\" starts a cycle by hand. Set your place in the forecast URL, the watering time in the Delay node, and the board in the Modbus connection. This is the idea behind Sprinqua.",
+      "nodes": [
+        {
+          "id": "ex-irrigation-schedule-and-weather-n1",
+          "type": "inject",
+          "name": "every day 06:00",
+          "x": 100,
+          "y": 100,
+          "z": "ex-irrigation-schedule-and-weather",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-irrigation-schedule-and-weather-n3"
+            ]
+          ],
+          "config": {
+            "cron": "0 6 * * *",
+            "interval": 0,
+            "mode": "cron",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "rfc3339",
+                "vt": "date"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-irrigation-schedule-and-weather-n2",
+          "type": "inject",
+          "name": "Water now",
+          "x": 100,
+          "y": 220,
+          "z": "ex-irrigation-schedule-and-weather",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-irrigation-schedule-and-weather-n5",
+              "ex-irrigation-schedule-and-weather-n6"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 0,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "true",
+                "vt": "bool"
+              },
+              {
+                "p": "topic",
+                "v": "manual",
+                "vt": "str"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-irrigation-schedule-and-weather-n3",
+          "type": "http-request",
+          "name": "rain forecast",
+          "x": 320,
+          "y": 100,
+          "z": "ex-irrigation-schedule-and-weather",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-irrigation-schedule-and-weather-n4"
+            ]
+          ],
+          "config": {
+            "bodyEncoding": "auto",
+            "errorMode": "passthrough",
+            "followRedirects": true,
+            "headers": {},
+            "method": "GET",
+            "responseFormat": "json",
+            "timeout": 20,
+            "tlsInsecure": false,
+            "url": "https://api.open-meteo.com/v1/forecast?latitude=38.72&longitude=-9.14&hourly=precipitation_probability&forecast_days=1&timezone=auto"
+          }
+        },
+        {
+          "id": "ex-irrigation-schedule-and-weather-n4",
+          "type": "function",
+          "name": "water today?",
+          "x": 540,
+          "y": 100,
+          "z": "ex-irrigation-schedule-and-weather",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-irrigation-schedule-and-weather-n5",
+              "ex-irrigation-schedule-and-weather-n6"
+            ]
+          ],
+          "config": {
+            "func": "const p = (msg.payload.hourly && msg.payload.hourly.precipitation_probability) || [];\nconst max = p.length ? Math.max(...p) : 0;\nif (max >= 60) {\n  node.status('blue', `skipped: ${max} % rain`);\n  return null;\n}\nnode.status('green', `watering: ${max} % rain`);\nmsg.payload = true;\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-irrigation-schedule-and-weather-n5",
+          "type": "modbus-write",
+          "name": "open valve (relay 1)",
+          "x": 780,
+          "y": 160,
+          "z": "ex-irrigation-schedule-and-weather",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "address": 0,
+            "byteOrder": "bigEndian",
+            "dataType": "raw",
+            "emitAck": false,
+            "fc": 5,
+            "offset": 0,
+            "scale": 1,
+            "server": "ex-irrigation-schedule-and-weather-c1",
+            "unitId": 32,
+            "wordOrder": "bigEndian"
+          }
+        },
+        {
+          "id": "ex-irrigation-schedule-and-weather-n6",
+          "type": "delay",
+          "name": "10 min",
+          "x": 780,
+          "y": 260,
+          "z": "ex-irrigation-schedule-and-weather",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-irrigation-schedule-and-weather-n7"
+            ]
+          ],
+          "config": {
+            "behaviour": "queue",
+            "maxQueueLength": 1000,
+            "mode": "delay",
+            "randomFirst": 0,
+            "randomLast": 1000,
+            "randomUnits": "milliseconds",
+            "rate": 1,
+            "rateUnits": "second",
+            "timeout": 10,
+            "timeoutUnits": "minutes"
+          }
+        },
+        {
+          "id": "ex-irrigation-schedule-and-weather-n7",
+          "type": "change",
+          "name": "close",
+          "x": 980,
+          "y": 260,
+          "z": "ex-irrigation-schedule-and-weather",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-irrigation-schedule-and-weather-n8"
+            ]
+          ],
+          "config": {
+            "rules": [
+              {
+                "p": "payload",
+                "pt": "msg",
+                "t": "set",
+                "to": "false",
+                "tot": "bool"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-irrigation-schedule-and-weather-n8",
+          "type": "modbus-write",
+          "name": "close valve (relay 1)",
+          "x": 1180,
+          "y": 260,
+          "z": "ex-irrigation-schedule-and-weather",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "address": 0,
+            "byteOrder": "bigEndian",
+            "dataType": "raw",
+            "emitAck": false,
+            "fc": 5,
+            "offset": 0,
+            "scale": 1,
+            "server": "ex-irrigation-schedule-and-weather-c1",
+            "unitId": 32,
+            "wordOrder": "bigEndian"
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-irrigation-schedule-and-weather-n1-w0--n3",
+          "sourceNode": "ex-irrigation-schedule-and-weather-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-irrigation-schedule-and-weather-n3",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-irrigation-schedule-and-weather-n2-w0--n5",
+          "sourceNode": "ex-irrigation-schedule-and-weather-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-irrigation-schedule-and-weather-n5",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-irrigation-schedule-and-weather-n2-w0--n6",
+          "sourceNode": "ex-irrigation-schedule-and-weather-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-irrigation-schedule-and-weather-n6",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-irrigation-schedule-and-weather-n3-w0--n4",
+          "sourceNode": "ex-irrigation-schedule-and-weather-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-irrigation-schedule-and-weather-n4",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-irrigation-schedule-and-weather-n4-w0--n5",
+          "sourceNode": "ex-irrigation-schedule-and-weather-n4",
+          "sourcePort": 0,
+          "targetNode": "ex-irrigation-schedule-and-weather-n5",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-irrigation-schedule-and-weather-n4-w0--n6",
+          "sourceNode": "ex-irrigation-schedule-and-weather-n4",
+          "sourcePort": 0,
+          "targetNode": "ex-irrigation-schedule-and-weather-n6",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-irrigation-schedule-and-weather-n6-w0--n7",
+          "sourceNode": "ex-irrigation-schedule-and-weather-n6",
+          "sourcePort": 0,
+          "targetNode": "ex-irrigation-schedule-and-weather-n7",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-irrigation-schedule-and-weather-n7-w0--n8",
+          "sourceNode": "ex-irrigation-schedule-and-weather-n7",
+          "sourcePort": 0,
+          "targetNode": "ex-irrigation-schedule-and-weather-n8",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": [
+    {
+      "id": "ex-irrigation-schedule-and-weather-c1",
+      "type": "modbus-server",
+      "name": "RS-485 #2 (ttyS2) · EBYTE 4DI+4DO · unit 32",
+      "config": {
+        "baudRate": 115200,
+        "dataBits": 8,
+        "defaultUnitId": 32,
+        "host": "localhost",
+        "idleTimeout": 60,
+        "parity": "none",
+        "port": 502,
+        "reconnectBackoff": 5,
+        "serialPort": "ttyS2",
+        "stopBits": 1,
+        "timeout": 1000,
+        "transport": "rtu"
+      }
+    }
+  ]
+}

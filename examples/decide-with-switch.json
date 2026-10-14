@@ -1,0 +1,204 @@
+{
+  "name": "Decide with Switch",
+  "description": "Sends a random value to low, normal or high.",
+  "category": "Getting started",
+  "order": 2,
+  "flows": [
+    {
+      "id": "ex-decide-with-switch",
+      "type": "tab",
+      "label": "Decide with Switch",
+      "info": "A Function node makes a random value from 0 to 100 every 3 seconds. The Switch node sends it to one of three outputs: below 30, between 30 and 70, or above. Change the limits in the Switch node to see the routing change.",
+      "nodes": [
+        {
+          "id": "ex-decide-with-switch-n1",
+          "type": "inject",
+          "name": "every 3 s",
+          "x": 100,
+          "y": 140,
+          "z": "ex-decide-with-switch",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-decide-with-switch-n2"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 3000,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "rfc3339",
+                "vt": "date"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-decide-with-switch-n2",
+          "type": "function",
+          "name": "random 0–100",
+          "x": 300,
+          "y": 140,
+          "z": "ex-decide-with-switch",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-decide-with-switch-n3"
+            ]
+          ],
+          "config": {
+            "func": "msg.payload = Math.round(Math.random() * 100);\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-decide-with-switch-n3",
+          "type": "switch",
+          "name": "low / normal / high",
+          "x": 520,
+          "y": 140,
+          "z": "ex-decide-with-switch",
+          "inputs": 1,
+          "outputs": 3,
+          "wires": [
+            [
+              "ex-decide-with-switch-n4"
+            ],
+            [
+              "ex-decide-with-switch-n5"
+            ],
+            [
+              "ex-decide-with-switch-n6"
+            ]
+          ],
+          "config": {
+            "checkall": false,
+            "property": "payload",
+            "propertyType": "msg",
+            "rules": [
+              {
+                "id": "r1",
+                "t": "lt",
+                "v": "30",
+                "vt": "num"
+              },
+              {
+                "id": "r2",
+                "t": "btwn",
+                "v": "30",
+                "vt": "num",
+                "v2": "70",
+                "v2t": "num"
+              },
+              {
+                "id": "r3",
+                "t": "else"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-decide-with-switch-n4",
+          "type": "debug",
+          "name": "low",
+          "x": 760,
+          "y": 80,
+          "z": "ex-decide-with-switch",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        },
+        {
+          "id": "ex-decide-with-switch-n5",
+          "type": "debug",
+          "name": "normal",
+          "x": 760,
+          "y": 140,
+          "z": "ex-decide-with-switch",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        },
+        {
+          "id": "ex-decide-with-switch-n6",
+          "type": "debug",
+          "name": "high",
+          "x": 760,
+          "y": 200,
+          "z": "ex-decide-with-switch",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-decide-with-switch-n1-w0--n2",
+          "sourceNode": "ex-decide-with-switch-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-decide-with-switch-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-decide-with-switch-n2-w0--n3",
+          "sourceNode": "ex-decide-with-switch-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-decide-with-switch-n3",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-decide-with-switch-n3-w0--n4",
+          "sourceNode": "ex-decide-with-switch-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-decide-with-switch-n4",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-decide-with-switch-n3-w1--n5",
+          "sourceNode": "ex-decide-with-switch-n3",
+          "sourcePort": 1,
+          "targetNode": "ex-decide-with-switch-n5",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-decide-with-switch-n3-w2--n6",
+          "sourceNode": "ex-decide-with-switch-n3",
+          "sourcePort": 2,
+          "targetNode": "ex-decide-with-switch-n6",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": []
+}

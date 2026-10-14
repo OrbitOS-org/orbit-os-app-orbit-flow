@@ -1,0 +1,134 @@
+{
+  "name": "Log readings to CSV",
+  "description": "Writes readings to one CSV file per day in the app's data folder.",
+  "category": "Data",
+  "order": 19,
+  "flows": [
+    {
+      "id": "ex-log-readings-to-csv",
+      "type": "tab",
+      "label": "Log readings to CSV",
+      "info": "Every 10 seconds a reading (simulated here) is added to logs/readings-YYYY-MM-DD.csv in the app's data folder, one file per day with a header line. Replace the Function node with your real readings. The files stay on the device; use File Read to read them back.",
+      "nodes": [
+        {
+          "id": "ex-log-readings-to-csv-n1",
+          "type": "inject",
+          "name": "every 10 s",
+          "x": 100,
+          "y": 120,
+          "z": "ex-log-readings-to-csv",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-log-readings-to-csv-n2"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 10000,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "rfc3339",
+                "vt": "date"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-log-readings-to-csv-n2",
+          "type": "function",
+          "name": "reading",
+          "x": 300,
+          "y": 120,
+          "z": "ex-log-readings-to-csv",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-log-readings-to-csv-n3"
+            ]
+          ],
+          "config": {
+            "func": "const now = new Date();\nmsg.day = now.toISOString().slice(0, 10);\nmsg.payload = {\n  time: now.toISOString(),\n  temperature: Math.round((20 + Math.random() * 5) * 10) / 10,\n  humidity: Math.round(40 + Math.random() * 20),\n};\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-log-readings-to-csv-n3",
+          "type": "csv-out",
+          "name": "logs/readings-<day>.csv",
+          "x": 520,
+          "y": 120,
+          "z": "ex-log-readings-to-csv",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-log-readings-to-csv-n4"
+            ]
+          ],
+          "config": {
+            "columns": "time,temperature,humidity",
+            "createDirs": true,
+            "delimiter": ",",
+            "encoding": "auto",
+            "forceQuote": false,
+            "header": true,
+            "mode": "append",
+            "newline": "\n",
+            "path": "logs/readings-{{day}}.csv",
+            "property": "payload",
+            "quoteChar": "\""
+          }
+        },
+        {
+          "id": "ex-log-readings-to-csv-n4",
+          "type": "debug",
+          "name": "written",
+          "x": 740,
+          "y": 120,
+          "z": "ex-log-readings-to-csv",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-log-readings-to-csv-n1-w0--n2",
+          "sourceNode": "ex-log-readings-to-csv-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-log-readings-to-csv-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-log-readings-to-csv-n2-w0--n3",
+          "sourceNode": "ex-log-readings-to-csv-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-log-readings-to-csv-n3",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-log-readings-to-csv-n3-w0--n4",
+          "sourceNode": "ex-log-readings-to-csv-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-log-readings-to-csv-n4",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": []
+}

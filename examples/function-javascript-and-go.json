@@ -1,0 +1,152 @@
+{
+  "name": "Function in JavaScript and Go",
+  "description": "The same 4–20 mA scaling done in a JavaScript and a Go function node.",
+  "category": "Getting started",
+  "order": 3,
+  "flows": [
+    {
+      "id": "ex-function-javascript-and-go",
+      "type": "tab",
+      "label": "Function in JavaScript and Go",
+      "info": "A 4–20 mA pressure transmitter reading (12 mA) is scaled to 0–10 bar twice: once in a JavaScript Function node and once in a Go Function node. Both give the same result. Use JavaScript for quick logic and Go when you want typed, compiled-style code.",
+      "nodes": [
+        {
+          "id": "ex-function-javascript-and-go-n1",
+          "type": "inject",
+          "name": "12 mA every 5 s",
+          "x": 100,
+          "y": 140,
+          "z": "ex-function-javascript-and-go",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-function-javascript-and-go-n2",
+              "ex-function-javascript-and-go-n3"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 5000,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "12",
+                "vt": "num"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-function-javascript-and-go-n2",
+          "type": "function",
+          "name": "scale (JavaScript)",
+          "x": 340,
+          "y": 100,
+          "z": "ex-function-javascript-and-go",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-function-javascript-and-go-n4"
+            ]
+          ],
+          "config": {
+            "func": "// 4–20 mA to 0–10 bar\nconst mA = Number(msg.payload);\nmsg.payload = Math.round(((mA - 4) / 16) * 10 * 100) / 100;\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-function-javascript-and-go-n3",
+          "type": "function-go",
+          "name": "scale (Go)",
+          "x": 340,
+          "y": 180,
+          "z": "ex-function-javascript-and-go",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-function-javascript-and-go-n5"
+            ]
+          ],
+          "config": {
+            "code": "package main\n\n// 4–20 mA to 0–10 bar\nfunc handle(payload any) any {\n    mA, ok := payload.(float64)\n    if !ok {\n        return nil\n    }\n    bar := (mA - 4) / 16 * 10\n    return float64(int(bar*100+0.5)) / 100\n}\n",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-function-javascript-and-go-n4",
+          "type": "debug",
+          "name": "bar (JavaScript)",
+          "x": 580,
+          "y": 100,
+          "z": "ex-function-javascript-and-go",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        },
+        {
+          "id": "ex-function-javascript-and-go-n5",
+          "type": "debug",
+          "name": "bar (Go)",
+          "x": 580,
+          "y": 180,
+          "z": "ex-function-javascript-and-go",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-function-javascript-and-go-n1-w0--n2",
+          "sourceNode": "ex-function-javascript-and-go-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-function-javascript-and-go-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-function-javascript-and-go-n1-w0--n3",
+          "sourceNode": "ex-function-javascript-and-go-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-function-javascript-and-go-n3",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-function-javascript-and-go-n2-w0--n4",
+          "sourceNode": "ex-function-javascript-and-go-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-function-javascript-and-go-n4",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-function-javascript-and-go-n3-w0--n5",
+          "sourceNode": "ex-function-javascript-and-go-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-function-javascript-and-go-n5",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": []
+}
