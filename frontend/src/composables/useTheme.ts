@@ -11,15 +11,15 @@ export type Theme = 'dark' | 'light'
 const STORAGE_KEY = 'orbit-flow-theme'
 
 function initialTheme(): Theme {
-  return document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'
+  return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
 }
 
 const theme = ref<Theme>(initialTheme())
 
 function setTheme(next: Theme): void {
   theme.value = next
-  if (next === 'light') {
-    document.documentElement.dataset.theme = 'light'
+  if (next === 'dark') {
+    document.documentElement.dataset.theme = 'dark'
   } else {
     delete document.documentElement.dataset.theme
   }
@@ -34,7 +34,7 @@ function toggleTheme(): void {
   setTheme(theme.value === 'dark' ? 'light' : 'dark')
 }
 
-/** The editor's colour theme: dark by default, light by choice. */
+/** The editor's colour theme: light by default, dark by choice. */
 export function useTheme() {
   return { theme, setTheme, toggleTheme }
 }

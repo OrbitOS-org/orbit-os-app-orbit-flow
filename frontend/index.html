@@ -15,23 +15,23 @@
     <link rel="shortcut icon" href="favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
     <link rel="manifest" href="site.webmanifest" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#f2f2f7" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Orbit Flow</title>
     <script>
       // Apply the saved theme before the first paint (see useTheme.ts).
       try {
-        if (localStorage.getItem('orbit-flow-theme') === 'light') {
-          document.documentElement.dataset.theme = 'light'
+        if (localStorage.getItem('orbit-flow-theme') === 'dark') {
+          document.documentElement.dataset.theme = 'dark'
         }
       } catch (e) {}
     </script>
     <style>
-      html[data-theme="light"] body { background-color: #f2f2f7; }
+      html[data-theme="dark"] body { background-color: #000000; }
       body {
         margin: 0;
         padding: 0;
-        background-color: #000000;
+        background-color: #f2f2f7;
         overflow: hidden;
       }
     </style>

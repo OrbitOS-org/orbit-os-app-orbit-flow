@@ -106,6 +106,6 @@ function onDragEnd() {
 .seg-item { padding: 4px 12px; border-radius: 7px; font-size: 13px; color: rgb(var(--c-text)); transition: background 0.15s; }
 .seg-item:hover:not(.on) { background: rgb(var(--c-surface) / 0.5); }
 .seg-item.on { background: rgb(var(--c-surface)); font-weight: 600; box-shadow: 0 1px 3px rgb(0 0 0 / 0.12), 0 0 0 0.5px rgb(0 0 0 / 0.04); }
-:root:not([data-theme="light"]) .seg-item.on { background: rgb(99 99 102); }
+:root[data-theme="dark"] .seg-item.on { background: rgb(99 99 102); }
 .seg-item.drop { box-shadow: inset 2px 0 0 rgb(var(--c-accent)); }
 </style>

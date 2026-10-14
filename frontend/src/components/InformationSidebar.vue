@@ -97,5 +97,5 @@ function onResizeEnd() {
 .ios-seg { gap: 2px; padding: 2px; border-radius: 9px; background: rgb(var(--c-surface-alt) / 0.8); }
 .seg-item { padding: 4px 4px; border-radius: 7px; font-size: 12px; color: rgb(var(--c-text)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .seg-item.on { background: rgb(var(--c-surface)); font-weight: 600; box-shadow: 0 1px 3px rgb(0 0 0 / 0.12), 0 0 0 0.5px rgb(0 0 0 / 0.04); }
-:root:not([data-theme="light"]) .seg-item.on { background: rgb(99 99 102); }
+:root[data-theme="dark"] .seg-item.on { background: rgb(99 99 102); }
 </style>

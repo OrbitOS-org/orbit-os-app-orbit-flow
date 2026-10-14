@@ -8,13 +8,34 @@
 
    Every theme colour is a variable holding an "R G B" triplet, so Tailwind
    classes (tailwind.config.js), this stylesheet and inline styles all read
-   the same values. Dark is the default; the light theme is chosen in the
-   header and kept in the browser (src/composables/useTheme.ts).
+   the same values. Light is the default; dark is chosen in the header and kept
+   in the browser (src/composables/useTheme.ts).
    ============================================ */
 
 :root {
+  color-scheme: light;
+  /* iOS light system colours (default); accent is the Orbit OS purple. */
+  --c-bg: 242 242 247;
+  --c-surface: 255 255 255;
+  --c-surface-alt: 229 229 234;
+  --c-border: 216 216 220;
+  --c-border-light: 199 199 204;
+  --c-text: 28 28 30;
+  --c-text-dim: 110 110 115;
+  --c-text-bright: 0 0 0;
+  --c-accent: 95 69 216;
+  --c-accent-dim: 80 55 196;
+  --c-success: 52 199 89;
+  --c-warning: 255 149 0;
+  --c-error: 255 59 48;
+  --c-grid: 60 60 67;
+  --c-wire: 154 154 163;
+  --bar-bg: rgb(249 249 251 / 0.78);
+}
+
+:root[data-theme="dark"] {
   color-scheme: dark;
-  /* iOS dark system colours; accent is the Orbit OS purple. */
+  /* iOS dark system colours. */
   --c-bg: 0 0 0;
   --c-surface: 28 28 30;
   --c-surface-alt: 44 44 46;
@@ -32,27 +53,6 @@
   --c-grid: 235 235 245;
   --c-wire: 124 124 133;
   --bar-bg: rgb(28 28 30 / 0.78);
-}
-
-:root[data-theme="light"] {
-  color-scheme: light;
-  /* iOS light system colours. */
-  --c-bg: 242 242 247;
-  --c-surface: 255 255 255;
-  --c-surface-alt: 229 229 234;
-  --c-border: 216 216 220;
-  --c-border-light: 199 199 204;
-  --c-text: 28 28 30;
-  --c-text-dim: 110 110 115;
-  --c-text-bright: 0 0 0;
-  --c-accent: 95 69 216;
-  --c-accent-dim: 80 55 196;
-  --c-success: 52 199 89;
-  --c-warning: 255 149 0;
-  --c-error: 255 59 48;
-  --c-grid: 60 60 67;
-  --c-wire: 154 154 163;
-  --bar-bg: rgb(249 249 251 / 0.78);
 }
 
 @layer base {
@@ -79,16 +79,16 @@
 }
 
 /* The bright text colours used for values and messages are picked for a
-   dark surface. On the light theme they get a darker shade of the same hue. */
-:root[data-theme="light"] .text-red-300,
-:root[data-theme="light"] .text-red-400 { color: #c81e1e; }
-:root[data-theme="light"] .text-green-400 { color: #15803d; }
-:root[data-theme="light"] .text-emerald-400 { color: #047857; }
-:root[data-theme="light"] .text-yellow-200,
-:root[data-theme="light"] .text-yellow-400 { color: #946200; }
-:root[data-theme="light"] .text-amber-400 { color: #b45309; }
-:root[data-theme="light"] .text-blue-400 { color: #1d4ed8; }
-:root[data-theme="light"] .text-purple-400 { color: #7e22ce; }
+   dark surface. On the light theme (the default) they get a darker shade of the same hue. */
+:root:not([data-theme="dark"]) .text-red-300,
+:root:not([data-theme="dark"]) .text-red-400 { color: #c81e1e; }
+:root:not([data-theme="dark"]) .text-green-400 { color: #15803d; }
+:root:not([data-theme="dark"]) .text-emerald-400 { color: #047857; }
+:root:not([data-theme="dark"]) .text-yellow-200,
+:root:not([data-theme="dark"]) .text-yellow-400 { color: #946200; }
+:root:not([data-theme="dark"]) .text-amber-400 { color: #b45309; }
+:root:not([data-theme="dark"]) .text-blue-400 { color: #1d4ed8; }
+:root:not([data-theme="dark"]) .text-purple-400 { color: #7e22ce; }
 
 /* ============================================
    Custom Scrollbars

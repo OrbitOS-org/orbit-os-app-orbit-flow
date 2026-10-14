@@ -17,7 +17,7 @@ Runs on Raspberry Pi, Arduino UNO Q and other ARM64 devices with Orbit OS (free 
 
 ## Features
 
-- **Visual editor** — drag, connect and deploy; several flows in tabs, with a live debug panel and a log view; dark by default, with a light theme
+- **Visual editor** — drag, connect and deploy; several flows in tabs, with a live debug panel and a log view; light by default, with a dark theme
 - **Industrial protocols built in** — Modbus TCP and RTU, OPC UA (read, subscribe, write), Siemens S7 and MQTT
 - **The device's own I/O** — GPIO, I²C, SPI and the serial ports, through the Orbit OS API
 - **Logic without code, or with it** — switch, change, delay, template and state-machine nodes; JavaScript, expressions or Go when you need them
