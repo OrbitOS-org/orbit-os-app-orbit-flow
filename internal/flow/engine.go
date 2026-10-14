@@ -64,6 +64,13 @@ type runningNode struct {
 	stopCh   chan struct{}   // per-node stop signal
 	done     chan struct{}   // closed when goroutine exits
 
+	// started is set once the node's Start and loop have run, so
+	// startAllNodeLoops never starts it again. A modified-flows deploy calls
+	// startAllNodeLoops with nodes of unchanged flows still running; starting
+	// them twice ran two loops per node (an Inject fired twice as often) and
+	// the next stop panicked with "close of closed channel".
+	started bool
+
 	// Local snapshots set during wireAllNodes(), read lock-free from nodeLoop.
 	localWires   [][]string               // snapshot of wires for this node
 	localTargets map[string]*runningNode   // targetNodeID → runningNode pointer
@@ -521,9 +528,10 @@ func (e *Engine) deployModifiedNodes(flows []Flow, configs []ConfigNode) error {
 	// Start only the new/restarted node loops. Unchanged nodes keep their goroutines.
 	for nodeID := range restartSet {
 		rn, ok := e.nodes[nodeID]
-		if !ok {
+		if !ok || rn.started {
 			continue
 		}
+		rn.started = true
 		if err := rn.instance.Start(); err != nil {
 			slog.Error("failed to start node",
 				"node_id", nodeID, "type", rn.config.Type, "error", err)
@@ -784,6 +792,11 @@ func (e *Engine) startAllNodeLoops() {
 			continue
 		default:
 		}
+		if rn.started {
+			// Already running (unchanged node in a partial deploy).
+			continue
+		}
+		rn.started = true
 
 		if err := rn.instance.Start(); err != nil {
 			slog.Error("failed to start node",
