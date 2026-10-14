@@ -48,6 +48,8 @@ func RegisterRoutes(r chi.Router, deps *Deps) {
 			r.Get("/nodes", deps.handleGetNodes)
 			r.Get("/configs/types", deps.handleGetConfigTypes)
 			r.Get("/settings", deps.handleGetSettings)
+			r.Get("/examples", deps.handleListExamples)
+			r.Get("/examples/{id}", deps.handleGetExample)
 			r.Get("/status/nodes", deps.handleGetNodeStatuses)
 			r.Get("/debug/messages", deps.handleGetDebugMessages)
 			r.Get("/logs", deps.handleGetLogs)

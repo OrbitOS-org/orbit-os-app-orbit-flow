@@ -24,6 +24,7 @@ Runs on Raspberry Pi, Arduino UNO Q and other ARM64 devices with Orbit OS (free 
 - **Data in and out** — HTTP, TCP and UDP nodes; JSON, XML and CSV; files in the app's data folder
 - **Notifications on your phone** — a node that sends a push notification through the Orbit OS mobile app
 - **Users and roles** — admin, editor and viewer accounts; credentials stored encrypted
+- **Examples inside the app** — add a ready-made flow from the **+** next to the flow tabs → *From example…* (for instance, switching the relays of an EBYTE RS-485 relay board)
 
 ## Install
 
@@ -57,6 +58,7 @@ You need [VS Code](https://code.visualstudio.com/) with the Orbit Studio extensi
 | `internal/nodes/` | the nodes, one folder per group; `gpio`, `i2c`, `spi` and `orbit` use the Orbit OS API |
 | `internal/auth/`, `internal/credentials/` | users, sessions and encrypted credentials |
 | `frontend/` | the editor (Vue 3); `npm run build` writes it to `web/dist/`, which is embedded in the app |
+| `examples/` | example flows shipped inside the app, one JSON file each (see `examples/examples.go`) |
 | `orbit-os-sdk-go/` | [Orbit OS Go SDK](https://github.com/OrbitOS-org/orbit-os-sdk-go) — not in the repository; added by Orbit Studio |
 | `orbit.project.json` | Orbit Studio project settings |
 

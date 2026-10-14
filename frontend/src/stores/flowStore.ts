@@ -188,6 +188,74 @@ export const useFlowStore = defineStore("flow", () => {
     return flow;
   }
 
+  /**
+   * Adds an example (see examples/ in the app) as new, undeployed flows.
+   * Every node, wire, flow and connection gets a fresh ID so an example can
+   * be imported more than once; a connection that already exists with the
+   * same settings is reused instead of added again.
+   */
+  function importExample(example: { flows: Flow[]; configs?: ConfigNode[] }): Flow | undefined {
+    if (activeFlowId.value) syncCanvasToActiveFlow();
+
+    const configIds = new Map<string, string>();
+    for (const c of example.configs ?? []) {
+      const same = configs.value.find(
+        (x) => x.type === c.type && JSON.stringify(x.config) === JSON.stringify(c.config),
+      );
+      if (same) {
+        configIds.set(c.id, same.id);
+      } else {
+        const id = generateId();
+        configIds.set(c.id, id);
+        configs.value.push({ ...JSON.parse(JSON.stringify(c)), id });
+      }
+    }
+    // Node settings point at connections by ID (e.g. config.server).
+    const remapConfig = (v: unknown): unknown => {
+      if (typeof v === "string") return configIds.get(v) ?? v;
+      if (Array.isArray(v)) return v.map(remapConfig);
+      if (v && typeof v === "object") {
+        return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, remapConfig(x)]));
+      }
+      return v;
+    };
+
+    let first: Flow | undefined;
+    for (const src of example.flows) {
+      const flowId = generateId();
+      const nodeIds = new Map(src.nodes.map((n) => [n.id, generateId()]));
+      const taken = new Set(flows.value.map((f) => f.label));
+      let label = src.label;
+      for (let i = 2; taken.has(label); i++) label = `${src.label} ${i}`;
+      const flow: Flow = {
+        id: flowId,
+        type: "tab",
+        label,
+        info: src.info,
+        nodes: src.nodes.map((n) => ({
+          ...JSON.parse(JSON.stringify(n)),
+          id: nodeIds.get(n.id)!,
+          z: flowId,
+          status: undefined,
+          wires: (n.wires ?? []).map((out) => out.map((t) => nodeIds.get(t) ?? t)),
+          config: remapConfig(n.config ?? {}) as Record<string, unknown>,
+        })),
+        wires: (src.wires ?? []).map((w) => ({
+          ...w,
+          id: generateId(),
+          sourceNode: nodeIds.get(w.sourceNode) ?? w.sourceNode,
+          targetNode: nodeIds.get(w.targetNode) ?? w.targetNode,
+        })),
+      };
+      flows.value.push(flow);
+      dirtyNodeIds.value = new Set([...dirtyNodeIds.value, ...nodeIds.values()]);
+      markDirty(flowId);
+      first ??= flow;
+    }
+    if (first) setActiveFlow(first.id);
+    return first;
+  }
+
   function removeFlow(flowId: string): void {
     if (flows.value.length <= 1) return;
 
@@ -766,6 +834,7 @@ export const useFlowStore = defineStore("flow", () => {
 
     // Actions
     setActiveFlow,
+    importExample,
     addFlow,
     removeFlow,
     reorderFlows,

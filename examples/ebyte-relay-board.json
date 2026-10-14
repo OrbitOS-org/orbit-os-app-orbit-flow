@@ -1,0 +1,690 @@
+{
+  "name": "EBYTE relay board",
+  "description": "Switch the 4 relays of an EBYTE MA01-AXCX4040 board over Modbus RTU (RS-485) and read its inputs.",
+  "flows": [
+    {
+      "id": "ebyte-relays",
+      "type": "tab",
+      "label": "EBYTE relay board",
+      "nodes": [
+        {
+          "id": "er-on1",
+          "type": "inject",
+          "name": "Relay 1 on",
+          "x": 80,
+          "y": 60,
+          "z": "ebyte-relays",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-write1"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 0,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "true",
+                "vt": "bool"
+              }
+            ]
+          }
+        },
+        {
+          "id": "er-off1",
+          "type": "inject",
+          "name": "Relay 1 off",
+          "x": 80,
+          "y": 104,
+          "z": "ebyte-relays",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-write1"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 0,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "false",
+                "vt": "bool"
+              }
+            ]
+          }
+        },
+        {
+          "id": "er-write1",
+          "type": "modbus-write",
+          "name": "Relay 1 (coil 0)",
+          "x": 330,
+          "y": 82,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-ack"
+            ]
+          ],
+          "config": {
+            "address": 0,
+            "byteOrder": "bigEndian",
+            "dataType": "raw",
+            "emitAck": true,
+            "fc": 5,
+            "offset": 0,
+            "scale": 1,
+            "server": "ebyte-rs485",
+            "unitId": 32,
+            "wordOrder": "bigEndian"
+          }
+        },
+        {
+          "id": "er-on2",
+          "type": "inject",
+          "name": "Relay 2 on",
+          "x": 80,
+          "y": 160,
+          "z": "ebyte-relays",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-write2"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 0,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "true",
+                "vt": "bool"
+              }
+            ]
+          }
+        },
+        {
+          "id": "er-off2",
+          "type": "inject",
+          "name": "Relay 2 off",
+          "x": 80,
+          "y": 204,
+          "z": "ebyte-relays",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-write2"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 0,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "false",
+                "vt": "bool"
+              }
+            ]
+          }
+        },
+        {
+          "id": "er-write2",
+          "type": "modbus-write",
+          "name": "Relay 2 (coil 1)",
+          "x": 330,
+          "y": 182,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-ack"
+            ]
+          ],
+          "config": {
+            "address": 1,
+            "byteOrder": "bigEndian",
+            "dataType": "raw",
+            "emitAck": true,
+            "fc": 5,
+            "offset": 0,
+            "scale": 1,
+            "server": "ebyte-rs485",
+            "unitId": 32,
+            "wordOrder": "bigEndian"
+          }
+        },
+        {
+          "id": "er-on3",
+          "type": "inject",
+          "name": "Relay 3 on",
+          "x": 80,
+          "y": 260,
+          "z": "ebyte-relays",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-write3"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 0,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "true",
+                "vt": "bool"
+              }
+            ]
+          }
+        },
+        {
+          "id": "er-off3",
+          "type": "inject",
+          "name": "Relay 3 off",
+          "x": 80,
+          "y": 304,
+          "z": "ebyte-relays",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-write3"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 0,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "false",
+                "vt": "bool"
+              }
+            ]
+          }
+        },
+        {
+          "id": "er-write3",
+          "type": "modbus-write",
+          "name": "Relay 3 (coil 2)",
+          "x": 330,
+          "y": 282,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-ack"
+            ]
+          ],
+          "config": {
+            "address": 2,
+            "byteOrder": "bigEndian",
+            "dataType": "raw",
+            "emitAck": true,
+            "fc": 5,
+            "offset": 0,
+            "scale": 1,
+            "server": "ebyte-rs485",
+            "unitId": 32,
+            "wordOrder": "bigEndian"
+          }
+        },
+        {
+          "id": "er-on4",
+          "type": "inject",
+          "name": "Relay 4 on",
+          "x": 80,
+          "y": 360,
+          "z": "ebyte-relays",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-write4"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 0,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "true",
+                "vt": "bool"
+              }
+            ]
+          }
+        },
+        {
+          "id": "er-off4",
+          "type": "inject",
+          "name": "Relay 4 off",
+          "x": 80,
+          "y": 404,
+          "z": "ebyte-relays",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-write4"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 0,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "false",
+                "vt": "bool"
+              }
+            ]
+          }
+        },
+        {
+          "id": "er-write4",
+          "type": "modbus-write",
+          "name": "Relay 4 (coil 3)",
+          "x": 330,
+          "y": 382,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-ack"
+            ]
+          ],
+          "config": {
+            "address": 3,
+            "byteOrder": "bigEndian",
+            "dataType": "raw",
+            "emitAck": true,
+            "fc": 5,
+            "offset": 0,
+            "scale": 1,
+            "server": "ebyte-rs485",
+            "unitId": 32,
+            "wordOrder": "bigEndian"
+          }
+        },
+        {
+          "id": "er-allon",
+          "type": "inject",
+          "name": "All on",
+          "x": 80,
+          "y": 460,
+          "z": "ebyte-relays",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-writeall"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 0,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "[true,true,true,true]",
+                "vt": "json"
+              }
+            ]
+          }
+        },
+        {
+          "id": "er-alloff",
+          "type": "inject",
+          "name": "All off",
+          "x": 80,
+          "y": 504,
+          "z": "ebyte-relays",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-writeall"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 0,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "[false,false,false,false]",
+                "vt": "json"
+              }
+            ]
+          }
+        },
+        {
+          "id": "er-writeall",
+          "type": "modbus-write",
+          "name": "All 4 relays (coils 0–3)",
+          "x": 330,
+          "y": 482,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-ack"
+            ]
+          ],
+          "config": {
+            "address": 0,
+            "byteOrder": "bigEndian",
+            "dataType": "raw",
+            "emitAck": true,
+            "fc": 15,
+            "offset": 0,
+            "scale": 1,
+            "server": "ebyte-rs485",
+            "unitId": 32,
+            "wordOrder": "bigEndian"
+          }
+        },
+        {
+          "id": "er-ack",
+          "type": "debug",
+          "name": "write confirmation",
+          "x": 590,
+          "y": 230,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        },
+        {
+          "id": "er-coils",
+          "type": "modbus-read",
+          "name": "Relay state (every 5 s)",
+          "x": 330,
+          "y": 560,
+          "z": "ebyte-relays",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-state"
+            ]
+          ],
+          "config": {
+            "address": 0,
+            "byteOrder": "bigEndian",
+            "dataType": "raw",
+            "emitOnChange": false,
+            "emitOnError": true,
+            "fc": 1,
+            "mode": "static",
+            "offset": 0,
+            "pollInterval": 5000,
+            "quantity": 4,
+            "scale": 1,
+            "server": "ebyte-rs485",
+            "unitId": 32,
+            "wordOrder": "bigEndian"
+          }
+        },
+        {
+          "id": "er-state",
+          "type": "debug",
+          "name": "relay state",
+          "x": 590,
+          "y": 560,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        },
+        {
+          "id": "er-inputs",
+          "type": "modbus-read",
+          "name": "Inputs DI1–DI4 (every 30 s)",
+          "x": 330,
+          "y": 640,
+          "z": "ebyte-relays",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-di"
+            ]
+          ],
+          "config": {
+            "address": 0,
+            "byteOrder": "bigEndian",
+            "dataType": "raw",
+            "emitOnChange": false,
+            "emitOnError": true,
+            "fc": 2,
+            "mode": "static",
+            "offset": 0,
+            "pollInterval": 30000,
+            "quantity": 4,
+            "scale": 1,
+            "server": "ebyte-rs485",
+            "unitId": 32,
+            "wordOrder": "bigEndian"
+          }
+        },
+        {
+          "id": "er-di",
+          "type": "debug",
+          "name": "inputs",
+          "x": 590,
+          "y": 640,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "er-w0",
+          "sourceNode": "er-on1",
+          "sourcePort": 0,
+          "targetNode": "er-write1",
+          "targetPort": 0
+        },
+        {
+          "id": "er-w1",
+          "sourceNode": "er-off1",
+          "sourcePort": 0,
+          "targetNode": "er-write1",
+          "targetPort": 0
+        },
+        {
+          "id": "er-w2",
+          "sourceNode": "er-write1",
+          "sourcePort": 0,
+          "targetNode": "er-ack",
+          "targetPort": 0
+        },
+        {
+          "id": "er-w3",
+          "sourceNode": "er-on2",
+          "sourcePort": 0,
+          "targetNode": "er-write2",
+          "targetPort": 0
+        },
+        {
+          "id": "er-w4",
+          "sourceNode": "er-off2",
+          "sourcePort": 0,
+          "targetNode": "er-write2",
+          "targetPort": 0
+        },
+        {
+          "id": "er-w5",
+          "sourceNode": "er-write2",
+          "sourcePort": 0,
+          "targetNode": "er-ack",
+          "targetPort": 0
+        },
+        {
+          "id": "er-w6",
+          "sourceNode": "er-on3",
+          "sourcePort": 0,
+          "targetNode": "er-write3",
+          "targetPort": 0
+        },
+        {
+          "id": "er-w7",
+          "sourceNode": "er-off3",
+          "sourcePort": 0,
+          "targetNode": "er-write3",
+          "targetPort": 0
+        },
+        {
+          "id": "er-w8",
+          "sourceNode": "er-write3",
+          "sourcePort": 0,
+          "targetNode": "er-ack",
+          "targetPort": 0
+        },
+        {
+          "id": "er-w9",
+          "sourceNode": "er-on4",
+          "sourcePort": 0,
+          "targetNode": "er-write4",
+          "targetPort": 0
+        },
+        {
+          "id": "er-w10",
+          "sourceNode": "er-off4",
+          "sourcePort": 0,
+          "targetNode": "er-write4",
+          "targetPort": 0
+        },
+        {
+          "id": "er-w11",
+          "sourceNode": "er-write4",
+          "sourcePort": 0,
+          "targetNode": "er-ack",
+          "targetPort": 0
+        },
+        {
+          "id": "er-w12",
+          "sourceNode": "er-allon",
+          "sourcePort": 0,
+          "targetNode": "er-writeall",
+          "targetPort": 0
+        },
+        {
+          "id": "er-w13",
+          "sourceNode": "er-alloff",
+          "sourcePort": 0,
+          "targetNode": "er-writeall",
+          "targetPort": 0
+        },
+        {
+          "id": "er-w14",
+          "sourceNode": "er-writeall",
+          "sourcePort": 0,
+          "targetNode": "er-ack",
+          "targetPort": 0
+        },
+        {
+          "id": "er-w15",
+          "sourceNode": "er-coils",
+          "sourcePort": 0,
+          "targetNode": "er-state",
+          "targetPort": 0
+        },
+        {
+          "id": "er-w16",
+          "sourceNode": "er-inputs",
+          "sourcePort": 0,
+          "targetNode": "er-di",
+          "targetPort": 0
+        }
+      ],
+      "info": "Controls an EBYTE MA01-AXCX4040 board (4 digital inputs, 4 relays) over Modbus RTU on RS-485. Press the button next to an inject node to switch a relay on or off (function 5, coils 0 to 3) or all four at once (function 15). The relay state is read every 5 s (function 1) and the inputs every 30 s (function 2). Before deploying, set the serial port, baud rate and unit ID of the board in the Modbus connection."
+    }
+  ],
+  "configs": [
+    {
+      "id": "ebyte-rs485",
+      "type": "modbus-server",
+      "name": "RS-485 #2 (ttyS2) · EBYTE 4DI+4DO · unit 32",
+      "config": {
+        "baudRate": 115200,
+        "dataBits": 8,
+        "defaultUnitId": 32,
+        "host": "localhost",
+        "idleTimeout": 60,
+        "parity": "none",
+        "port": 502,
+        "reconnectBackoff": 5,
+        "serialPort": "ttyS2",
+        "stopBits": 1,
+        "timeout": 1000,
+        "transport": "rtu"
+      }
+    }
+  ]
+}

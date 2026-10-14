@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useFlowStore } from '@/stores/flowStore'
 import { useUiStore } from '@/stores/uiStore'
+import { useAuthStore } from '@/stores/authStore'
+import ExamplesSheet from '@/components/ExamplesSheet.vue'
 
 const flowStore = useFlowStore()
 const ui = useUiStore()
@@ -17,9 +19,25 @@ function handleDblClick(flowId: string) {
   ui.openFlowEditProperties(flowId)
 }
 
-function handleAddClick() {
+const auth = useAuthStore()
+
+// "+" opens a small menu: a new empty flow, or one from an example.
+const addMenuOpen = ref(false)
+const examplesOpen = ref(false)
+
+function newFlow() {
+  addMenuOpen.value = false
   ui.openFlowCreateProperties()
 }
+function fromExample() {
+  addMenuOpen.value = false
+  examplesOpen.value = true
+}
+function closeMenuOutside(e: MouseEvent) {
+  if (!(e.target as HTMLElement).closest('.add-menu')) addMenuOpen.value = false
+}
+onMounted(() => document.addEventListener('click', closeMenuOutside))
+onUnmounted(() => document.removeEventListener('click', closeMenuOutside))
 
 // ── Drag & Drop ──────────────────────────────────────────────────
 const dragIdx = ref<number | null>(null)
@@ -87,17 +105,26 @@ function onDragEnd() {
 
     </div>
 
-    <!-- Add Flow Button -->
-    <button
-      class="flex items-center justify-center w-7 h-7 shrink-0 rounded-full text-terminal-text-dim hover:text-accent bg-terminal-surface-alt/70 hover:bg-terminal-surface-alt transition-colors duration-100"
-      title="New flow"
-      @click="handleAddClick"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m-7-7h14" />
-      </svg>
-    </button>
+    <!-- Add flow: new or from an example -->
+    <div class="add-menu relative shrink-0">
+      <button
+        class="flex items-center justify-center w-7 h-7 rounded-full text-terminal-text-dim hover:text-accent bg-terminal-surface-alt/70 hover:bg-terminal-surface-alt transition-colors duration-100"
+        title="Add flow"
+        aria-label="Add flow"
+        :aria-expanded="addMenuOpen"
+        @click="auth.can('deploy') ? (addMenuOpen = !addMenuOpen) : newFlow()"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m-7-7h14" />
+        </svg>
+      </button>
+      <div v-if="addMenuOpen" class="ios-menu fixed mt-2 w-48 z-50 p-1" role="menu">
+        <button class="menu-item" role="menuitem" @click="newFlow">New flow</button>
+        <button class="menu-item" role="menuitem" @click="fromExample">From example…</button>
+      </div>
+    </div>
   </div>
+  <ExamplesSheet v-if="examplesOpen" @close="examplesOpen = false" />
 </template>
 
 <style scoped>
@@ -107,5 +134,7 @@ function onDragEnd() {
 .seg-item:hover:not(.on) { background: rgb(var(--c-surface) / 0.5); }
 .seg-item.on { background: rgb(var(--c-surface)); font-weight: 600; box-shadow: 0 1px 3px rgb(0 0 0 / 0.12), 0 0 0 0.5px rgb(0 0 0 / 0.04); }
 :root[data-theme="dark"] .seg-item.on { background: rgb(99 99 102); }
+.menu-item { display: block; width: 100%; text-align: left; padding: 7px 10px; border-radius: 8px; font-size: 13px; color: rgb(var(--c-text)); }
+.menu-item:hover { background: rgb(var(--c-accent)); color: #fff; }
 .seg-item.drop { box-shadow: inset 2px 0 0 rgb(var(--c-accent)); }
 </style>

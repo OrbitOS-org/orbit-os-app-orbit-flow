@@ -1,5 +1,6 @@
 import type {
   Flow,
+  ConfigNode,
   FlowsResponse,
   DeployPayload,
   DeployResponse,
@@ -9,6 +10,9 @@ import type { LogEntry } from '@/types/events'
 import type { Role, User } from '@/types/auth'
 import type { CertEntryInput, CertEntrySummary } from '@/types/cert'
 import { basePathNoSlash, readCookie } from '@/runtime'
+
+export interface ExampleSummary { id: string; name: string; description: string }
+export interface Example { name: string; description: string; flows: Flow[]; configs?: ConfigNode[] }
 
 export interface ApiError {
   status: number
@@ -280,6 +284,17 @@ export function useApi() {
   async function getConfigTypes(): Promise<{ type: string; label: string; description: string; defaults: Record<string, unknown> }[]> {
     const res = await request<{ types: any[] }>('/configs/types')
     return res.types ?? []
+  }
+
+  /** Example flows that ship with the app. */
+  async function listExamples(): Promise<ExampleSummary[]> {
+    const res = await request<{ examples: ExampleSummary[] }>('/examples')
+    return res.examples ?? []
+  }
+
+  /** One example flow, in the format of GET /flows. */
+  async function getExample(id: string): Promise<Example> {
+    return request<Example>(`/examples/${encodeURIComponent(id)}`)
   }
 
   /**
@@ -672,6 +687,8 @@ export function useApi() {
   }
 
   return {
+    listExamples,
+    getExample,
     getFlows,
     deployFlows,
     getFlow,
