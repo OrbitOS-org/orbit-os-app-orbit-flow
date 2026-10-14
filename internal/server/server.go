@@ -53,6 +53,10 @@ type Server struct {
 	// httpServer is the underlying net/http server instance.
 	httpServer *http.Server
 
+	// listener is the page's port when it was opened ahead of Start with
+	// Listen; nil otherwise.
+	listener net.Listener
+
 	// engine is the flow runtime engine that executes deployed flows.
 	engine *flow.Engine
 
@@ -526,9 +530,13 @@ func (s *Server) Start() error {
 	// banner only AFTER the port is confirmed reachable. A bind error
 	// (port in use etc.) surfaces here as a normal startup error
 	// without the user ever seeing a banner that lies about a URL.
-	listener, err := net.Listen("tcp", s.cfg.ListenAddr())
-	if err != nil {
-		return fmt.Errorf("server: listen failed: %w", err)
+	listener := s.listener
+	if listener == nil {
+		var err error
+		listener, err = net.Listen("tcp", s.cfg.ListenAddr())
+		if err != nil {
+			return fmt.Errorf("server: listen failed: %w", err)
+		}
 	}
 	slog.Info("loopze server listening", "address", listener.Addr().String())
 
