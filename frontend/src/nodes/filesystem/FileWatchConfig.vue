@@ -1,147 +1,33 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import FormField from '@/components/ui/FormField.vue'
-import FormInput from '@/components/ui/FormInput.vue'
-import FormSelect from '@/components/ui/FormSelect.vue'
+// Watch, as Node-RED's watch node: a file or folder, and whether to watch
+// its sub-folders. A message for each file created, changed or deleted.
+import { onMounted } from 'vue'
 import FormCheckbox from '@/components/ui/FormCheckbox.vue'
-import NumberInput from '@/components/ui/NumberInput.vue'
 import { useNodeProperty } from '@/composables/useNodeProperty'
+import FileField from './FileField.vue'
 
-const mode = useNodeProperty<string>('mode', 'watch')
-const path = useNodeProperty<string>('path', '')
 const recursive = useNodeProperty<boolean>('recursive', false)
-const glob = useNodeProperty<string>('glob', '*')
-const watchEvents = useNodeProperty<string[]>('watchEvents', ['create', 'write', 'remove', 'rename'])
-const sendAs = useNodeProperty<string>('sendAs', 'individual')
-const debounceMs = useNodeProperty<number>('debounceMs', 100)
-const incremental = useNodeProperty<boolean>('incremental', false)
-const fromStart = useNodeProperty<boolean>('fromStart', false)
-const rootJail = useNodeProperty<string>('rootJail', '')
+const mode = useNodeProperty<string>('mode', 'watch')
+const incremental = useNodeProperty<boolean>('incremental', true)
 
-const modes = [
-  { value: 'read',       label: 'Read (list folder, triggered by message)' },
-  { value: 'watch',      label: 'Watch (event-driven)' },
-  { value: 'read+watch', label: 'Read + Watch (always incremental)' },
-]
-
-const sendAsOptions = [
-  { value: 'individual', label: 'Individual (one message per entry)' },
-  { value: 'array',      label: 'Array (one message with all entries)' },
-]
-
-const isWatchMode = computed(() => mode.value !== 'read')
-const isReadPlusWatch = computed(() => mode.value === 'read+watch')
-// read+watch is always incremental — UI hides the toggle for that mode.
-const showIncremental = computed(() => mode.value !== 'read+watch')
-
-const eventNames = ['create', 'write', 'remove', 'rename'] as const
-function makeToggle(name: typeof eventNames[number]) {
-  return computed({
-    get: () => (watchEvents.value ?? []).includes(name),
-    set: (v: boolean) => {
-      const current = new Set(watchEvents.value ?? [])
-      if (v) current.add(name)
-      else current.delete(name)
-      watchEvents.value = eventNames.filter(n => current.has(n))
-    },
-  })
-}
-const createT = makeToggle('create')
-const writeT = makeToggle('write')
-const removeT = makeToggle('remove')
-const renameT = makeToggle('rename')
+// The node only watches now. A node saved with the old "Read" modes is
+// switched to watching when opened; listing a folder is Read File's job.
+onMounted(() => {
+  if (mode.value !== 'watch') mode.value = 'watch'
+  if (!incremental.value) incremental.value = true
+})
 </script>
 
 <template>
   <div class="flex flex-col gap-3 flex-1 min-h-0">
-    <FormField label="Mode">
-      <FormSelect
-        :model-value="mode"
-        :options="modes"
-        @update:model-value="mode = String($event)"
-      />
-    </FormField>
+    <FileField label="File or folder" pick="any" hint="A file, or a folder to watch all its files." />
 
-    <FormField :label="mode === 'read' ? 'Path (optional)' : 'Path'">
-      <FormInput
-        v-model="path"
-        placeholder="/data/incoming"
-        mono
-        :invalid="mode !== 'read' && !path"
-      />
-      <div v-if="mode !== 'read' && !path" class="text-[10px] text-status-error leading-tight">
-        Absolute path required for Watch / Read+Watch modes
-      </div>
-      <div v-else-if="!path" class="text-[10px] text-text-muted leading-tight">
-        Leave empty to list msg.path from the incoming message (Read mode only).
-      </div>
-      <div v-else class="text-[10px] text-text-muted leading-tight">
-        File Watch never reads file contents — chain a File Read to consume the changed file.
-        msg.path overrides this in Read mode.
-      </div>
-    </FormField>
+    <FormCheckbox v-model="recursive" label="Watch sub-folders recursively" />
 
-    <FormField label="Filter (glob)">
-      <FormInput v-model="glob" placeholder="*" mono />
-    </FormField>
-
-    <FormCheckbox v-model="recursive" label="Recursive (descend into subfolders, Read mode only)" />
-
-    <FormField label="Send as">
-      <FormSelect
-        :model-value="sendAs"
-        :options="sendAsOptions"
-        @update:model-value="sendAs = String($event)"
-      />
-    </FormField>
-
-    <template v-if="showIncremental">
-      <FormCheckbox v-model="incremental" label="Incremental (only changed entries since last scan)" />
-    </template>
-    <div v-else class="text-[10px] text-text-muted leading-tight">
-      Read + Watch mode is always incremental. Each event triggers a re-scan;
-      only entries with advanced modTime are emitted.
+    <div class="text-[10px] text-terminal-text-dim leading-relaxed border border-terminal-border bg-terminal-bg p-2 rounded">
+      Sends a message when a file is created, changed or deleted: msg.payload and msg.filename are the
+      file's name (e.g. incoming/order-1029.csv), msg.event is create, write or remove. Wire it to Read File,
+      with File left empty, to get the content.
     </div>
-
-    <template v-if="incremental || isReadPlusWatch">
-      <FormCheckbox v-model="fromStart" label="Emit all existing entries on first access" />
-    </template>
-
-    <template v-if="isWatchMode">
-      <FormField label="Watch events">
-        <div class="flex flex-col gap-1">
-          <FormCheckbox v-model="createT" label="Create" />
-          <FormCheckbox v-model="writeT"  label="Write" />
-          <FormCheckbox v-model="removeT" label="Remove" />
-          <FormCheckbox v-model="renameT" label="Rename" />
-        </div>
-      </FormField>
-
-      <FormField label="Debounce">
-        <NumberInput
-          :model-value="debounceMs"
-          :min="0"
-          :max="10000"
-          unit="ms"
-          @update:model-value="debounceMs = Number($event)"
-        />
-      </FormField>
-
-      <div class="text-[10px] text-status-warning leading-tight">
-        v1 limitation: watcher is non-recursive even when "recursive" is set.
-        Recursive walks apply to mode=read only.
-      </div>
-    </template>
-
-    <FormField label="Root jail (optional)">
-      <FormInput
-        v-model="rootJail"
-        placeholder="/data"
-        mono
-      />
-      <div class="text-[10px] text-text-muted leading-tight">
-        Resolved paths must stay inside this directory. On OrbitOS, empty falls back to the app's own workdir (never fully open) — set this to narrow it further.
-      </div>
-    </FormField>
   </div>
 </template>

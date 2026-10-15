@@ -153,6 +153,20 @@ export interface GpioPinInfo {
 
 const BASE_URL = `${basePathNoSlash}/api/v1`
 
+/** A file or folder in the app's files ("logs/readings.csv"). */
+export interface AppFile {
+  path: string
+  size: number
+  modified: string
+  isDir: boolean
+}
+
+export interface FilesResponse {
+  files: AppFile[]
+  used: number
+  free: number
+}
+
 const CSRF_COOKIE = 'orbit_flow_csrf'
 const CSRF_HEADER = 'X-CSRF-Token'
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
@@ -434,6 +448,20 @@ export function useApi() {
   }
 
   // ── Auth endpoints ───────────────────────────────────────────────────────
+
+  /** The app's files (Settings → Files and the file pickers). */
+  async function listFiles(): Promise<FilesResponse> {
+    return request<FilesResponse>('/files')
+  }
+
+  async function deleteFile(path: string): Promise<void> {
+    await request<void>(`/files?path=${encodeURIComponent(path)}`, { method: 'DELETE' })
+  }
+
+  /** Address that downloads a file of the app's files. */
+  function fileDownloadUrl(path: string): string {
+    return `${BASE_URL}/files/download?path=${encodeURIComponent(path)}`
+  }
 
   /** Stop Flows / Start Flows state, as Node-RED's /flows/state. */
   async function getFlowsState(): Promise<'start' | 'stop'> {
@@ -751,6 +779,9 @@ export function useApi() {
     getStateMachineSnapshot,
     setupAdmin,
     getFlowsState,
+    listFiles,
+    deleteFile,
+    fileDownloadUrl,
     setFlowsState,
     login,
     logout,

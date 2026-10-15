@@ -70,6 +70,8 @@ func RegisterRoutes(r chi.Router, deps *Deps) {
 			r.Get("/certs", deps.handleListCerts)
 			r.Get("/certs/{id}", deps.handleGetCert)
 
+			r.Get("/files", deps.handleListFiles)
+			r.Get("/files/download", deps.handleDownloadFile)
 			r.Get("/uart/ports", deps.handleListUartPorts)
 			r.Get("/gpio/pins", deps.handleListGpioPins)
 			r.Get("/i2c/buses", deps.handleListI2CBuses)
@@ -107,6 +109,8 @@ func RegisterRoutes(r chi.Router, deps *Deps) {
 		// User management — admin only.
 		r.Group(func(r chi.Router) {
 			r.Use(deps.AuthMW.RequireRole(auth.RoleAdmin))
+
+			r.Delete("/files", deps.handleDeleteFile)
 
 			r.Get("/users", deps.handleListUsers)
 			r.Post("/users", deps.handleCreateUser)

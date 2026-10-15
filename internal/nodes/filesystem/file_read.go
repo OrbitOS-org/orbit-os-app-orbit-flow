@@ -9,15 +9,28 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/flow"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes"
 )
 
-// FileReadNode reads a file's content into msg.payload on every incoming
-// message. Optional incremental mode reads only bytes appended since the
-// last read using a persistent byte-offset cursor; line-aware trim
+// Read File outputs, as Node-RED's read file node ("a single utf8 string",
+// "a msg per line", "a single Buffer object"), plus "new": only the lines
+// added since the previous read, a message per line, for following a log.
+const (
+	readOutString = "string"
+	readOutLines  = "lines"
+	readOutNew    = "new"
+	readOutBytes  = "bytes"
+)
+
+// FileReadNode is Read File: on every incoming message it reads a file of
+// the app's files folder into msg.payload, per the output setting. A
+// folder gives the list of its files. "new" reads only bytes appended since
+// the last read using a persistent byte-offset cursor; line-aware trim
 // guarantees the cursor never advances past a partial trailing line.
 //
 // Watch / event-driven behaviour lives in FileWatchNode. Wire one in
@@ -27,6 +40,7 @@ type FileReadNode struct {
 	nodes.BaseNode
 
 	path         string
+	output       string
 	encoding     string
 	rootJail     string
 	incremental  bool
@@ -53,9 +67,36 @@ func (n *FileReadNode) SetContext(_, _, _, flowPers flow.ContextStore) {
 func (n *FileReadNode) Init() error {
 	p := n.cfg.Properties
 	n.path = nodes.StringVal(p, "path", "")
-	n.encoding = nodes.StringVal(p, "encoding", "auto")
+	n.encoding = nodes.StringVal(p, "encoding", "utf-8")
 	n.rootJail = nodes.StringVal(p, "rootJail", "")
 	n.incremental = nodes.BoolVal(p, "incremental", false)
+	// Flows saved before "output" existed: incremental → new, binary → bytes.
+	n.output = nodes.StringVal(p, "output", "")
+	if n.output == "" {
+		switch {
+		case n.incremental:
+			n.output = readOutNew
+		case n.encoding == "binary":
+			n.output = readOutBytes
+		default:
+			n.output = readOutString
+		}
+	}
+	switch n.output {
+	case readOutString, readOutLines, readOutBytes:
+		n.incremental = false
+	case readOutNew:
+		n.incremental = true
+		if _, set := p["delimiter"]; !set {
+			n.delimiter = DelimAuto
+		}
+	default:
+		return fmt.Errorf("file-read %s: invalid output %q", n.cfg.ID, n.output)
+	}
+	// Text outputs read text: "auto" (by file extension) means UTF-8 here.
+	if n.encoding == "auto" || n.encoding == "binary" {
+		n.encoding = "utf-8"
+	}
 	n.fromStart = nodes.BoolVal(p, "fromStart", false)
 	n.delimiter = nodes.StringVal(p, "delimiter", DelimLF)
 	n.maxLineBytes = int64(nodes.IntVal(p, "maxLineBytes", 1048576))
@@ -122,10 +163,61 @@ func (n *FileReadNode) HandleMessage(msg *flow.Message) ([][]*flow.Message, erro
 		return nil, nil
 	}
 
+	if info, err := os.Stat(resolved); err == nil && info.IsDir() {
+		return n.listFolder(resolved, msg)
+	}
 	if n.incremental {
 		return n.readIncrementalAndEmit(resolved, msg)
 	}
 	return n.readWholeAndEmit(resolved, msg)
+}
+
+// listFolder sends the folder's entries: name, path (inside the files
+// folder), size, modified time and whether it is a folder.
+func (n *FileReadNode) listFolder(absPath string, msg *flow.Message) ([][]*flow.Message, error) {
+	items, err := os.ReadDir(absPath)
+	if err != nil {
+		n.statusError(folderReadErrorLabel(err))
+		return nil, fmt.Errorf("file-read: %w", err)
+	}
+	list := make([]map[string]any, 0, len(items))
+	for _, it := range items {
+		info, err := it.Info()
+		if err != nil {
+			continue
+		}
+		list = append(list, map[string]any{
+			"name":     it.Name(),
+			"path":     relName(filepath.Join(absPath, it.Name())),
+			"size":     info.Size(),
+			"modified": info.ModTime().UTC().Format(time.RFC3339),
+			"isDir":    it.IsDir(),
+		})
+	}
+	msg.SetPayload(list)
+	msg.Set("filename", relName(absPath))
+	if n.Status != nil {
+		n.Status("blue", fmt.Sprintf("%d entries", len(list)))
+	}
+	return [][]*flow.Message{{msg}}, nil
+}
+
+// perLine sends one message per line of text, as Node-RED's "a msg per
+// line": each is a copy of msg with the line in msg.payload. A trailing
+// newline does not make an empty last message.
+func perLine(msg *flow.Message, text string) []*flow.Message {
+	text = strings.TrimSuffix(strings.ReplaceAll(text, "\r\n", "\n"), "\n")
+	if text == "" {
+		return nil
+	}
+	lines := strings.Split(text, "\n")
+	out := make([]*flow.Message, len(lines))
+	for i, line := range lines {
+		m := msg.Clone()
+		m.SetPayload(line)
+		out[i] = m
+	}
+	return out
 }
 
 // readWholeAndEmit reads the entire file into msg.payload and forwards.
@@ -135,13 +227,23 @@ func (n *FileReadNode) readWholeAndEmit(absPath string, msg *flow.Message) ([][]
 		n.statusError(fileReadErrorLabel(err))
 		return nil, fmt.Errorf("file-read: %w", err)
 	}
-	encoding := resolveEncoding(absPath, n.encoding)
-	msg.SetPayload(decodePayload(data, encoding))
-	msg.Set("filename", absPath)
-	msg.Set("encoding", encoding)
+	msg.Set("filename", relName(absPath))
 	msg.Set("size", info.Size())
 	if n.Status != nil {
 		n.Status("blue", "read "+humanSize(int(info.Size())))
+	}
+	switch n.output {
+	case readOutBytes:
+		msg.SetPayload(decodePayload(data, "binary"))
+	case readOutLines:
+		text, _ := decodePayload(data, n.encoding).(string)
+		lines := perLine(msg, text)
+		if len(lines) == 0 {
+			return nil, nil
+		}
+		return [][]*flow.Message{lines}, nil
+	default:
+		msg.SetPayload(decodePayload(data, n.encoding))
 	}
 	return [][]*flow.Message{{msg}}, nil
 }
@@ -166,22 +268,25 @@ func (n *FileReadNode) readIncrementalAndEmit(absPath string, msg *flow.Message)
 		return nil, nil
 	}
 
-	encoding := resolveEncoding(absPath, n.encoding)
-	msg.SetPayload(decodePayload(res.Data, encoding))
-	msg.Set("filename", absPath)
-	msg.Set("encoding", encoding)
-	msg.Set("position", res.Position)
-	msg.Set("bytesRead", res.BytesRead)
-	if delim != DelimNone {
-		msg.Set("lineCount", res.LineCount)
-	}
+	msg.Set("filename", relName(absPath))
 	if res.Reset {
 		msg.Set("reset", true)
 	}
 	if n.Status != nil {
 		n.Status("blue", "read "+humanSize(res.BytesRead))
 	}
-	return [][]*flow.Message{{msg}}, nil
+	if delim == DelimNone {
+		// One chunk, as before: msg.position lets the CSV node stream it.
+		msg.Set("position", res.Position)
+		msg.SetPayload(decodePayload(res.Data, n.encoding))
+		return [][]*flow.Message{{msg}}, nil
+	}
+	text, _ := decodePayload(res.Data, n.encoding).(string)
+	lines := perLine(msg, text)
+	if len(lines) == 0 {
+		return nil, nil
+	}
+	return [][]*flow.Message{lines}, nil
 }
 
 // resolveDelimiter applies the encoding-aware default. When the user left
@@ -244,16 +349,14 @@ func FileReadTypeInfo() flow.NodeTypeInfo {
 	return flow.NodeTypeInfo{
 		Type:        "file-read",
 		Category:    "storage",
-		Label:       "File Read",
-		Description: "Read file content (one-shot or incremental tail)",
+		Label:       "Read File",
+		Description: "Reads a file: as one text, a message per line, only the new lines, or bytes; a folder gives its list of files",
 		Icon:        "file-in",
+		Keywords:    []string{"file", "load", "log", "tail", "folder", "list"},
 		Defaults: map[string]any{
-			"path":         "",
-			"encoding":     "auto",
-			"incremental":  false,
-			"fromStart":    false,
-			"delimiter":    "\n",
-			"maxLineBytes": 1048576,
+			"path":     "",
+			"output":   "string",
+			"encoding": "utf-8",
 		},
 		Inputs:  1,
 		Outputs: 1,

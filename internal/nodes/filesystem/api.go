@@ -2,19 +2,13 @@
 // Licensed under the GNU Affero General Public License v3.0 or later.
 // See LICENSE file for details.
 
-// This file exposes a minimal public surface of the filesystem package
-// for other node packages that need the same path-resolution and write
-// conventions (e.g. core/csv_out.go). Keep the surface intentionally
-// small — these are pragmatic exports for in-tree reuse, not a stable
-// external API.
+// This file exposes the small public surface of the filesystem package:
+// the files folder (set at startup) and name resolution inside it, used by
+// the files API of the editor (Settings → Files).
 
 package filesystem
 
-import (
-	"sync"
-
-	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/flow"
-)
+import "sync"
 
 var (
 	workdirMu sync.RWMutex
@@ -40,37 +34,20 @@ func mandatoryWorkdir() string {
 	return workdir
 }
 
-// File-write modes, exposed for callers that use WriteFile.
-const (
-	ModeOverwrite = fileOutModeOverwrite
-	ModeAppend    = fileOutModeAppend
-	ModeCreate    = fileOutModeCreate
-)
-
-// ErrFileExists is returned by WriteFile in ModeCreate when the target
-// already exists. Callers can errors.Is against this sentinel.
-var ErrFileExists = errFileExists
-
-// ResolvePath renders a path template against a message, honors the
-// msg.filename override, validates absoluteness, and enforces rootJail
-// containment. Empty rootJail disables jail enforcement.
-func ResolvePath(tmpl string, msg *flow.Message, rootJail string) (string, error) {
-	return resolvePath(tmpl, msg, rootJail)
+// Workdir is the folder the file nodes are confined to (the app's files
+// folder on Orbit OS), or "" when none was set.
+func Workdir() string {
+	return mandatoryWorkdir()
 }
 
-// WriteFile opens path with the flags for the configured mode and writes
-// data in a single syscall. Use the Mode* constants for the mode arg.
-func WriteFile(path string, data []byte, mode string) error {
-	return writeFile(path, data, mode)
+// Resolve turns a name inside the files folder ("logs/readings.csv") into
+// an absolute path, refusing anything outside the folder.
+func Resolve(name string) (string, error) {
+	return validatePath(name, "")
 }
 
-// FileWriteErrorLabel maps a write error to a stable status label
-// (matches the labels used by file-out's status pill).
-func FileWriteErrorLabel(err error) string {
-	return fileWriteErrorLabel(err)
-}
-
-// HumanSize renders a byte count like "1.5 kB" for status text.
-func HumanSize(b int) string {
-	return humanSize(b)
+// RelName is the name of an absolute path inside the files folder, as the
+// user sees it ("logs/readings.csv"); other paths are returned unchanged.
+func RelName(abs string) string {
+	return relName(abs)
 }

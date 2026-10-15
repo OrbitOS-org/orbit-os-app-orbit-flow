@@ -1,78 +1,51 @@
 <script setup lang="ts">
+// Write File, as Node-RED's write file node: File, Action (append /
+// overwrite / delete), "Add newline". Folders are created when needed;
+// text is written as UTF-8 and a byte array as bytes.
+import { computed } from 'vue'
 import FormField from '@/components/ui/FormField.vue'
-import FormInput from '@/components/ui/FormInput.vue'
-import FormSelect from '@/components/ui/FormSelect.vue'
 import FormCheckbox from '@/components/ui/FormCheckbox.vue'
+import ToggleGroup from '@/components/ui/ToggleGroup.vue'
 import { useNodeProperty } from '@/composables/useNodeProperty'
+import FileField from './FileField.vue'
 
-const path = useNodeProperty<string>('path', '')
-const mode = useNodeProperty<string>('mode', 'overwrite')
-const encoding = useNodeProperty<string>('encoding', 'auto')
-const createDirs = useNodeProperty<boolean>('createDirs', false)
-const appendNewline = useNodeProperty<boolean>('appendNewline', false)
-const rootJail = useNodeProperty<string>('rootJail', '')
+const mode = useNodeProperty<string>('mode', 'append')
+const appendNewline = useNodeProperty<boolean>('appendNewline', true)
 
-const modes = [
-  { value: 'overwrite', label: 'Overwrite (replace existing)' },
-  { value: 'append',    label: 'Append (add to existing)' },
-  { value: 'create',    label: 'Create only (fail if exists)' },
+const ACTIONS = [
+  { value: 'append', label: 'Append' },
+  { value: 'overwrite', label: 'Overwrite' },
+  { value: 'delete', label: 'Delete' },
 ]
 
-const encodings = [
-  { value: 'auto',   label: 'Auto (by extension)' },
-  { value: 'utf-8',  label: 'UTF-8 (text)' },
-  { value: 'binary', label: 'Binary (bytes)' },
-]
+// Flows saved before keep "create only"; it shows as Overwrite here.
+const action = computed<string>({
+  get: () => (mode.value === 'create' ? 'overwrite' : mode.value),
+  set: (v) => { mode.value = v },
+})
 
-// Workaround for Vue's Mustache-style interpolation: rendering the literal
-// string "{{mustache}}" inline would close the outer {{ }} prematurely.
-const MUSTACHE_TOKEN = '{{mustache}}'
+const HELP: Record<string, string> = {
+  append: 'Adds each msg.payload to the end of the file.',
+  overwrite: 'Replaces the file with msg.payload.',
+  delete: 'Deletes the file when a message arrives. The payload is not used.',
+}
 </script>
 
 <template>
   <div class="flex flex-col gap-3 flex-1 min-h-0">
-    <FormField label="Path (optional)">
-      <FormInput
-        v-model="path"
-        placeholder="/var/log/events.log"
-        mono
-      />
-      <div v-if="!path" class="text-[10px] text-text-muted leading-tight">
-        Leave empty to write to msg.filename from the incoming message.
-      </div>
-      <div v-else class="text-[10px] text-text-muted leading-tight">
-        {{ MUSTACHE_TOKEN }} supported; msg.filename overrides this path
-      </div>
+    <FileField />
+
+    <FormField label="Action">
+      <ToggleGroup v-model="action" :options="ACTIONS" />
     </FormField>
 
-    <FormField label="Mode">
-      <FormSelect
-        :model-value="mode"
-        :options="modes"
-        @update:model-value="mode = String($event)"
-      />
-    </FormField>
+    <FormCheckbox v-if="action !== 'delete'" v-model="appendNewline" label="Add newline (\n) to each payload" />
 
-    <FormField label="Encoding">
-      <FormSelect
-        :model-value="encoding"
-        :options="encodings"
-        @update:model-value="encoding = String($event)"
-      />
-    </FormField>
-
-    <FormCheckbox v-model="appendNewline" label="Append newline after each write" />
-    <FormCheckbox v-model="createDirs" label="Create parent directories if missing" />
-
-    <FormField label="Root jail (optional)">
-      <FormInput
-        v-model="rootJail"
-        placeholder="/var/log"
-        mono
-      />
-      <div class="text-[10px] text-text-muted leading-tight">
-        Resolved paths must stay inside this directory. On OrbitOS, empty falls back to the app's own workdir (never fully open) — set this to narrow it further.
-      </div>
-    </FormField>
+    <div class="text-[10px] text-terminal-text-dim leading-relaxed border border-terminal-border bg-terminal-bg p-2 rounded">
+      {{ HELP[action] }}
+      <template v-if="action !== 'delete'">
+        Folders are created when needed. Text is written as UTF-8, a list of numbers (0-255) as bytes, other values as JSON.
+      </template>
+    </div>
   </div>
 </template>

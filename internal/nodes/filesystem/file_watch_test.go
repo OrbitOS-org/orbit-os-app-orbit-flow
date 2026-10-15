@@ -369,18 +369,14 @@ func TestFileWatch_WatchMode_EmitsOnCreate(t *testing.T) {
 	}
 	msg := col.wait(t, 2*time.Second)
 
-	entry, _ := msg.Get("payload").(map[string]any)
-	if entry == nil || entry["name"] != "fresh.txt" {
-		t.Errorf("expected fresh.txt entry, got %v", entry)
+	// As Node-RED's watch: the file name in msg.payload and msg.filename,
+	// what happened in msg.event. (No workdir in tests: the full path.)
+	want := filepath.Join(dir, "fresh.txt")
+	if msg.Get("payload") != want || msg.Get("filename") != want || msg.Get("file") != "fresh.txt" {
+		t.Errorf("payload=%v filename=%v file=%v, want %s", msg.Get("payload"), msg.Get("filename"), msg.Get("file"), want)
 	}
 	if msg.Get("event") != "create" {
 		t.Errorf("event = %v, want create", msg.Get("event"))
-	}
-	if msg.Get("changed") != true {
-		t.Errorf("changed = %v, want true", msg.Get("changed"))
-	}
-	if msg.Get("filename") != entry["path"] {
-		t.Errorf("filename should match entry path, got %v vs %v", msg.Get("filename"), entry["path"])
 	}
 }
 
@@ -423,9 +419,8 @@ func TestFileWatch_WatchMode_RemoveEvent(t *testing.T) {
 	if msg.Get("event") != "remove" {
 		t.Errorf("event = %v, want remove", msg.Get("event"))
 	}
-	entry, _ := msg.Get("payload").(map[string]any)
-	if entry == nil || entry["path"] != target {
-		t.Errorf("entry path = %v, want %v", entry, target)
+	if msg.Get("payload") != target {
+		t.Errorf("payload = %v, want %v", msg.Get("payload"), target)
 	}
 }
 
@@ -452,12 +447,11 @@ func TestFileWatch_ReadPlusWatch_OnlyChanged(t *testing.T) {
 		t.Fatal(err)
 	}
 	msg := col.wait(t, 2*time.Second)
-	entry, _ := msg.Get("payload").(map[string]any)
-	if entry["name"] != "new.txt" {
-		t.Errorf("expected new.txt, got %v", entry["name"])
+	if msg.Get("file") != "new.txt" {
+		t.Errorf("expected new.txt, got %v", msg.Get("file"))
 	}
-	if entry["content"] != nil {
-		t.Errorf("file-watch must not include content, got %v", entry["content"])
+	if _, isMap := msg.Get("payload").(map[string]any); isMap {
+		t.Errorf("watch must send the file name, not its content or entry: %v", msg.Get("payload"))
 	}
 
 	// old.txt was in the baseline → should not re-emit
@@ -545,5 +539,32 @@ func TestFileWatch_JailViolation(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "escapes jail") {
 		t.Errorf("error = %v", err)
+	}
+}
+
+// Files under a sub-folder are seen with recursive on: fsnotify watches
+// one folder at a time, so the node adds every sub-folder.
+func TestFileWatch_RecursiveSeesSubFolders(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "a", "b"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	fw, _ := newFileWatch(t, map[string]any{"path": dir, "mode": "watch", "recursive": true, "incremental": true, "debounceMs": 20})
+	withWatchPers(fw)
+	col := newSendCollector()
+	fw.SetSend(col.sendFn())
+	if err := fw.Start(); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = fw.Stop() })
+	time.Sleep(30 * time.Millisecond)
+
+	deep := filepath.Join(dir, "a", "b", "deep.txt")
+	if err := os.WriteFile(deep, []byte("x"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	msg := col.wait(t, 2*time.Second)
+	if msg.Get("filename") != deep || msg.Get("event") != "create" {
+		t.Errorf("filename=%v event=%v, want %s create", msg.Get("filename"), msg.Get("event"), deep)
 	}
 }

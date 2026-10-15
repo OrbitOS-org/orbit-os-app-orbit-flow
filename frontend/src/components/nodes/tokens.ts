@@ -357,7 +357,7 @@ const NODE_FILL: Record<string, string> = {
   change: '#e2d96e', switch: '#e2d96e',
   template: '#f3b567',
   delay: '#e6e0f8', statemachine: '#e6e0f8', 'context-watch': '#e6e0f8',
-  json: '#debd5c', xml: '#debd5c', csv: '#debd5c', 'csv-out': '#debd5c',
+  json: '#debd5c', xml: '#debd5c', csv: '#debd5c',
   'mqtt-in': '#d8bfd8', 'mqtt-out': '#d8bfd8', 'mqtt-request': '#d8bfd8',
   'http-in': '#e7e7ae', 'http-request': '#e7e7ae', 'http-response': '#e7e7ae',
   'tcp-in': '#c0c0c0', 'tcp-out': '#c0c0c0', 'tcp-request': '#c0c0c0',

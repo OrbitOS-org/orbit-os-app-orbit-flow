@@ -20,11 +20,8 @@ const props = withDefaults(defineProps<Props>(), { selected: false })
 
 function bodyText(): string {
   const cfg = props.data.config ?? {}
-  const mode = (cfg.mode as string) || 'watch'
-  const path = (cfg.path as string) || (mode === 'read' ? 'msg.path' : '(set path)')
-  const glob = (cfg.glob as string) || '*'
-  const tail = glob && glob !== '*' ? ` [${glob}]` : ''
-  return `${mode} · ${path}${tail}`
+  const path = (cfg.path as string) || 'set a file or folder'
+  return cfg.recursive ? `${path} · with sub-folders` : path
 }
 </script>
 

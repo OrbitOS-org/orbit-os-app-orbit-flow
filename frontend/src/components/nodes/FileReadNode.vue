@@ -20,10 +20,10 @@ const props = withDefaults(defineProps<Props>(), { selected: false })
 
 function bodyText(): string {
   const cfg = props.data.config ?? {}
-  const incremental = Boolean(cfg.incremental)
+  const output = (cfg.output as string) || (cfg.incremental ? 'new' : cfg.encoding === 'binary' ? 'bytes' : 'string')
   const path = (cfg.path as string) || 'msg.filename'
-  const tag = incremental ? 'incr' : 'read'
-  return `${tag} · ${path}`
+  const tag: Record<string, string> = { string: 'text', lines: 'per line', new: 'new lines', bytes: 'bytes' }
+  return `${path} · ${tag[output] ?? output}`
 }
 </script>
 

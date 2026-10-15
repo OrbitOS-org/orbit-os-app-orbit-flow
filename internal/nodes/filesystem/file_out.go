@@ -16,10 +16,13 @@ import (
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes"
 )
 
-// File-out modes.
+// Write File actions, as Node-RED's write file node: append, overwrite,
+// delete. "create" (fail if the file exists) is still accepted for flows
+// saved before, but no longer offered.
 const (
 	fileOutModeOverwrite = "overwrite"
 	fileOutModeAppend    = "append"
+	fileOutModeDelete    = "delete"
 	fileOutModeCreate    = "create"
 )
 
@@ -27,10 +30,14 @@ const (
 // file. Used by the status mapper to derive a stable error label.
 var errFileExists = errors.New("file already exists")
 
-// FileOutNode writes msg.payload to a file. Modes:
-//   - overwrite: replace existing content (or create if missing)
-//   - append:    append to existing content (or create if missing)
-//   - create:    create a new file; fail if it already exists
+// FileOutNode is Write File: it writes msg.payload to a file in the app's
+// files folder, as Node-RED's write file node. Actions:
+//   - append:    add to the end of the file (created if missing)
+//   - overwrite: replace the file
+//   - delete:    delete the file; the payload is not used
+//
+// Folders are created when needed. What is written follows the payload: a
+// byte array as bytes, text as UTF-8, any other value as JSON.
 //
 // Pass-through is implicit: the input message is forwarded unchanged on
 // the output port after a successful write so downstream nodes can chain.
@@ -40,8 +47,6 @@ type FileOutNode struct {
 
 	path          string
 	mode          string
-	encoding      string
-	createDirs    bool
 	appendNewline bool
 	rootJail      string
 }
@@ -56,21 +61,14 @@ func NewFileOutNode(cfg flow.NodeConfig) (flow.NodeInstance, error) {
 func (n *FileOutNode) Init() error {
 	p := n.cfg.Properties
 	n.path = nodes.StringVal(p, "path", "")
-	n.mode = nodes.StringVal(p, "mode", fileOutModeOverwrite)
-	n.encoding = nodes.StringVal(p, "encoding", "auto")
-	n.createDirs = nodes.BoolVal(p, "createDirs", false)
-	n.appendNewline = nodes.BoolVal(p, "appendNewline", false)
+	n.mode = nodes.StringVal(p, "mode", fileOutModeAppend)
+	n.appendNewline = nodes.BoolVal(p, "appendNewline", true)
 	n.rootJail = nodes.StringVal(p, "rootJail", "")
 
 	switch n.mode {
-	case fileOutModeOverwrite, fileOutModeAppend, fileOutModeCreate:
+	case fileOutModeOverwrite, fileOutModeAppend, fileOutModeDelete, fileOutModeCreate:
 	default:
-		return fmt.Errorf("file-out %s: invalid mode %q", n.cfg.ID, n.mode)
-	}
-	switch n.encoding {
-	case "auto", "utf-8", "binary":
-	default:
-		return fmt.Errorf("file-out %s: invalid encoding %q", n.cfg.ID, n.encoding)
+		return fmt.Errorf("file-out %s: invalid action %q", n.cfg.ID, n.mode)
 	}
 	return nil
 }
@@ -104,8 +102,18 @@ func (n *FileOutNode) HandleMessage(msg *flow.Message) ([][]*flow.Message, error
 		return nil, fmt.Errorf("file-out: %w", err)
 	}
 
-	encoding := resolveEncoding(resolved, n.encoding)
-	data, err := encodePayload(msg.Get("payload"), encoding)
+	if n.mode == fileOutModeDelete {
+		if err := os.Remove(resolved); err != nil && !errors.Is(err, os.ErrNotExist) {
+			n.statusError(fileWriteErrorLabel(err))
+			return nil, fmt.Errorf("file-out: delete: %w", err)
+		}
+		if n.Status != nil {
+			n.Status("blue", "deleted "+relName(resolved))
+		}
+		return [][]*flow.Message{{msg}}, nil
+	}
+
+	data, err := encodeByPayload(msg.Get("payload"))
 	if err != nil {
 		n.statusError("encode error")
 		return nil, fmt.Errorf("file-out: %w", err)
@@ -114,11 +122,9 @@ func (n *FileOutNode) HandleMessage(msg *flow.Message) ([][]*flow.Message, error
 		data = append(data, '\n')
 	}
 
-	if n.createDirs {
-		if err := os.MkdirAll(filepath.Dir(resolved), 0o755); err != nil {
-			n.statusError("mkdir error")
-			return nil, fmt.Errorf("file-out: mkdir: %w", err)
-		}
+	if err := os.MkdirAll(filepath.Dir(resolved), 0o755); err != nil {
+		n.statusError("mkdir error")
+		return nil, fmt.Errorf("file-out: mkdir: %w", err)
 	}
 
 	if err := writeFile(resolved, data, n.mode); err != nil {
@@ -193,15 +199,14 @@ func FileOutTypeInfo() flow.NodeTypeInfo {
 	return flow.NodeTypeInfo{
 		Type:        "file-out",
 		Category:    "storage",
-		Label:       "File Write",
-		Description: "Write or append payload to a file",
+		Label:       "Write File",
+		Description: "Appends msg.payload to a file, overwrites it, or deletes the file",
 		Icon:        "file-out",
+		Keywords:    []string{"file", "save", "log", "append", "delete"},
 		Defaults: map[string]any{
 			"path":          "",
-			"mode":          "overwrite",
-			"encoding":      "auto",
-			"createDirs":    false,
-			"appendNewline": false,
+			"mode":          "append",
+			"appendNewline": true,
 		},
 		Inputs:  1,
 		Outputs: 1,

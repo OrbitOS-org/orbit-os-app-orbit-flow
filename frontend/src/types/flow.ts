@@ -37,7 +37,6 @@ export type NodeType =
   | 'json'
   | 'xml'
   | 'csv'
-  | 'csv-out'
   | 'file-read'
   | 'file-out'
   | 'file-watch'

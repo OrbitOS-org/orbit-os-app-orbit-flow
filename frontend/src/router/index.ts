@@ -19,6 +19,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: 'users', name: 'settings-users', component: () => import('@/views/UsersView.vue'), meta: { requiresAdmin: true } },
       { path: 'certs', name: 'settings-certs', component: () => import('@/views/CertsView.vue') },
+      { path: 'files', name: 'settings-files', component: () => import('@/views/settings/FilesSection.vue') },
       { path: 'appearance', name: 'settings-appearance', component: () => import('@/views/settings/AppearanceSection.vue') },
       { path: 'about', name: 'settings-about', component: () => import('@/views/settings/AboutSection.vue') },
     ],

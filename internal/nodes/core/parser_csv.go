@@ -241,6 +241,11 @@ func hasNumericField(msg *flow.Message, key string) bool {
 // (or N fan-out messages in output=rows mode). Used when no msg.filename is
 // present or when the action is stringify.
 func (n *CSVParserNode) handleOneShot(msg *flow.Message, value any) ([][]*flow.Message, error) {
+	// As in Node-RED: msg.reset sends the column names again (with "send
+	// the header once"), e.g. when a new file is started.
+	if reset, _ := msg.Get("reset").(bool); reset {
+		n.headerEmitted = false
+	}
 	var (
 		stringified string
 		rows        []map[string]any
@@ -574,9 +579,8 @@ func (n *CSVParserNode) parseCSV(v any, knownCols []string) (
 	return rows, arrRows, effectiveCols, nil
 }
 
-// csvWriteOpts bundles the CSV serialization options that are independent
-// of which node owns the call. Used by both CSVParserNode.stringifyCSV and
-// the csv-out node, so the wire-format logic has a single implementation.
+// csvWriteOpts bundles the CSV serialization options used by
+// CSVParserNode.stringifyCSV.
 type csvWriteOpts struct {
 	Columns    []string // configured column order; empty = derive
 	Header     bool     // whether a header row may be emitted (caller still gates with WithHeader)

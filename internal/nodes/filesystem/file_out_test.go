@@ -22,6 +22,11 @@ func newFileOut(t *testing.T, props map[string]any) (*FileOutNode, *struct {
 }) {
 	t.Helper()
 
+	// These tests compare the exact bytes written; the newline that Write
+	// File adds by default has its own test.
+	if _, set := props["appendNewline"]; !set {
+		props["appendNewline"] = false
+	}
 	node, err := NewFileOutNode(flow.NodeConfig{ID: "test-fo", Type: "file-out", Properties: props})
 	if err != nil {
 		t.Fatalf("factory: %v", err)
@@ -139,15 +144,66 @@ func TestFileOut_CreateDirs(t *testing.T) {
 	}
 }
 
-func TestFileOut_CreateDirsDisabled_FailsOnMissingParent(t *testing.T) {
+func TestFileOut_AlwaysCreatesFolders(t *testing.T) {
 	dir := t.TempDir()
-	path := filepath.Join(dir, "missing", "out.log")
-	fo, _ := newFileOut(t, map[string]any{"path": path, "mode": "overwrite"})
+	path := filepath.Join(dir, "missing", "deeper", "out.log")
+	fo, _ := newFileOut(t, map[string]any{"path": path, "mode": "append"})
 
 	msg := flow.NewMessage()
 	msg.SetPayload("hi")
-	if _, err := fo.HandleMessage(msg); err == nil {
-		t.Fatal("expected error when parent dir missing, got nil")
+	if _, err := fo.HandleMessage(msg); err != nil {
+		t.Fatalf("HandleMessage: %v", err)
+	}
+	if got, _ := os.ReadFile(path); string(got) != "hi" {
+		t.Errorf("file content = %q, want 'hi'", got)
+	}
+}
+
+func TestFileOut_NewlineByDefault(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "a.log")
+	node, _ := NewFileOutNode(flow.NodeConfig{ID: "fo", Properties: map[string]any{"path": path}})
+	fo := node.(*FileOutNode)
+	if err := fo.Init(); err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range []string{"a", "b"} {
+		msg := flow.NewMessage()
+		msg.SetPayload(p)
+		if _, err := fo.HandleMessage(msg); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if got, _ := os.ReadFile(path); string(got) != "a\nb\n" {
+		t.Errorf("default (append, newline): %q, want \"a\\nb\\n\"", got)
+	}
+}
+
+func TestFileOut_Delete(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "old.log")
+	if err := os.WriteFile(path, []byte("x"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	fo, _ := newFileOut(t, map[string]any{"path": path, "mode": "delete"})
+	for i := 0; i < 2; i++ { // the second time the file is already gone: not an error
+		if _, err := fo.HandleMessage(flow.NewMessage()); err != nil {
+			t.Fatalf("delete %d: %v", i, err)
+		}
+	}
+	if _, err := os.Stat(path); !os.IsNotExist(err) {
+		t.Fatalf("file still there: %v", err)
+	}
+}
+
+func TestFileOut_ObjectAsJSON(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "o.json")
+	fo, _ := newFileOut(t, map[string]any{"path": path, "mode": "overwrite"})
+	msg := flow.NewMessage()
+	msg.SetPayload(map[string]any{"kWh": float64(12.5)})
+	if _, err := fo.HandleMessage(msg); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := os.ReadFile(path); string(got) != `{"kWh":12.5}` {
+		t.Errorf("file content = %s", got)
 	}
 }
 
@@ -168,9 +224,8 @@ func TestFileOut_BinaryPayload(t *testing.T) {
 	}
 }
 
-func TestFileOut_BinaryPayloadFromExtension(t *testing.T) {
-	// .bin extension makes encoding=auto resolve to binary; payload is a
-	// string of byte numbers in []any form.
+func TestFileOut_IntBytes(t *testing.T) {
+	// A []int payload (bytes from another node) is written as bytes.
 	dir := t.TempDir()
 	path := filepath.Join(dir, "out.bin")
 	fo, _ := newFileOut(t, map[string]any{"path": path, "mode": "overwrite"})

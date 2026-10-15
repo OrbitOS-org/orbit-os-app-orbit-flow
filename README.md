@@ -22,7 +22,7 @@ Runs on Raspberry Pi, Arduino UNO Q and other ARM64 devices with Orbit OS (free 
 - **Industrial protocols built in** — Modbus TCP and RTU, OPC UA (read, subscribe, write), Siemens S7 and MQTT
 - **The device's own I/O** — GPIO, I²C, SPI and the serial ports, through the Orbit OS API; *Serial In*, *Serial Out* and *Serial Request* work like Node-RED's serial nodes, on the board's UARTs, RS-232/RS-485 ports and USB-serial adapters
 - **Logic without code, or with it** — switch, change, delay, template and state-machine nodes; JavaScript, expressions or Go when you need them
-- **Data in and out** — HTTP, TCP and UDP nodes; JSON, XML and CSV; files in the app's own files folder
+- **Data in and out** — HTTP, TCP and UDP nodes; JSON, XML and CSV; Write File, Read File and Watch on the app's own files, which you can see, download and delete in Settings → Files
 - **Notifications on your phone** — a node that sends a push notification through the Orbit OS mobile app
 - **Users and roles** — admin, editor and viewer accounts; credentials stored encrypted
 - **Examples and saved flows** — the **+** next to the flow tabs → *Open…* adds a ready-made example (for instance, switching the relays of an EBYTE RS-485 relay board, or reading a GPS on a serial port) or a flow you exported with *Export…* from a tab's menu; exported flows are kept in the app's data folder

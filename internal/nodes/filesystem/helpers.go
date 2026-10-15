@@ -342,3 +342,33 @@ func toUint8(v any) (byte, bool) {
 	}
 	return 0, false
 }
+
+// relName shows a path inside the files folder as the user knows it,
+// "logs/readings.csv", not the device's absolute path. Paths outside it
+// (tests without a workdir) are returned unchanged.
+func relName(abs string) string {
+	base := mandatoryWorkdir()
+	if base == "" {
+		return abs
+	}
+	rel, err := filepath.Rel(base, abs)
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return abs
+	}
+	return filepath.ToSlash(rel)
+}
+
+// encodeByPayload chooses how to write a payload from what it is, as
+// Node-RED does: a byte array (a list of numbers 0-255, or []byte) is
+// written as bytes, text as UTF-8, any other value as JSON.
+func encodeByPayload(payload any) ([]byte, error) {
+	switch p := payload.(type) {
+	case []byte, []int:
+		return encodeBinary(p)
+	case []any:
+		if b, err := encodeBinary(p); err == nil {
+			return b, nil
+		}
+	}
+	return encodeText(payload)
+}

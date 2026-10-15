@@ -23,7 +23,6 @@ func init() {
 			{Type: "json", Factory: NewJSONParserNode, Info: JSONParserTypeInfo()},
 			{Type: "xml", Factory: NewXMLParserNode, Info: XMLParserTypeInfo()},
 			{Type: "csv", Factory: NewCSVParserNode, Info: CSVParserTypeInfo()},
-			{Type: "csv-out", Factory: NewCSVOutNode, Info: CSVOutTypeInfo()},
 			{Type: "context-watch", Factory: NewContextWatchNode, Info: ContextWatchTypeInfo()},
 			{Type: "catch", Factory: NewCatchNode, Info: CatchTypeInfo()},
 			{Type: "change", Factory: NewChangeNode, Info: ChangeTypeInfo()},

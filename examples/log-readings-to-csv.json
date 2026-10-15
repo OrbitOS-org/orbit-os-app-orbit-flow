@@ -1,6 +1,6 @@
 {
   "name": "Log readings to CSV",
-  "description": "Writes readings to one CSV file per day in the app's data folder.",
+  "description": "Writes readings to one CSV file per day in the app's files.",
   "category": "Data",
   "order": 20,
   "flows": [
@@ -8,7 +8,7 @@
       "id": "ex-log-readings-to-csv",
       "type": "tab",
       "label": "Log readings to CSV",
-      "info": "Every 10 seconds a reading (simulated here) is added to logs/readings-YYYY-MM-DD.csv in the app's data folder, one file per day with a header line. Replace the Function node with your real readings. The files stay on the device; use File Read to read them back.",
+      "info": "Every 10 seconds a reading (simulated here) goes through the CSV node, which turns it into a CSV line, and Write File adds it to logs/readings-YYYY-MM-DD.csv in the app's files, one file per day. The Function sets msg.reset on the first reading of each day, so the CSV node writes the column names at the top of the new file. Replace the Function with your real readings. See the files in Settings → Files, or read them back with Read File.",
       "nodes": [
         {
           "id": "ex-log-readings-to-csv-n1",
@@ -53,15 +53,46 @@
             ]
           ],
           "config": {
-            "func": "const now = new Date();\nmsg.day = now.toISOString().slice(0, 10);\nmsg.payload = {\n  time: now.toISOString(),\n  temperature: Math.round((20 + Math.random() * 5) * 10) / 10,\n  humidity: Math.round(40 + Math.random() * 20),\n};\nreturn msg;",
+            "func": "const now = new Date();\nmsg.day = now.toISOString().slice(0, 10);\n// A new day starts a new file: msg.reset makes the CSV node send the column names again.\nif (flow.get('csvDay') !== msg.day) {\n  msg.reset = true;\n  flow.set('csvDay', msg.day);\n}\nmsg.payload = {\n  time: now.toISOString(),\n  temperature: Math.round((20 + Math.random() * 5) * 10) / 10,\n  humidity: Math.round(40 + Math.random() * 20),\n};\nreturn msg;",
             "outputs": 1
           }
         },
         {
           "id": "ex-log-readings-to-csv-n3",
-          "type": "csv-out",
-          "name": "logs/readings-<day>.csv",
+          "type": "csv",
+          "name": "to CSV",
           "x": 520,
+          "y": 120,
+          "z": "ex-log-readings-to-csv",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-log-readings-to-csv-n5"
+            ]
+          ],
+          "config": {
+            "property": "payload",
+            "action": "stringify",
+            "header": true,
+            "headerOnce": true,
+            "columns": "time,temperature,humidity",
+            "delimiter": ",",
+            "quoteChar": "\"",
+            "comment": "",
+            "trimSpaces": false,
+            "skipEmptyLines": true,
+            "forceQuote": false,
+            "newline": "\n",
+            "output": "rows",
+            "cast": false
+          }
+        },
+        {
+          "id": "ex-log-readings-to-csv-n5",
+          "type": "file-out",
+          "name": "logs/readings-<day>.csv",
+          "x": 730,
           "y": 120,
           "z": "ex-log-readings-to-csv",
           "inputs": 1,
@@ -72,24 +103,16 @@
             ]
           ],
           "config": {
-            "columns": "time,temperature,humidity",
-            "createDirs": true,
-            "delimiter": ",",
-            "encoding": "auto",
-            "forceQuote": false,
-            "header": true,
-            "mode": "append",
-            "newline": "\n",
             "path": "logs/readings-{{day}}.csv",
-            "property": "payload",
-            "quoteChar": "\""
+            "mode": "append",
+            "appendNewline": false
           }
         },
         {
           "id": "ex-log-readings-to-csv-n4",
           "type": "debug",
           "name": "written",
-          "x": 740,
+          "x": 940,
           "y": 120,
           "z": "ex-log-readings-to-csv",
           "inputs": 1,
@@ -121,8 +144,15 @@
           "targetPort": 0
         },
         {
-          "id": "ex-log-readings-to-csv-n3-w0--n4",
+          "id": "ex-log-readings-to-csv-n3-w0--n5",
           "sourceNode": "ex-log-readings-to-csv-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-log-readings-to-csv-n5",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-log-readings-to-csv-n5-w0--n4",
+          "sourceNode": "ex-log-readings-to-csv-n5",
           "sourcePort": 0,
           "targetNode": "ex-log-readings-to-csv-n4",
           "targetPort": 0

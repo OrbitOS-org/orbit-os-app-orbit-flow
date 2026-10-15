@@ -28,6 +28,10 @@ const sections = computed<Section[][]>(() => [
       icon: 'M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6z' },
   ].filter((s) => s.show),
   [
+    { name: 'settings-files', title: 'Files', color: '#ff9500', show: true,
+      icon: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
+  ],
+  [
     { name: 'settings-appearance', title: 'Appearance', color: '#5f45d8', show: true,
       icon: 'M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM12 4v16' },
     { name: 'settings-about', title: 'About', color: '#8e8e93', show: true,

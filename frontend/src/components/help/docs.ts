@@ -696,134 +696,71 @@ export const nodeHelpDocs: Record<string, NodeHelpDoc> = {
 
   'file-read': {
     overview:
-      'Reads a file\'s content on every incoming message. Two modes: full read (entire file each time) and incremental (byte-cursor tail — only new content since the last read). Path comes from the config field or from msg.filename per message.',
+      'Reads a file of the app\'s files on every incoming message, as Node-RED\'s read file node. The app\'s files are a folder of their own on the device; the file nodes cannot reach anything else.',
     inputs: [
-      'Any message — triggers one read. msg.filename overrides the configured path for this message only.',
+      'Any message triggers one read. msg.filename is read when File is empty.',
     ],
     outputs: [
-      'msg.payload = file content (string, Buffer, or line array depending on encoding / delimiter). msg.filename = resolved absolute path. msg.encoding = encoding used. In incremental mode: msg.eof = true when the cursor reaches the end of file.',
+      'a single string: msg.payload = the whole file as text.',
+      'a msg per line: one message per line, msg.payload = the line.',
+      'new lines since the last read: one message per line added since the previous read (for following a log).',
+      'bytes: msg.payload = the file as a list of numbers (0-255).',
+      'A folder in File: msg.payload = the list of its files (name, path, size, modified, isDir).',
+      'msg.filename = the file\'s name inside the app\'s files.',
     ],
     properties: [
-      { key: 'path',          desc: 'Absolute path to the file. Leave empty to use msg.filename from each incoming message.' },
-      { key: 'encoding',      desc: 'auto (by extension) | utf-8 | utf-16le (Windows / Excel) | utf-16be | utf-16 (BOM detection) | latin1 | windows-1252 | binary ([]int).' },
-      { key: 'incremental',   desc: 'When on: only read bytes added since the last run. Cursor is persisted so it survives restarts and redeployments.' },
-      { key: 'fromStart',     desc: 'Incremental only — emit all existing content on the first access (cursor starts at 0). Off by default (cursor pins to current EOF at start).' },
-      { key: 'delimiter',     desc: 'Split output into an array of lines at this byte sequence (e.g. \\n). Empty = no split, returns a single string.' },
-      { key: 'maxLineBytes',  desc: 'Safety limit per line when delimiter is set. Lines longer than this are truncated and flagged.' },
-      { key: 'rootJail',      desc: 'Resolved paths must stay inside this directory. Empty = no restriction.' },
+      { key: 'File',     desc: 'A name inside the app\'s files, e.g. logs/readings.csv, or a folder. Browse lists what is there. Message properties work in the name: logs/{{topic}}.log. Empty: msg.filename.' },
+      { key: 'Output',   desc: 'a single string | a msg per line | new lines since the last read | bytes.' },
+      { key: 'Encoding', desc: 'For text: UTF-8 (default), UTF-16, Latin-1 or Windows-1252.' },
     ],
     examples: [
-      {
-        title: 'Tail a growing log file',
-        config: 'path=/var/log/app.log · incremental=on · fromStart=off · delimiter=\\n',
-        result: 'Each trigger emits only new lines appended since the last read. Cursor survives restarts.',
-      },
-      {
-        title: 'Read a full file on demand',
-        config: 'path=(empty) · incremental=off · encoding=utf8',
-        result: 'msg.filename from upstream is read in full on each trigger. Useful for ad-hoc file processing.',
-      },
-      {
-        title: 'Binary file as Buffer',
-        config: 'path=/data/firmware.bin · encoding=buffer',
-        result: 'msg.payload = Buffer — pipe into a Function node or TCP-Out for binary forwarding.',
-      },
+      { title: 'Follow a log', config: 'File=logs/events.log · Output=new lines since the last read', result: 'Each trigger sends only the lines added since the previous one. The position survives restarts.' },
+      { title: 'React to new files', config: 'Watch → Read File (File empty) → CSV', result: 'Each new file in the watched folder is read and turned into objects.' },
     ],
     tips: [
-      'Leave path empty and pass msg.filename from File Watch — the classic watch → read pipeline.',
-      'Incremental cursor is line-aware: the cursor never advances past a partial trailing line, so partial writes are not emitted.',
-      'fromStart=off (default) pins the cursor to the current file size at deploy — only content written after deploy is emitted. Useful for "new events only" log tailing.',
-      'Chain a JSON Parser node after file-read to decode JSON-Lines (NDJSON) log files.',
+      '"new lines since the last read" starts at the end of the file on the first read; only lines written after that are sent.',
+      'See, download and delete the app\'s files in Settings → Files.',
     ],
   },
 
   'file-watch': {
     overview:
-      'Watches a file or directory for filesystem events and emits metadata messages — it never reads file content. Three modes: Read (list directory entries on trigger), Watch (event-driven), Read+Watch (always-incremental: emit only entries whose modTime advanced).\n\nChain a File Read node to consume changed file content.',
-    inputs: [
-      '(Read mode only) Any message triggers a directory listing. msg.path overrides the configured path for this message.',
-    ],
+      'Sends a message when a file in the app\'s files is created, changed or deleted, as Node-RED\'s watch node. It does not read the file: wire it to Read File for the content.',
     outputs: [
-      'One message per matching entry (sendAs=individual) or one message with an array (sendAs=array).',
-      'Each entry: msg.payload = { name, path, size, modTime, isDir }. Watch-mode entries also carry msg.payload.event = "create" | "write" | "remove" | "rename".',
+      'msg.payload and msg.filename = the file\'s name (e.g. incoming/order-1029.csv); msg.file = the name without folders; msg.event = create | write | remove; msg.size and msg.modified for files that exist.',
     ],
     properties: [
-      { key: 'mode',       desc: '"read" (list on trigger) | "watch" (event-driven) | "read+watch" (always-incremental scan per event).' },
-      { key: 'path',       desc: 'Absolute path to the file or directory. Required for watch / read+watch. Optional for read (falls back to msg.path).' },
-      { key: 'glob',       desc: 'Filename filter (e.g. *.csv, data-*.json). Default * = all files.' },
-      { key: 'recursive',  desc: 'Descend into subdirectories (read mode only). Watch is non-recursive in v1.' },
-      { key: 'sendAs',     desc: '"individual" (one message per entry, default) | "array" (one message with all entries as an array).' },
-      { key: 'incremental',desc: 'Read mode: only emit entries whose modTime advanced since the last scan. The state map is persisted.' },
-      { key: 'fromStart',  desc: 'Emit all existing entries on the very first access. Off by default.' },
-      { key: 'watchEvents',desc: 'Which FS events to listen for: create, write, remove, rename.' },
-      { key: 'debounceMs', desc: 'Coalesce rapid events into one emission per file. Default 100 ms.' },
-      { key: 'rootJail',   desc: 'Resolved paths must stay inside this directory. Empty = no restriction.' },
-    ],
-    examples: [
-      {
-        title: 'Watch a folder, chain to File Read',
-        config: 'mode=watch · path=/data/incoming · glob=*.csv · watchEvents=[create]',
-        result: 'Each new CSV triggers a message with msg.payload.path. Wire to a File Read node to process the file contents.',
-      },
-      {
-        title: 'Incremental directory scan',
-        config: 'mode=read · path=/data/reports · incremental=on · sendAs=individual',
-        result: 'On each trigger, only files that are new or changed since the last scan are emitted.',
-      },
-      {
-        title: 'Read+Watch for live folder monitoring',
-        config: 'mode=read+watch · path=/data/feeds · glob=*.json',
-        result: 'On every FS event, re-scans the folder and emits entries with advanced modTime. Combines polling accuracy with low latency.',
-      },
+      { key: 'File or folder', desc: 'A file, or a folder to watch all its files, inside the app\'s files.' },
+      { key: 'Watch sub-folders recursively', desc: 'Also watch every folder inside it, including folders created later.' },
     ],
     tips: [
-      'File Watch emits metadata only — msg.payload.path points to the file. Wire the output into a File Read node to get the content.',
-      'Debounce (default 100 ms) prevents bursts when editors write multiple chunks per save.',
-      'sendAs=array is useful when a downstream Function node needs to process the whole batch at once.',
-      'v1 limitation: watch is non-recursive even when "recursive" is enabled. Use read / read+watch for recursive traversal.',
+      'Changes within 100 ms are sent once, so a file written in several pieces gives one message.',
+      'Files already there when the flow starts are not sent; only changes after that.',
     ],
   },
 
   'file-out': {
     overview:
-      'Writes msg.payload to a file. Three modes: overwrite (replace), append (add to end), and create (only if the file does not exist). Path can be set in config or supplied per-message via msg.filename. Supports Mustache templates in the path, auto-encoding, optional parent directory creation, and an optional trailing newline.',
+      'Writes msg.payload to a file of the app\'s files, as Node-RED\'s write file node: appends to it, overwrites it, or deletes the file. Folders are created when needed.',
     inputs: [
-      'msg.payload — the content to write. String values are written as-is; objects are JSON-serialised; Buffers are written as raw bytes.',
-      'msg.filename overrides the configured path for this message.',
+      'msg.payload: text is written as UTF-8, a list of numbers (0-255) as bytes, other values as JSON.',
+      'msg.filename is used when File is empty.',
     ],
     outputs: [
-      'No output by default. The node is silent on success. Errors route to a Catch node.',
+      'The same message, after the file is written, so more nodes can follow.',
     ],
     properties: [
-      { key: 'path',          desc: 'File path. May contain {{mustache}} placeholders resolved from the message (e.g. /data/{{topic}}.log). Leave empty to use msg.filename.' },
-      { key: 'mode',          desc: '"overwrite" (default) | "append" | "create" (fail if file already exists).' },
-      { key: 'encoding',      desc: 'utf8 (default) | utf16le | latin1 | base64 | hex | buffer. Applies to string payloads. Buffer payloads are always written raw.' },
-      { key: 'createDirs',    desc: 'Automatically create parent directories if they do not exist. Off by default.' },
-      { key: 'appendNewline', desc: 'Append a \\n after the payload. Handy for log-line append patterns.' },
-      { key: 'rootJail',      desc: 'Resolved paths must stay inside this directory. Empty = no restriction.' },
+      { key: 'File',   desc: 'A name inside the app\'s files, e.g. logs/readings.csv. Message properties work in the name: logs/{{topic}}.log. Empty: msg.filename.' },
+      { key: 'Action', desc: 'Append (add to the end) | Overwrite (replace the file) | Delete (remove the file; the payload is not used).' },
+      { key: 'Add newline (\\n) to each payload', desc: 'On by default. Turn it off when the payload already ends with a newline (CSV) or for binary files.' },
     ],
     examples: [
-      {
-        title: 'Append a log line per message',
-        config: 'path=/var/log/flow.log · mode=append · appendNewline=on',
-        result: 'Each message adds one line to the log. No risk of overwriting previous entries.',
-      },
-      {
-        title: 'Write per-topic files with Mustache',
-        config: 'path=/data/{{topic}}.json · mode=overwrite',
-        result: 'msg.topic = "sensor/temp" → file /data/sensor/temp.json is created or replaced.',
-      },
-      {
-        title: 'One-shot file creation',
-        config: 'mode=create · createDirs=on',
-        result: 'Parent directories are created if missing. The write fails (catchable error) if the file already exists — safe for exactly-once creation patterns.',
-      },
+      { title: 'A log line per message', config: 'File=logs/events.log · Append · Add newline', result: 'Each message adds one line to the file.' },
+      { title: 'CSV, one file per day', config: 'CSV → Write File, File=logs/readings-{{day}}.csv · Append · no newline', result: 'See the example "Log readings to CSV".' },
     ],
     tips: [
-      'Object payloads are automatically JSON-serialised. For pretty JSON, add a JSON Parser (stringify, indent=2) node upstream.',
-      'Mustache templates resolve msg fields: {{payload.id}}, {{topic}}, {{filename}}, etc.',
-      'Use rootJail in untrusted flows to prevent path-traversal writes outside a safe directory.',
-      'Wire a Catch node downstream to handle write errors (permission denied, disk full) without crashing the flow.',
+      'Wire a Catch node to handle write errors (disk full) without stopping the flow.',
+      'See, download and delete the files in Settings → Files.',
     ],
   },
 

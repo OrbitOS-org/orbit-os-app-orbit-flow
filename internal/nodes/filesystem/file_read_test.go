@@ -64,9 +64,6 @@ func TestFileRead_UTF8(t *testing.T) {
 	if got := msg.Get("payload"); got != "hello world" {
 		t.Errorf("payload = %v, want %q", got, "hello world")
 	}
-	if got := msg.Get("encoding"); got != "utf-8" {
-		t.Errorf("encoding = %v, want utf-8", got)
-	}
 	if got := msg.Get("filename"); got != path {
 		t.Errorf("filename = %v, want %q", got, path)
 	}
@@ -82,7 +79,7 @@ func TestFileRead_Binary(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	fr, _ := newFileRead(t, map[string]any{"path": path})
+	fr, _ := newFileRead(t, map[string]any{"path": path, "output": "bytes"})
 	out, _ := fr.HandleMessage(flow.NewMessage())
 	msg := out[0][0]
 
@@ -94,33 +91,6 @@ func TestFileRead_Binary(t *testing.T) {
 	for i, b := range bytes {
 		if b != want[i] {
 			t.Errorf("byte[%d] = %d, want %d", i, b, want[i])
-		}
-	}
-	if got := msg.Get("encoding"); got != "binary" {
-		t.Errorf("encoding = %v, want binary", got)
-	}
-}
-
-func TestFileRead_AutoEncoding(t *testing.T) {
-	dir := t.TempDir()
-	cases := map[string]string{
-		"data.json": "utf-8",
-		"app.log":   "utf-8",
-		"img.png":   "binary",
-		"raw.bin":   "binary",
-	}
-	for name, wantEnc := range cases {
-		path := filepath.Join(dir, name)
-		if err := os.WriteFile(path, []byte("xyz"), 0o644); err != nil {
-			t.Fatal(err)
-		}
-		fr, _ := newFileRead(t, map[string]any{"path": path, "encoding": "auto"})
-		out, err := fr.HandleMessage(flow.NewMessage())
-		if err != nil {
-			t.Fatalf("%s: HandleMessage: %v", name, err)
-		}
-		if got := out[0][0].Get("encoding"); got != wantEnc {
-			t.Errorf("%s: encoding = %v, want %v", name, got, wantEnc)
 		}
 	}
 }
@@ -324,15 +294,11 @@ func TestFileRead_Incremental_FromStart(t *testing.T) {
 	if err != nil {
 		t.Fatalf("HandleMessage: %v", err)
 	}
-	msg := out[0][0]
-	if got := msg.Get("payload"); got != "alice\nbob\n" {
-		t.Errorf("payload = %v", got)
+	if got := payloads(out); !equalAny(got, "alice", "bob") {
+		t.Errorf("payloads = %v, want one message per line", got)
 	}
-	if got := msg.Get("lineCount"); got != 2 {
-		t.Errorf("lineCount = %v, want 2", got)
-	}
-	if got, _ := msg.Get("position").(int64); got != 10 {
-		t.Errorf("position = %v, want 10", msg.Get("position"))
+	if out[0][0].Get("position") != nil {
+		t.Error("a message per line carries no position (the CSV node would take it for a chunk)")
 	}
 }
 
@@ -384,8 +350,8 @@ func TestFileRead_Incremental_AppendsOnly(t *testing.T) {
 	_ = f.Close()
 
 	out, _ = fr.HandleMessage(flow.NewMessage())
-	if got := out[0][0].Get("payload"); got != "first\nsecond\n" {
-		t.Errorf("after append: payload = %v", got)
+	if got := payloads(out); !equalAny(got, "first", "second") {
+		t.Errorf("after append: payloads = %v", got)
 	}
 
 	f, _ = os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0o644)
@@ -393,8 +359,8 @@ func TestFileRead_Incremental_AppendsOnly(t *testing.T) {
 	_ = f.Close()
 
 	out, _ = fr.HandleMessage(flow.NewMessage())
-	if got := out[0][0].Get("payload"); got != "third\n" {
-		t.Errorf("delta read: payload = %v", got)
+	if got := payloads(out); !equalAny(got, "third") {
+		t.Errorf("delta read: payloads = %v", got)
 	}
 }
 
@@ -421,8 +387,8 @@ func TestFileRead_Incremental_PartialLineNotEmitted(t *testing.T) {
 	_ = f.Close()
 
 	out, _ = fr.HandleMessage(flow.NewMessage())
-	if got := out[0][0].Get("payload"); got != "incomplete\n" {
-		t.Errorf("after newline: payload = %v", got)
+	if got := payloads(out); !equalAny(got, "incomplete") {
+		t.Errorf("after newline: payloads = %v", got)
 	}
 }
 
@@ -483,61 +449,11 @@ func TestFileRead_Incremental_TruncationEmitsReset(t *testing.T) {
 	}
 	out, _ := fr.HandleMessage(flow.NewMessage())
 	msg := out[0][0]
-	if got := msg.Get("payload"); got != "new\n" {
-		t.Errorf("after truncation: payload = %v", got)
+	if got := payloads(out); !equalAny(got, "new") {
+		t.Errorf("after truncation: payloads = %v", got)
 	}
 	if got, _ := msg.Get("reset").(bool); !got {
 		t.Errorf("expected reset=true on truncation")
-	}
-}
-
-func TestFileRead_Incremental_DelimiterNone(t *testing.T) {
-	dir := t.TempDir()
-	path := filepath.Join(dir, "log.bin")
-	if err := os.WriteFile(path, []byte{1, 2, 3}, 0o644); err != nil {
-		t.Fatal(err)
-	}
-	fr, _ := newFileRead(t, map[string]any{
-		"path":        path,
-		"encoding":    "binary",
-		"incremental": true,
-		"fromStart":   true,
-		"delimiter":   "none",
-	})
-	withReadPers(fr)
-
-	out, _ := fr.HandleMessage(flow.NewMessage())
-	msg := out[0][0]
-	bytes, _ := msg.Get("payload").([]int)
-	if len(bytes) != 3 {
-		t.Errorf("payload len = %d, want 3", len(bytes))
-	}
-	if got := msg.Get("lineCount"); got != nil {
-		t.Errorf("lineCount should be absent for DelimNone, got %v", got)
-	}
-}
-
-func TestFileRead_Incremental_DefaultDelimiterByEncoding(t *testing.T) {
-	dir := t.TempDir()
-	path := filepath.Join(dir, "blob.bin")
-	if err := os.WriteFile(path, []byte{0xFF, 0xFE, 0xFD}, 0o644); err != nil {
-		t.Fatal(err)
-	}
-	fr, _ := newFileRead(t, map[string]any{
-		"path":        path,
-		"encoding":    "auto",
-		"incremental": true,
-		"fromStart":   true,
-	})
-	withReadPers(fr)
-
-	out, _ := fr.HandleMessage(flow.NewMessage())
-	if out == nil {
-		t.Fatal("expected emission for binary file with default delimiter")
-	}
-	bytes, ok := out[0][0].Get("payload").([]int)
-	if !ok || len(bytes) != 3 {
-		t.Errorf("expected 3-byte []int payload, got %T %v", out[0][0].Get("payload"), out[0][0].Get("payload"))
 	}
 }
 
@@ -556,5 +472,89 @@ func TestFileRead_Incremental_StartFailsWithoutFlowPers(t *testing.T) {
 	if err := fr.Start(); err == nil {
 		_ = fr.Stop()
 		t.Fatal("expected Start to fail without flowPers, got nil")
+	}
+}
+
+// payloads collects msg.payload of every message sent on the output.
+func payloads(out [][]*flow.Message) []any {
+	var got []any
+	for _, port := range out {
+		for _, m := range port {
+			got = append(got, m.Payload())
+		}
+	}
+	return got
+}
+
+func equalAny(got []any, want ...string) bool {
+	if len(got) != len(want) {
+		return false
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func TestFileRead_Outputs(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "r.csv")
+	if err := os.WriteFile(path, []byte("a,1\r\nb,2\r\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	read := func(output string) [][]*flow.Message {
+		fr, _ := newFileRead(t, map[string]any{"path": path, "output": output})
+		out, err := fr.HandleMessage(flow.NewMessage())
+		if err != nil {
+			t.Fatalf("%s: %v", output, err)
+		}
+		return out
+	}
+	if got := payloads(read("string")); !equalAny(got, "a,1\r\nb,2\r\n") {
+		t.Errorf("string: %v", got)
+	}
+	if got := payloads(read("lines")); !equalAny(got, "a,1", "b,2") {
+		t.Errorf("lines: %v (CRLF and the last newline must not show)", got)
+	}
+	if b, ok := read("bytes")[0][0].Payload().([]int); !ok || len(b) != 10 {
+		t.Errorf("bytes: %T", read("bytes")[0][0].Payload())
+	}
+}
+
+func TestFileRead_FolderGivesItsFiles(t *testing.T) {
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "a.log"), []byte("12345"), 0o644)
+	_ = os.Mkdir(filepath.Join(dir, "sub"), 0o755)
+	fr, _ := newFileRead(t, map[string]any{"path": dir})
+	out, err := fr.HandleMessage(flow.NewMessage())
+	if err != nil {
+		t.Fatal(err)
+	}
+	list, ok := out[0][0].Payload().([]map[string]any)
+	if !ok || len(list) != 2 {
+		t.Fatalf("payload = %#v", out[0][0].Payload())
+	}
+	if list[0]["name"] != "a.log" || list[0]["size"] != int64(5) || list[0]["isDir"] != false || list[1]["isDir"] != true {
+		t.Errorf("entries = %v", list)
+	}
+}
+
+func TestFileRead_OldSettingsStillWork(t *testing.T) {
+	cases := []struct {
+		props map[string]any
+		want  string
+	}{
+		{map[string]any{"incremental": true}, readOutNew},
+		{map[string]any{"encoding": "binary"}, readOutBytes},
+		{map[string]any{"encoding": "auto"}, readOutString},
+	}
+	for _, c := range cases {
+		c.props["path"] = "x"
+		fr, _ := newFileRead(t, c.props)
+		if fr.output != c.want || fr.encoding == "binary" || fr.encoding == "auto" {
+			t.Errorf("%v: output=%q encoding=%q, want output %q and a text encoding", c.props, fr.output, fr.encoding, c.want)
+		}
 	}
 }

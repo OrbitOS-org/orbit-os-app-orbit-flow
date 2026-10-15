@@ -210,24 +210,21 @@ const summaries: Record<string, NodeSummaryFn> = {
   },
 
   'file-read'(cfg) {
-    const incremental = Boolean(cfg.incremental)
+    const output = (cfg.output as string) || (cfg.incremental ? 'new' : cfg.encoding === 'binary' ? 'bytes' : 'string')
     const path = (cfg.path as string) || 'msg.filename'
-    const tag = incremental ? 'incr' : 'read'
-    return `${tag} · ${path}`
+    const tag: Record<string, string> = { string: 'as text', lines: 'a message per line', new: 'new lines only', bytes: 'as bytes' }
+    return `reads ${path} ${tag[output] ?? ''}`
   },
 
   'file-watch'(cfg) {
-    const mode = (cfg.mode as string) || 'watch'
-    const path = (cfg.path as string) || (mode === 'read' ? 'msg.path' : '(set path)')
-    const glob = (cfg.glob as string) || '*'
-    const tail = glob && glob !== '*' ? ` [${glob}]` : ''
-    return `${mode} · ${path}${tail}`
+    const path = (cfg.path as string) || '(set a file or folder)'
+    return `watches ${path}${cfg.recursive ? ' and its sub-folders' : ''}`
   },
 
   'file-out'(cfg) {
-    const mode = (cfg.mode as string) || 'overwrite'
+    const mode = (cfg.mode as string) || 'append'
     const path = (cfg.path as string) || 'msg.filename'
-    return `${mode} · ${path}`
+    return mode === 'delete' ? `deletes ${path}` : `${mode === 'append' ? 'appends to' : 'overwrites'} ${path}`
   },
 
   delay(cfg) {

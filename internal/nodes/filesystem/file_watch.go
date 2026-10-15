@@ -153,6 +153,15 @@ func (n *FileWatchNode) Start() error {
 		return fmt.Errorf("file-watch %s: add watch: %w", n.cfg.ID, err)
 	}
 	n.watcher = w
+	// fsnotify watches one folder at a time: recursive needs every sub-folder.
+	if n.recursive {
+		_ = filepath.WalkDir(resolved, func(p string, d fs.DirEntry, err error) error {
+			if err == nil && d.IsDir() && p != resolved {
+				_ = w.Add(p)
+			}
+			return nil
+		})
+	}
 
 	if requiresPers {
 		if err := n.initDirCursor(resolved); err != nil {
@@ -163,7 +172,7 @@ func (n *FileWatchNode) Start() error {
 	}
 
 	if n.Status != nil {
-		n.Status("green", "watching · "+resolved)
+		n.Status("green", "watching "+relName(resolved))
 	}
 	n.wg.Add(1)
 	go n.watchLoop()
@@ -363,6 +372,15 @@ func (n *FileWatchNode) handleWatchTick() {
 		entries = []folderEntry{makeFolderEntry(n.resolved, info)}
 	}
 
+	// New sub-folders get watched too.
+	if n.recursive {
+		for _, e := range entries {
+			if e.IsDir {
+				_ = n.watcher.Add(e.Path)
+			}
+		}
+	}
+
 	switch n.mode {
 	case fileWatchModeWatch:
 		n.dispatchWatch(entries)
@@ -451,19 +469,25 @@ func (n *FileWatchNode) dispatchWatchIncremental(entries []folderEntry) {
 	_ = saveDirCursor(n.flowPers, key, newMap)
 }
 
-// emitChangeMsg packages one entry change into a flow message and sends
-// it on the output port. Both msg.filename and msg.path are set so the
-// downstream file-read can pick up the changed path either way.
+// emitChangeMsg sends one change, as Node-RED's watch node: msg.payload
+// and msg.filename are the file's name inside the files folder
+// ("incoming/order-1029.csv"), so a Read File wired after it reads it;
+// msg.event is create, write or remove.
 func (n *FileWatchNode) emitChangeMsg(e folderEntry, eventName, previousModTime string) {
+	name := relName(e.Path)
 	msg := flow.NewMessage()
-	msg.SetTopic(e.Path)
+	msg.SetTopic(name)
 	msg.Set("event", eventName)
-	msg.Set("changed", true)
-	msg.Set("filename", e.Path)
+	msg.Set("filename", name)
+	msg.Set("file", e.Name)
+	if eventName != "remove" {
+		msg.Set("size", e.Size)
+		msg.Set("modified", e.ModTime)
+	}
 	if previousModTime != "" {
 		msg.Set("previousModTime", previousModTime)
 	}
-	msg.SetPayload(entryToMap(e))
+	msg.SetPayload(name)
 	n.Send(0, msg)
 }
 
@@ -712,19 +736,15 @@ func FileWatchTypeInfo() flow.NodeTypeInfo {
 	return flow.NodeTypeInfo{
 		Type:        "file-watch",
 		Category:    "storage",
-		Label:       "File Watch",
-		Description: "Watch a file or folder for changes (metadata only)",
+		Label:       "Watch",
+		Description: "Sends a message when a file in a folder is created, changed or deleted",
 		Icon:        "folder-in",
+		Keywords:    []string{"file", "folder", "watch", "change", "new file"},
 		Defaults: map[string]any{
 			"mode":        "watch",
 			"path":        "",
 			"recursive":   false,
-			"glob":        "*",
-			"watchEvents": []string{"create", "write", "remove", "rename"},
-			"sendAs":      "individual",
-			"debounceMs":  100,
-			"incremental": false,
-			"fromStart":   false,
+			"incremental": true,
 		},
 		Inputs:  1,
 		Outputs: 1,
