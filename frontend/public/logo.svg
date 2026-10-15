@@ -1,29 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Orbit Flow">
-  <!-- Orbit Flow icon: one node feeding two, joined by wires, on the Orbit OS purple.
-       The bars on the nodes use the colours the editor gives its node groups. -->
+  <!-- Orbit Flow icon: one node feeding two, in white on the Orbit OS purple.
+       Same mark and tile as the sign-in screen (frontend/src/components/AppMark.vue
+       on .auth-icon): the 24-unit mark scaled 1.5x and centred. -->
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#a08bff"/>
-      <stop offset="0.5" stop-color="#6f52e6"/>
+      <stop offset="0.55" stop-color="#6f52e6"/>
       <stop offset="1" stop-color="#3f25a3"/>
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
-  <path d="M27 32 C33 32 31 18 37 18 M27 32 C33 32 31 46 37 46" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"/>
-  <g fill="#0d1117">
-    <rect x="7" y="23.5" width="20" height="17" rx="4.5"/>
-    <rect x="37" y="10" width="20" height="16" rx="4.5"/>
-    <rect x="37" y="38" width="20" height="16" rx="4.5"/>
-  </g>
-  <rect x="7" y="23.5" width="4" height="17" rx="2" fill="#4dff8f"/>
-  <rect x="37" y="10" width="4" height="16" rx="2" fill="#38b6ff"/>
-  <rect x="37" y="38" width="4" height="16" rx="2" fill="#f2b04a"/>
-  <g fill="#ffffff" opacity="0.85">
-    <rect x="14" y="29" width="9" height="2.2" rx="1.1"/>
-    <rect x="14" y="33.5" width="6" height="2.2" rx="1.1"/>
-    <rect x="44" y="15" width="9" height="2.2" rx="1.1"/>
-    <rect x="44" y="19.5" width="6" height="2.2" rx="1.1"/>
-    <rect x="44" y="43" width="9" height="2.2" rx="1.1"/>
-    <rect x="44" y="47.5" width="6" height="2.2" rx="1.1"/>
+  <rect width="64" height="64" rx="15" fill="url(#bg)"/>
+  <g transform="translate(14 14) scale(1.5)">
+    <path d="M9.5 12c2.6 0 2-6 5-6M9.5 12c2.6 0 2 6 5 6" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round"/>
+    <g fill="#ffffff">
+      <rect x="1.5" y="8.5" width="8" height="7" rx="2"/>
+      <rect x="14.5" y="2.5" width="8" height="7" rx="2"/>
+      <rect x="14.5" y="14.5" width="8" height="7" rx="2"/>
+    </g>
   </g>
 </svg>
