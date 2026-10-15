@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { newId } from '@/lib/id'
 import { ref, computed, onMounted } from 'vue'
 import { useFlowStore } from '@/stores/flowStore'
 import { useUiStore } from '@/stores/uiStore'
@@ -122,7 +123,7 @@ function save() {
   if (isEditing.value && props.configId) {
     flowStore.updateConfig(props.configId, { name: label, config })
   } else {
-    flowStore.addConfig({ id: crypto.randomUUID(), type: 'serial-port', name: label, config })
+    flowStore.addConfig({ id: newId(), type: 'serial-port', name: label, config })
   }
   cancel()
 }

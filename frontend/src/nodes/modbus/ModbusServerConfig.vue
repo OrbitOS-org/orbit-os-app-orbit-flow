@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { newId } from '@/lib/id'
 import { ref, computed, onMounted } from 'vue'
 import { useFlowStore } from '@/stores/flowStore'
 import { useUiStore } from '@/stores/uiStore'
@@ -143,7 +144,7 @@ onMounted(async () => {
 })
 
 function generateId(): string {
-  return crypto.randomUUID()
+  return newId()
 }
 
 function save() {

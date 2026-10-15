@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { newId } from '@/lib/id'
 import { computed, ref } from 'vue'
 import FormInput from '@/components/ui/FormInput.vue'
 import FormSelect from '@/components/ui/FormSelect.vue'
@@ -30,7 +31,7 @@ interface LayoutField {
 
 function defaultField(): LayoutField {
   return {
-    id: crypto.randomUUID(),
+    id: newId(),
     offset: '0',
     name: '',
     type: 'real',
@@ -52,7 +53,7 @@ const layout = computed<LayoutField[]>({
     (rawLayout.value ?? []).map((raw) => {
       const f = (raw ?? {}) as Record<string, unknown>
       return {
-        id: (f.id as string) || crypto.randomUUID(),
+        id: (f.id as string) || newId(),
         offset: stringifyOffset(f.offset),
         name: String(f.name ?? ''),
         type: String(f.type ?? 'real'),

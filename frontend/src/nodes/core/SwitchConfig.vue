@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { newId } from '@/lib/id'
 import { computed, nextTick } from 'vue'
 import { useVueFlow } from '@vue-flow/core'
 import { useFlowStore } from '@/stores/flowStore'
@@ -93,7 +94,7 @@ const rules = computed<Rule[]>(() => {
 
 function newRule(): Rule {
   return {
-    id: crypto.randomUUID(),
+    id: newId(),
     t: 'eq', v: '', vt: 'str', vs: 'memory',
     v2: '', v2t: 'str', v2s: 'memory',
     case: false,

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, markRaw, ref, shallowRef, triggerRef } from 'vue'
 import type { DebugMessage } from '@/types/events'
 import { useFlowStore } from './flowStore'
+import { newId } from '@/lib/id'
 
 const MAX_MESSAGES = 1000
 
@@ -119,7 +120,7 @@ export const useDebugStore = defineStore('debug', () => {
 
     // Defensive: backend should always provide an ID, but if missing, generate
     // a stable one so :key / v-memo can identify the row uniquely.
-    if (!message.id) message.id = crypto.randomUUID()
+    if (!message.id) message.id = newId()
 
     // markRaw prevents Vue from wrapping the (immutable) payload tree in proxies.
     const arr = messages.value

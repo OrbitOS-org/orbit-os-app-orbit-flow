@@ -11,6 +11,7 @@ import type {
   DeployModeType,
 } from "@/types/flow";
 import { useApi } from "@/composables/useApi";
+import { newId } from '@/lib/id';
 
 interface FlowNode {
   id: string;
@@ -139,10 +140,7 @@ export const useFlowStore = defineStore("flow", () => {
   // --------------- Helpers ---------------
 
   function generateId(): string {
-    return (
-      crypto.randomUUID?.() ??
-      `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
-    );
+    return newId();
   }
 
   function markDirty(flowId?: string): void {
@@ -878,6 +876,15 @@ export const useFlowStore = defineStore("flow", () => {
   function addConfig(config: ConfigNode): void {
     configs.value.push(config);
     dirty.value = true;
+    // Created with "+ New" on a node: that node uses it from now on.
+    const ctx = useUiStore().propertiesContext;
+    if (ctx?.type === 'config-edit' && ctx.configType === config.type && ctx.assignTo) {
+      const node = nodes.value.find((n) => n.id === ctx.assignTo!.nodeId);
+      if (node) {
+        const cfg = (node.data?.config ?? {}) as Record<string, unknown>;
+        updateNodeData(node.id, { config: { ...cfg, [ctx.assignTo.key]: config.id } });
+      }
+    }
   }
 
   function updateConfig(id: string, updates: Partial<ConfigNode>): void {

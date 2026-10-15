@@ -16,7 +16,9 @@ export type PropertiesContext =
   | { type: 'node' }
   | { type: 'flow-create' }
   | { type: 'flow-edit'; flowId: string }
-  | { type: 'config-edit'; configType: string; configId?: string }
+  // assignTo: the node property that gets a connection created here ("+ New"
+  // on a node), so the node uses it at once, as in Node-RED.
+  | { type: 'config-edit'; configType: string; configId?: string; assignTo?: { nodeId: string; key: string } }
   | null
 
 export const useUiStore = defineStore('ui', () => {
@@ -89,8 +91,8 @@ export const useUiStore = defineStore('ui', () => {
     propertiesContext.value = null
   }
 
-  function openConfigEditor(configType: string, configId?: string) {
-    propertiesContext.value = { type: 'config-edit', configType, configId }
+  function openConfigEditor(configType: string, configId?: string, assignTo?: { nodeId: string; key: string }) {
+    propertiesContext.value = { type: 'config-edit', configType, configId, assignTo }
     propertiesPanelOpen.value = true
   }
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { copyText } from '@/lib/clipboard'
 import { computed, defineAsyncComponent } from 'vue'
 import { useUiStore } from '@/stores/uiStore'
 import { useFlowStore } from '@/stores/flowStore'
@@ -69,9 +70,7 @@ function formatValue(value: unknown): string {
 }
 
 function copyId(id: string) {
-  if (typeof navigator !== 'undefined' && navigator.clipboard) {
-    navigator.clipboard.writeText(id).catch(() => {})
-  }
+  void copyText(id)
 }
 
 // ── Resize handle ────────────────────────────────────────────────

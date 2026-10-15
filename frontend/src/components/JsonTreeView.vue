@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { copyText } from '@/lib/clipboard'
 import { computed, ref } from 'vue'
 import { useDebugStore } from '@/stores/debugStore'
 
@@ -125,11 +126,7 @@ function valueAsString(v: unknown): string {
 }
 
 async function copy(text: string, target: 'path' | 'value') {
-  try {
-    await navigator.clipboard.writeText(text)
-  } catch {
-    return
-  }
+  if (!(await copyText(text))) return
   if (target === 'path') {
     copiedPath.value = true
     setTimeout(() => (copiedPath.value = false), 1000)

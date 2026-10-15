@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { newId } from '@/lib/id'
 import { computed, ref } from 'vue'
 import FormInput from '@/components/ui/FormInput.vue'
 import FormSelect from '@/components/ui/FormSelect.vue'
@@ -26,7 +27,7 @@ interface LayoutField {
 // Default new field values. Bit = -1 sentinel matches the backend.
 function defaultField(): LayoutField {
   return {
-    id: crypto.randomUUID(),
+    id: newId(),
     offset: 0,
     name: '',
     type: 'uint16',
@@ -47,7 +48,7 @@ const rawLayout = useNodeProperty<Partial<LayoutField>[]>('layout', [])
 const layout = computed<LayoutField[]>({
   get: () =>
     (rawLayout.value ?? []).map((f) => ({
-      id: (f.id as string) || crypto.randomUUID(),
+      id: (f.id as string) || newId(),
       offset: Number(f.offset ?? 0),
       name: String(f.name ?? ''),
       type: String(f.type ?? 'uint16'),

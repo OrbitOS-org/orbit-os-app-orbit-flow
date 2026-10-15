@@ -33,8 +33,23 @@ export function useConfigSelector(configType: string) {
     return port ? `${host}:${port}` : host
   }
 
+  // The node property that holds a connection of each type.
+  const NODE_KEY: Record<string, string> = {
+    'mqtt-broker': 'broker',
+    'modbus-server': 'server',
+    'opcua-server': 'server',
+    's7-plc': 'plc',
+    'gpio-pin': 'pin',
+    'i2c-bus': 'bus',
+    'spi-device': 'device',
+    'serial-port': 'port',
+  }
+
+  /** Opens the editor for a new connection; once created, the selected node uses it. */
   function openNewConfig() {
-    uiStore.openConfigEditor(configType)
+    const node = flowStore.selectedNode
+    const key = NODE_KEY[configType]
+    uiStore.openConfigEditor(configType, undefined, node && key ? { nodeId: node.id, key } : undefined)
   }
 
   function openEditConfig(configId: string) {
