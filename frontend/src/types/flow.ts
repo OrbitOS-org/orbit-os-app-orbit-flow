@@ -154,6 +154,8 @@ export interface DeployResponse {
   configs?: ConfigNode[]
   success: boolean
   error?: string
+  /** The flows are stopped (Stop Flows): saved, not started. */
+  stopped?: boolean
 }
 
 export interface FlowsResponse {

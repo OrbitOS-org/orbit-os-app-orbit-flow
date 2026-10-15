@@ -32,6 +32,7 @@ import (
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/logbuffer"
 	flownats "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nats"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes"
+	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/runstate"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/storage"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/ws"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/web"
@@ -70,6 +71,10 @@ type Server struct {
 
 	// store is the persistent storage for flows and credentials.
 	store storage.Storage
+
+	// runState says whether the flows are stopped (Stop Flows), kept across
+	// restarts as in Node-RED.
+	runState *runstate.State
 
 	// certs is the shared TLS certificate store used by connection nodes
 	// (TCP, HTTP, MQTT, OPC UA) to resolve cert refs and by the API
@@ -191,7 +196,13 @@ func New(cfg *config.Config, logBuffer *logbuffer.Buffer) (*Server, error) {
 		return nil, fmt.Errorf("server: %w", err)
 	}
 
+	runState, err := runstate.Load(cfg.DataDir)
+	if err != nil {
+		slog.Warn("flows state unreadable, starting the flows", "error", err)
+	}
+
 	s := &Server{
+		runState:        runState,
 		router:          chi.NewRouter(),
 		cfg:             cfg,
 		engine:          engine,
@@ -315,6 +326,7 @@ func (s *Server) setupRoutes() {
 		LogBuffer: s.logBuffer,
 		Certs:     s.certs,
 		Library:   library.New(filepath.Join(s.cfg.DataDir, "library")),
+		RunState:  s.runState,
 	}
 	deps.Users = s.users
 	deps.Sessions = s.sessions
@@ -514,6 +526,8 @@ func (s *Server) Start() error {
 	// Load saved workspace from storage and deploy.
 	if ws, err := s.store.LoadWorkspace(); err != nil {
 		slog.Error("failed to load workspace from storage", "error", err)
+	} else if s.runState.Stopped() {
+		slog.Info("flows are stopped (Stop Flows): not starting them", "flows", len(ws.Flows))
 	} else if len(ws.Flows) > 0 {
 		if err := s.engine.Deploy(ws.Flows, ws.Configs, flow.DeployFull); err != nil {
 			slog.Error("failed to deploy saved workspace", "error", err)

@@ -435,6 +435,20 @@ export function useApi() {
 
   // ── Auth endpoints ───────────────────────────────────────────────────────
 
+  /** Stop Flows / Start Flows state, as Node-RED's /flows/state. */
+  async function getFlowsState(): Promise<'start' | 'stop'> {
+    const res = await request<{ state: 'start' | 'stop' }>('/flows/state')
+    return res.state
+  }
+
+  async function setFlowsState(state: 'start' | 'stop'): Promise<'start' | 'stop'> {
+    const res = await request<{ state: 'start' | 'stop' }>('/flows/state', {
+      method: 'POST',
+      body: JSON.stringify({ state }),
+    })
+    return res.state
+  }
+
   async function setupAdmin(username: string, password: string): Promise<User> {
     const res = await request<{ user: User }>('/setup', {
       method: 'POST',
@@ -736,6 +750,8 @@ export function useApi() {
     listAllStateMachines,
     getStateMachineSnapshot,
     setupAdmin,
+    getFlowsState,
+    setFlowsState,
     login,
     logout,
     getMe,

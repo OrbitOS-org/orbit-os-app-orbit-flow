@@ -42,6 +42,20 @@ export const useUiStore = defineStore('ui', () => {
   // Why the last deploy failed, when the server said (e.g. a serial port
   // used by two connections); shown in the banner.
   const deployError = ref<string | null>(null)
+  // Stop Flows (Deploy menu), as in Node-RED: no flow runs on the device
+  // until Start Flows. Read from the device; kept there across restarts.
+  const flowsStopped = ref(false)
+  // A short message in the banner under the header ("Flows stopped…").
+  const notice = ref<{ text: string; tone: 'ok' | 'warn' } | null>(null)
+  let noticeTimer: ReturnType<typeof setTimeout> | null = null
+  function showNotice(text: string, tone: 'ok' | 'warn' = 'ok') {
+    if (noticeTimer) clearTimeout(noticeTimer)
+    notice.value = { text, tone }
+    noticeTimer = setTimeout(() => { notice.value = null; noticeTimer = null }, 3500)
+  }
+  function setFlowsStopped(v: boolean) {
+    flowsStopped.value = v
+  }
   const propertiesContext = ref<PropertiesContext>(null)
   const logsPanelOpen = ref<boolean>(false)
   const logsLimit = ref<LogsLimit>(loadLogsLimit())
@@ -187,6 +201,10 @@ export const useUiStore = defineStore('ui', () => {
     connectionStatus,
     deployStatus,
     deployError,
+    flowsStopped,
+    setFlowsStopped,
+    notice,
+    showNotice,
     logsPanelOpen,
     logsLimit,
 

@@ -35,7 +35,7 @@ export interface NodeStatus {
 }
 
 export interface DeployEvent {
-  action: 'deploying' | 'deployed' | 'failed'
+  action: 'deploying' | 'deployed' | 'failed' | 'stopped' | 'started'
   revision: string
   message?: string
 }

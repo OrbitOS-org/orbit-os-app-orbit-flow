@@ -20,6 +20,7 @@ import (
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/logbuffer"
 	flownats "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nats"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes/serial"
+	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/runstate"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/storage"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/ws"
 	"github.com/go-chi/chi/v5"
@@ -35,6 +36,8 @@ type Deps struct {
 	// Library keeps the flows closed with "Save and close".
 	Library *library.Store
 	Certs   *credentials.CertStore
+	// RunState says whether the flows are stopped (Stop Flows).
+	RunState *runstate.State
 
 	// authDeps embeds the auth-specific dependencies (UserStore,
 	// SessionManager, Middleware, throttle, setup mutex) so the auth
@@ -145,6 +148,27 @@ func (d *Deps) handleDeployFlows(w http.ResponseWriter, r *http.Request) {
 	mode := flow.DeployModifiedNodes // default
 	if req.Mode != "" {
 		mode = flow.DeployMode(req.Mode)
+	}
+
+	// Stopped (Stop Flows): the changes are saved and run on Start Flows, as
+	// in Node-RED. Restart Flows needs the flows started.
+	if d.RunState.Stopped() {
+		if mode == flow.DeployRestart {
+			d.broadcast(ws.EventDeploy, map[string]any{"action": "failed", "revision": "", "message": "the flows are stopped"})
+			jsonError(w, http.StatusConflict, "the flows are stopped: use Start Flows")
+			return
+		}
+		rev := workspaceRevision(workspace)
+		slog.Info("workspace saved; flows are stopped, not started", "rev", rev)
+		d.broadcast(ws.EventDeploy, map[string]any{"action": "deployed", "revision": rev, "mode": string(mode)})
+		jsonResponse(w, http.StatusOK, map[string]any{
+			"success": true,
+			"rev":     rev,
+			"flows":   req.Flows,
+			"configs": req.Configs,
+			"stopped": true,
+		})
+		return
 	}
 
 	// Restart mode: full engine restart before deploy.

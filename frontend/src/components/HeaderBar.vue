@@ -71,8 +71,15 @@ const deployModes: { value: DeployModeType; label: string; description: string }
 ]
 
 async function handleRestart(): Promise<void> {
+  if (uiStore.flowsStopped) return
   showDeployMenu.value = false
   await flowStore.restartFlows()
+}
+
+// Stop Flows / Start Flows, as in Node-RED 3.0: same line, one or the other.
+async function handleStopStart(): Promise<void> {
+  showDeployMenu.value = false
+  await flowStore.setFlowsRunning(uiStore.flowsStopped)
 }
 
 function handleClickOutside(event: MouseEvent) {
@@ -124,6 +131,12 @@ function selectMode(mode: DeployModeType): void {
 
     <!-- Right: Actions & Status -->
     <div class="flex items-center gap-2">
+      <!-- Stop Flows: nothing runs on the device until Start Flows -->
+      <span
+        v-if="uiStore.flowsStopped"
+        class="flows-stopped"
+        title="The flows are stopped on the device. Deploy menu → Start Flows runs them again."
+      ><i />Flows stopped</span>
       <!-- Connection status -->
       <div
         class="flex items-center gap-1.5 px-2 py-1 rounded"
@@ -349,12 +362,24 @@ function selectMode(mode: DeployModeType): void {
           <button
             class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-xs hover:bg-terminal-surface-alt transition-colors duration-100 disabled:opacity-50"
             :disabled="deployBusy"
+            @click="handleStopStart"
+          >
+            <svg v-if="!uiStore.flowsStopped" class="w-3.5 h-3.5 shrink-0 text-status-error" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
+            <svg v-else class="w-3.5 h-3.5 shrink-0 text-status-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M7 4l13 8-13 8z" /></svg>
+            <div>
+              <div class="font-medium" :class="uiStore.flowsStopped ? 'text-status-success' : 'text-status-error'">{{ uiStore.flowsStopped ? 'Start Flows' : 'Stop Flows' }}</div>
+              <div class="text-terminal-text-dim text-[10px] mt-0.5">{{ uiStore.flowsStopped ? 'Runs the deployed flows again' : 'Stops every flow on the device now; nothing is deleted' }}</div>
+            </div>
+          </button>
+          <button
+            class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-xs hover:bg-terminal-surface-alt transition-colors duration-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="deployBusy || uiStore.flowsStopped"
             @click="handleRestart"
           >
-            <span class="w-2 h-2 shrink-0" />
+            <svg class="w-3.5 h-3.5 shrink-0 text-terminal-text-dim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" /></svg>
             <div>
               <div class="text-terminal-text font-medium">Restart Flows</div>
-              <div class="text-terminal-text-dim text-[10px] mt-0.5">Restarts the deployed flows; changes in the editor stay pending</div>
+              <div class="text-terminal-text-dim text-[10px] mt-0.5">{{ uiStore.flowsStopped ? 'Start the flows first' : 'Restarts the deployed flows; changes in the editor stay pending' }}</div>
             </div>
           </button>
         </div>
@@ -363,7 +388,15 @@ function selectMode(mode: DeployModeType): void {
     <!-- iOS-style banner after a deploy -->
     <Transition name="banner">
       <div
-        v-if="uiStore.deployStatus === 'deployed' || uiStore.deployStatus === 'failed'"
+        v-if="uiStore.notice"
+        class="ios-banner"
+        role="status"
+      >
+        <span class="mark" :class="uiStore.notice.tone === 'warn' ? 'warn' : ''">{{ uiStore.notice.tone === 'warn' ? '■' : '✓' }}</span>
+        <span>{{ uiStore.notice.text }}</span>
+      </div>
+      <div
+        v-else-if="uiStore.deployStatus === 'deployed' || uiStore.deployStatus === 'failed'"
         class="ios-banner"
         role="status"
       >
@@ -388,6 +421,13 @@ function selectMode(mode: DeployModeType): void {
   background: rgb(var(--c-success)); color: #fff; font-size: 13px; font-weight: 700;
 }
 .ios-banner .mark.bad { background: rgb(var(--c-error)); }
+.ios-banner .mark.warn { background: rgb(var(--c-warning)); }
+.flows-stopped {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px;
+  font-size: 11.5px; font-weight: 600; white-space: nowrap;
+  color: rgb(var(--c-warning)); background: rgb(var(--c-warning) / 0.14);
+}
+.flows-stopped i { width: 8px; height: 8px; border-radius: 2px; background: currentColor; }
 .banner-enter-active, .banner-leave-active { transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2), opacity 0.25s; }
 .banner-enter-from, .banner-leave-to { transform: translate(-50%, -140%); opacity: 0; }
 @media (prefers-reduced-motion: reduce) { .banner-enter-active, .banner-leave-active { transition: none; } }

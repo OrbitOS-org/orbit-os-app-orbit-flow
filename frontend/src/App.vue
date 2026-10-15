@@ -36,8 +36,10 @@ const ws = useWebSocket({ autoConnect: false })
 watch(
   () => auth.isAuthenticated,
   (authed) => {
-    if (authed) ws.connect()
-    else ws.disconnect()
+    if (authed) {
+      ws.connect()
+      flowStore.refreshFlowsState()
+    } else ws.disconnect()
   },
   { immediate: true },
 )
@@ -59,6 +61,9 @@ ws.onDeploy((event) => {
     case 'deploying': ui.setDeployStatus('deploying'); break
     case 'deployed':  ui.setDeployStatus('deployed');  break
     case 'failed':    ui.setDeployStatus('failed');    break
+    // Stop Flows / Start Flows, also from another browser.
+    case 'stopped':   ui.setFlowsStopped(true); flowStore.clearNodeStatuses(); break
+    case 'started':   ui.setFlowsStopped(false); break
   }
 })
 
@@ -66,6 +71,7 @@ watch(ws.status, (status) => {
   switch (status) {
     case 'connected':
       ui.setConnectionStatus('connected')
+      if (auth.isAuthenticated) flowStore.refreshFlowsState()
       break
     case 'connecting':
     case 'reconnecting':

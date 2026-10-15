@@ -186,7 +186,7 @@ export const useFlowStore = defineStore("flow", () => {
   function flowState(flowId: string): FlowState {
     const deployed = deployedFlows.value.find((f) => f.id === flowId);
     if (!deployed) return "new";
-    if (deployed.disabled) return "stopped";
+    if (deployed.disabled || useUiStore().flowsStopped) return "stopped";
     return dirtyFlowIds.value.has(flowId) ? "changed" : "running";
   }
 
@@ -729,6 +729,7 @@ export const useFlowStore = defineStore("flow", () => {
       dirtyNodeIds.value = new Set();
       dirtyFlowIds.value = new Set();
       ui.setDeployStatus('deployed');
+      if (result.stopped) ui.showNotice('Deployed. The flows stay stopped until Start Flows.', 'warn');
 
       return result;
     } catch (err) {
@@ -746,6 +747,47 @@ export const useFlowStore = defineStore("flow", () => {
    * "Restart Flows", as in Node-RED: restarts what is deployed on the device,
    * without deploying the changes in the editor (they stay pending).
    */
+  /** Forget the node statuses: nothing runs (Stop Flows). */
+  function clearNodeStatuses(): void {
+    for (const n of nodes.value) {
+      if (n.data) n.data.status = null;
+    }
+    for (const f of flows.value) {
+      for (const n of f.nodes) delete (n as { status?: unknown }).status;
+    }
+  }
+
+  /** Reads Stop Flows / Start Flows from the device. */
+  async function refreshFlowsState(): Promise<void> {
+    try {
+      const stopped = (await useApi().getFlowsState()) === 'stop';
+      useUiStore().setFlowsStopped(stopped);
+      if (stopped) clearNodeStatuses();
+    } catch {
+      // older app or offline: leave as it is
+    }
+  }
+
+  /** Stop Flows / Start Flows (Deploy menu), as in Node-RED. */
+  async function setFlowsRunning(run: boolean): Promise<boolean> {
+    const ui = useUiStore();
+    try {
+      const state = await useApi().setFlowsState(run ? 'start' : 'stop');
+      ui.setFlowsStopped(state === 'stop');
+      if (state === 'stop') {
+        clearNodeStatuses();
+        ui.showNotice('Flows stopped on the device', 'warn');
+      } else {
+        ui.showNotice('Flows started');
+      }
+      return true;
+    } catch (err) {
+      const e = err as { message?: string };
+      ui.showNotice(e.message ?? 'Could not change the flows state', 'warn');
+      return false;
+    }
+  }
+
   async function restartFlows(): Promise<boolean> {
     if (deploying.value) return false;
     const ui = useUiStore();
@@ -1002,6 +1044,9 @@ export const useFlowStore = defineStore("flow", () => {
     showFlow,
     restartFlows,
     changedFlowCount,
+    refreshFlowsState,
+    setFlowsRunning,
+    clearNodeStatuses,
     pendingFlows,
     importExample,
     addFlow,

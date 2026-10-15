@@ -5,6 +5,7 @@ import NodeIcon from "@/components/nodes/NodeIcon.vue";
 import AppTooltip from "@/components/ui/AppTooltip.vue";
 import { nodeFill, NODE_INK, STATUS_COLORS } from "@/components/nodes/tokens";
 import { useFlowStore } from "@/stores/flowStore";
+import { useUiStore } from "@/stores/uiStore";
 
 export interface ActionButton {
     /** Label displayed vertically on the button. */
@@ -62,6 +63,8 @@ function handleToggle() {
     emit('toggle', !props.toggleState);
 }
 
+// Stop Flows: the Inject and Debug buttons are off, as in Node-RED.
+const ui = useUiStore();
 const flowStore = useFlowStore();
 const slots = useSlots();
 
@@ -169,7 +172,7 @@ const outputHandles = computed(() =>
       class="node-tab left nopan nodrag"
       :class="{ pressed: actionActive }"
       :style="{ background: fill }"
-      :disabled="props.disabled"
+      :disabled="props.disabled || ui.flowsStopped"
       :title="props.actionButton.title ?? props.actionButton.label"
       :aria-label="props.actionButton.title ?? props.actionButton.label"
       @click.stop="handleAction"
@@ -228,7 +231,7 @@ const outputHandles = computed(() =>
       class="node-tab right nopan nodrag"
       :class="{ off: !props.toggleState }"
       :style="{ background: props.toggleState ? fill : undefined }"
-      :disabled="props.disabled"
+      :disabled="props.disabled || ui.flowsStopped"
       :title="props.toggleState ? 'On — click to turn off' : 'Off — click to turn on'"
       :aria-label="props.toggleState ? 'Turn off' : 'Turn on'"
       @click.stop="handleToggle"

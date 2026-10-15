@@ -44,6 +44,7 @@ func RegisterRoutes(r chi.Router, deps *Deps) {
 			r.Use(deps.AuthMW.RequireRole(auth.RoleViewer))
 
 			r.Get("/flows", deps.handleGetFlows)
+			r.Get("/flows/state", deps.handleGetFlowsState)
 			r.Get("/flows/{id}", deps.handleGetFlow)
 			r.Get("/nodes", deps.handleGetNodes)
 			r.Get("/configs/types", deps.handleGetConfigTypes)
@@ -80,6 +81,7 @@ func RegisterRoutes(r chi.Router, deps *Deps) {
 			r.Use(deps.AuthMW.RequireRole(auth.RoleEditor))
 
 			r.Post("/flows", deps.handleDeployFlows)
+			r.Post("/flows/state", deps.handleSetFlowsState)
 			r.Post("/library", deps.handleSaveLibraryFlow)
 			r.Delete("/library/{id}", deps.handleDeleteLibraryFlow)
 			r.Post("/inject/{id}", deps.handleInjectNode)
