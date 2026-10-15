@@ -5,6 +5,7 @@
 package core_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/flow"
@@ -352,5 +353,42 @@ func TestFunctionNode_ConsoleLog(t *testing.T) {
 	}
 	if captured[0].Status != "debug" {
 		t.Errorf("status: want %q, got %q", "debug", captured[0].Status)
+	}
+}
+
+// context is this node's own memory, as in Node-RED: a counter written the
+// Node-RED way works, and another Function keeps its own count.
+func TestFunctionNode_Context(t *testing.T) {
+	code := `
+let n = context.get('count') || 0;
+context.set('count', n + 1);
+msg.payload = { count: n + 1, keys: context.keys(), viaNode: node.get('count') };
+return msg;`
+	a, _ := newFunctionNode(t, code, 1)
+	b, _ := newFunctionNode(t, code, 1)
+
+	var last map[string]any
+	for i := 0; i < 3; i++ {
+		out, err := a.HandleMessage(inMsg(nil))
+		if err != nil {
+			t.Fatal(err)
+		}
+		last, _ = out[0][0].Payload().(map[string]any)
+	}
+	if fmt.Sprint(last["count"]) != "3" || fmt.Sprint(last["keys"]) != "[count]" || fmt.Sprint(last["viaNode"]) != "3" {
+		t.Fatalf("after 3 messages: %v", last)
+	}
+	out, err := b.HandleMessage(inMsg(nil))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := out[0][0].Payload().(map[string]any); fmt.Sprint(got["count"]) != "1" {
+		t.Fatalf("the other Function must have its own context: %v", got)
+	}
+
+	del, _ := newFunctionNode(t, `context.set('x', 1); context.delete('x'); msg.payload = context.get('x') === undefined; return msg;`, 1)
+	out, _ = del.HandleMessage(inMsg(nil))
+	if out[0][0].Payload() != true {
+		t.Fatalf("context.delete: %v", out[0][0].Payload())
 	}
 }

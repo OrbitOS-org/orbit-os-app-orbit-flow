@@ -89,6 +89,18 @@ interface FlowContextStore {
   keys(persistent?: boolean): string[];
 }
 
+/** This node's own memory, as Node-RED's context: only this Function sees it. */
+interface NodeContextStore {
+  /** Read a value; undefined if it was never set. */
+  get(key: string): any;
+  /** Store a value, kept between messages (until the node is deployed again). */
+  set(key: string, value: any): void;
+  /** Delete a key. */
+  delete(key: string): void;
+  /** The keys stored. */
+  keys(): string[];
+}
+
 /** A byte buffer for binary data manipulation (Node.js Buffer compatible). */
 interface FlowBuffer {
   /** Number of bytes in the buffer. */
@@ -195,6 +207,8 @@ declare var node: FlowNodeAPI;
 declare var global: FlowContextStore;
 /** Flow-scoped context store — shared within the current flow. */
 declare var flow: FlowContextStore;
+/** This node's own memory (only this Function), as in Node-RED. */
+declare var context: NodeContextStore;
 /** Buffer API for byte manipulation (Node.js compatible). */
 declare var Buffer: FlowBufferConstructor;
 `

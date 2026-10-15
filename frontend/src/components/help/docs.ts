@@ -166,8 +166,8 @@ export const nodeHelpDocs: Record<string, NodeHelpDoc> = {
         result: 'Forwards the message unchanged.',
       },
       {
-        title: 'Counter in node-local context',
-        config: 'const n = (node.get("count") ?? 0) + 1;\nnode.set("count", n);\nmsg.payload = n;\nreturn msg;',
+        title: 'Counter in the node\'s context',
+        config: 'const n = (context.get("count") ?? 0) + 1;\ncontext.set("count", n);\nmsg.payload = n;\nreturn msg;',
         result: 'Increments a per-node counter and emits it as payload.',
       },
       {
@@ -177,7 +177,7 @@ export const nodeHelpDocs: Record<string, NodeHelpDoc> = {
       },
     ],
     tips: [
-      'Available context APIs: node.get/set/delete (per-node, in-memory), flow.* and global.* (configurable memory or persistent storage).',
+      'Memory between messages, as in Node-RED: context.get/set/delete/keys (only this node), flow.* (all nodes of the tab) and global.* (all flows); flow and global keep values across restarts with a third argument true. node.get/set still work and use the node\'s context.',
       'Throwing or returning a Promise that rejects routes the message to the catch flow (if any).',
       'Heavy work? Prefer a dedicated node — long-running JS can stall the flow.',
     ],

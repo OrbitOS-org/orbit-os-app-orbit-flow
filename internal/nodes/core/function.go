@@ -5,14 +5,15 @@
 package core
 
 import (
-	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes"
 	"fmt"
+	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes"
 	"log/slog"
+	"sort"
 	"time"
 
-	"github.com/dop251/goja"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/flow"
 	scriptingoja "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/scripting/goja"
+	"github.com/dop251/goja"
 )
 
 // FunctionNode executes user-supplied JavaScript for each incoming message.
@@ -39,8 +40,8 @@ import (
 type FunctionNode struct {
 	config flow.NodeConfig
 	nodes.BaseNode
-	ctxMem  flow.ContextStore // global volatile memory store
-	ctxPers flow.ContextStore // global persistent file-backed store
+	ctxMem   flow.ContextStore // global volatile memory store
+	ctxPers  flow.ContextStore // global persistent file-backed store
 	flowMem  flow.ContextStore // flow-scoped volatile memory store
 	flowPers flow.ContextStore // flow-scoped persistent file-backed store
 
@@ -251,6 +252,36 @@ func (n *FunctionNode) registerGlobals() {
 	})
 
 	_ = n.vm.Set("node", nodeObj)
+
+	// context.get/set/delete/keys — this node's own memory, as Node-RED's
+	// context: only this Function sees it (flow is shared by the tab,
+	// global by all flows). Same store as node.get/node.set, which stay
+	// for flows written with them.
+	contextObj := n.vm.NewObject()
+	_ = contextObj.Set("get", func(call goja.FunctionCall) goja.Value {
+		val, ok := n.nodeCtx[call.Argument(0).String()]
+		if !ok {
+			return goja.Undefined()
+		}
+		return n.vm.ToValue(val)
+	})
+	_ = contextObj.Set("set", func(call goja.FunctionCall) goja.Value {
+		n.nodeCtx[call.Argument(0).String()] = call.Argument(1).Export()
+		return goja.Undefined()
+	})
+	_ = contextObj.Set("delete", func(call goja.FunctionCall) goja.Value {
+		delete(n.nodeCtx, call.Argument(0).String())
+		return goja.Undefined()
+	})
+	_ = contextObj.Set("keys", func(goja.FunctionCall) goja.Value {
+		keys := make([]string, 0, len(n.nodeCtx))
+		for k := range n.nodeCtx {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		return n.vm.ToValue(keys)
+	})
+	_ = n.vm.Set("context", contextObj)
 
 	// console.log / warn / error → node counterparts
 	consoleObj := n.vm.NewObject()
