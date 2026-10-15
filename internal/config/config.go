@@ -110,15 +110,12 @@ var (
 )
 
 const (
-	// defaultHost binds all interfaces: cmd/orbit_flow registers this app with
-	// the OrbitOS launcher using ExposureMode_EXPOSURE_MODE_REDIRECT, so the
-	// browser is sent straight to <device-ip>:<port>/ instead of going
-	// through the portal's reverse proxy at /orbit-flow — some things (the flow
-	// editor's WebSocket log/debug stream in particular) don't tolerate the
-	// proxied path prefix well. That means this HTTP server must itself be
-	// reachable from the LAN, not just from the device's loopback. Port
-	// sits in the 50000-60000 band reserved for this app's WebUI on-device.
-	defaultHost            = "0.0.0.0"
+	// defaultHost is loopback: on Orbit OS the page is reached only through
+	// the Launcher, which proxies http://<device>/orbit-flow/ to this port
+	// after its own login (cmd/orbit_flow registers it in proxy mode). The
+	// port is not open to the network. The port sits in the 50000-60000
+	// band reserved for app pages.
+	defaultHost            = "127.0.0.1"
 	defaultPort            = 52880
 	defaultDataDir         = "./data"
 	defaultFlowFile        = "workspace.json"

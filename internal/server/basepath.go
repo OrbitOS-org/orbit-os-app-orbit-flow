@@ -82,8 +82,10 @@ func jsString(s string) string {
 
 // stripBasePath returns middleware that removes the configured base
 // prefix from r.URL.Path before handing the request to the inner
-// handler. Requests that do not start with the prefix get a 404. When
-// basePath is empty the middleware is a no-op.
+// handler. Requests without the prefix are served as they are: the
+// Orbit OS Launcher removes the prefix itself before proxying, and a
+// browser on the device's own port asks for "/". When basePath is empty
+// the middleware is a no-op.
 func stripBasePath(basePath string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		if basePath == "" {
@@ -109,7 +111,7 @@ func stripBasePath(basePath string) func(http.Handler) http.Handler {
 				next.ServeHTTP(w, &r2)
 				return
 			default:
-				http.NotFound(w, r)
+				next.ServeHTTP(w, r)
 			}
 		})
 	}

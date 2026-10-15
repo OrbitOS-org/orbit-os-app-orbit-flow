@@ -11,6 +11,7 @@ package ws
 import (
 	"encoding/json"
 	"log/slog"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -99,6 +100,15 @@ func buildOriginChecker(allowed []string) func(*http.Request) bool {
 		oFull := strings.ToLower(u.Scheme + "://" + u.Host)
 
 		if len(exact) == 0 && len(wildcards) == 0 {
+			// Through the Orbit OS Launcher the connection comes from the
+			// device itself (its proxy dials 127.0.0.1) with Host set to
+			// 127.0.0.1:<port> while Origin is the device's address, so
+			// the two never match. Such a connection has already passed
+			// the Launcher's login, and its SameSite=Lax cookie keeps other
+			// sites from opening one, so it is allowed; auth still gates it.
+			if fromLoopback(r) {
+				return true
+			}
 			// Same-origin fallback: Origin host must equal request Host.
 			return strings.EqualFold(oHost, r.Host)
 		}
@@ -112,6 +122,16 @@ func buildOriginChecker(allowed []string) func(*http.Request) bool {
 		}
 		return false
 	}
+}
+
+// fromLoopback says whether the request comes from this device itself.
+func fromLoopback(r *http.Request) bool {
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return false
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
 }
 
 // Event represents a message sent to or received from a WebSocket client.

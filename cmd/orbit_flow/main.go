@@ -35,7 +35,6 @@ import (
 	"flag"
 	"fmt"
 	"log/slog"
-	"net"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -59,13 +58,10 @@ import (
 
 const logTag = "main"
 
-// appHubRoute identifies the app's tile in the Orbit OS Launcher. With
-// ExposureMode_EXPOSURE_MODE_REDIRECT (see appHubRegistrar below) it is
-// not a proxied path prefix — the launcher sends the browser straight to
-// <device-ip>:<port>/ instead of proxying through /orbit-flow/... on the
-// portal's own origin. Some things (the flow editor's WebSocket log/debug
-// stream, Monaco's dynamic worker loading) didn't tolerate the proxied path
-// prefix well, so this app opts out of that in favour of a direct link.
+// appHubRoute is the app's path on the Orbit OS Launcher: the Launcher
+// proxies http://<device>/orbit-flow/... to this app (see appHubRegistrar).
+// It is also the page's URL prefix (cfg.BasePath), so the links the page
+// builds include it.
 const appHubRoute = "/orbit-flow"
 
 //go:embed metadata.json
@@ -96,6 +92,9 @@ func main() {
 	// --data-dir, ...) and calls flag.Parse() itself, so the device --host
 	// flag must be registered above, before this call.
 	cfg := config.Load()
+	if cfg.BasePath == "" {
+		cfg.BasePath = appHubRoute
+	}
 	// Builds from Orbit Studio do not stamp a version: use the one in
 	// metadata.json, the same the Store and the device show.
 	if config.Version == "dev" && appManifest.Version != "" {
@@ -234,45 +233,23 @@ func main() {
 }
 
 // appHubRegistrar returns the function that announces the page to the
-// Orbit OS Launcher on a given port, with
-// ExposureMode_EXPOSURE_MODE_REDIRECT: clicking the tile sends the browser
-// straight to http://<lan-ip>:<port>/ instead of proxying through the
-// portal's own origin at /orbit-flow/... (ExposureMode_EXPOSURE_MODE_PROXY, the
-// default RegisterWebUI uses). The redirect target must be an address the
-// browser can actually dial, so — unlike the proxy case, where 127.0.0.1 is
-// fine because the daemon dials it locally — this needs the device's real
-// LAN-facing IP, not cfg.Host (which is 0.0.0.0, not a dialable address).
+// Orbit OS Launcher on a given port, in proxy mode: the Launcher serves it
+// at http://<device>/orbit-flow/ behind its own login and forwards the
+// requests (WebSocket included) to 127.0.0.1:<port>. No device IP is
+// needed, so it keeps working without internet and after the IP changes.
 func appHubRegistrar(orbit *client.Client) (server.RegisterFunc, error) {
-	ip, err := detectLANIP()
-	if err != nil {
-		return nil, fmt.Errorf("detect LAN IP: %w", err)
-	}
 	return func(port int) error {
 		err := orbit.AppHubManager.RegisterService(&apphubv26.RegisterServiceRequest{
-			Host:         ip,
+			Host:         "127.0.0.1",
 			Port:         int32(port),
 			Routes:       []*apphubv26.Route{{Path: appHubRoute}},
 			Health:       &apphubv26.HealthCheck{Type: apphubv26.HealthCheckType_HEALTH_CHECK_TCP},
-			ExposureMode: apphubv26.ExposureMode_EXPOSURE_MODE_REDIRECT,
+			ExposureMode: apphubv26.ExposureMode_EXPOSURE_MODE_PROXY,
 		})
 		if err != nil {
 			return err
 		}
-		slog.Info("page registered with the Launcher (direct redirect)", "route", appHubRoute, "addr", fmt.Sprintf("%s:%d", ip, port))
+		slog.Info("page registered with the Launcher (proxy)", "route", appHubRoute, "port", port)
 		return nil
 	}, nil
-}
-
-// detectLANIP returns this device's outbound-facing IP without sending any
-// packet (a UDP "connect" only resolves the local routing table) — the same
-// trick used by other Orbit apps (e.g. app-mcp-server) to find an address
-// reachable from other machines on the LAN, as opposed to 127.0.0.1 or
-// 0.0.0.0 which aren't valid redirect targets for a remote browser.
-func detectLANIP() (string, error) {
-	conn, err := net.Dial("udp", "8.8.8.8:80")
-	if err != nil {
-		return "", err
-	}
-	defer conn.Close()
-	return conn.LocalAddr().(*net.UDPAddr).IP.String(), nil
 }

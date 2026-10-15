@@ -99,18 +99,18 @@ func TestStripBasePathRewritesPath(t *testing.T) {
 	}
 }
 
-func TestStripBasePath404OutsidePrefix(t *testing.T) {
-	inner := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
+// The Orbit OS Launcher removes the prefix before proxying, so a request
+// without it is served as it is (not a 404).
+func TestStripBasePathServesRequestsWithoutThePrefix(t *testing.T) {
+	var seen string
+	inner := http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) { seen = r.URL.Path })
 	mw := stripBasePath("/orbit-flow")(inner)
 
-	req := httptest.NewRequest(http.MethodGet, "/somewhere/else", nil)
-	rec := httptest.NewRecorder()
-	mw.ServeHTTP(rec, req)
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/flows", nil)
+	mw.ServeHTTP(httptest.NewRecorder(), req)
 
-	if rec.Code != http.StatusNotFound {
-		t.Fatalf("got %d, want 404", rec.Code)
+	if seen != "/api/v1/flows" {
+		t.Fatalf("inner saw path %q, want /api/v1/flows", seen)
 	}
 }
 
