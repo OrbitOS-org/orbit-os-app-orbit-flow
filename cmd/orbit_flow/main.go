@@ -135,19 +135,24 @@ func main() {
 		os.Exit(1)
 	}
 
-	// OrbitOS apps may only touch their own workdir — install it as the
-	// mandatory jail for the File/CSV nodes' filesystem access (see
-	// internal/nodes/filesystem's effectiveJail) before the flow engine can
-	// deploy any flow that uses them. This overrides whatever rootJail a
-	// flow configures if it points outside cfg.DataDir; an empty rootJail
-	// no longer means "no restriction" the way it does in upstream
-	// loopze-edge run outside OrbitOS.
+	// The File/CSV nodes may only touch the flows' own files: the "files"
+	// folder inside the data folder, installed as their mandatory jail (see
+	// internal/nodes/filesystem's effectiveJail) before any flow is
+	// deployed. Not the data folder itself: it holds the app's encryption
+	// and session keys, the users and the saved flows, which a flow must
+	// never read or rewrite. A relative path in a node ("logs/readings.csv")
+	// is taken from this folder.
 	absDataDir, err := filepath.Abs(cfg.DataDir)
 	if err != nil {
 		slog.Error("failed to resolve data directory to an absolute path", "path", cfg.DataDir, "error", err)
 		os.Exit(1)
 	}
-	filesystem.SetWorkdir(absDataDir)
+	filesDir := filepath.Join(absDataDir, "files")
+	if err := os.MkdirAll(filesDir, 0o750); err != nil {
+		slog.Error("failed to create the flows' files folder", "path", filesDir, "error", err)
+		os.Exit(1)
+	}
+	filesystem.SetWorkdir(filesDir)
 
 	appManifest.PrintInfo()
 
