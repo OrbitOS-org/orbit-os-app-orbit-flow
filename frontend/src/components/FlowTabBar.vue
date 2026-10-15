@@ -235,7 +235,7 @@ function onDragEnd() {
         flow.id === flowStore.activeFlowId
           ? 'on'
           : '',
-        flow.disabled ? 'opacity-40' : '',
+        flow.disabled ? 'tab-off' : '',
         dragIdx === idx ? 'opacity-30' : '',
         dropIdx === idx && dragIdx !== idx ? 'drop' : '',
       ]"
@@ -255,7 +255,7 @@ function onDragEnd() {
         :title="STATE_LABEL[flowStore.flowState(flow.id)]"
         aria-hidden="true"
       />
-      <span class="truncate max-w-[140px]" :class="{ 'text-terminal-text-dim line-through decoration-1': flow.disabled, 'text-terminal-text-dim': flowStore.flowState(flow.id) === 'stopped' }">{{ flow.label }}</span>
+      <span class="truncate max-w-[140px]" :class="{ 'italic text-terminal-text-dim': flow.disabled, 'text-terminal-text-dim': flowStore.flowState(flow.id) === 'stopped' }">{{ flow.label }}</span>
       <span class="sr-only">({{ STATE_LABEL[flowStore.flowState(flow.id)] }})</span>
       <!-- Flow menu: state, stop/start, deploy this flow, rename, close -->
       <button
@@ -402,4 +402,6 @@ function onDragEnd() {
 .menu-item { display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: left; padding: 7px 10px; border-radius: 8px; font-size: 13px; color: rgb(var(--c-text)); }
 .menu-item:hover { background: rgb(var(--c-accent)); color: #fff; }
 .seg-item.drop { box-shadow: inset 2px 0 0 rgb(var(--c-accent)); }
+/* A disabled flow's tab, as in Node-RED: dashed border, italic name. */
+.seg-item.tab-off { outline: 1px dashed rgb(var(--c-text-dim) / 0.7); outline-offset: -1px; }
 </style>

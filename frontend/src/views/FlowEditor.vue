@@ -880,7 +880,7 @@ onMounted(async () => {
                 </div>
             </Panel>
         </VueFlow>
-        <!-- As in Node-RED: a disabled flow is shown faded, with a note -->
+        <!-- A disabled flow: drawn as in Node-RED (see .flow-off), with a note -->
         <div v-if="flowStore.activeFlow?.disabled" class="flow-off-note" role="status">
             This flow is disabled{{ flowStore.flowState(flowStore.activeFlow.id) === 'stopped' ? '' : ' — it stops running when you deploy' }}
         </div>
@@ -891,8 +891,14 @@ onMounted(async () => {
 .vue-flow {
     background-color: rgb(var(--c-bg));
 }
-.flow-off :deep(.vue-flow__node) { opacity: 0.4; }
-.flow-off :deep(.vue-flow__edge) { opacity: 0.35; }
+/* A disabled flow, as in Node-RED: nodes with a dashed outline and their
+   colour at half, text and ports as they are (the flow stays easy to read
+   and edit); dashed wires. */
+.flow-off :deep(.flow-node) {
+    background-image: linear-gradient(rgb(var(--c-bg) / 0.5), rgb(var(--c-bg) / 0.5));
+    outline: 1px dashed rgb(0 0 0 / 0.45); outline-offset: -1px;
+}
+.flow-off :deep(.vue-flow__edge-path) { stroke-dasharray: 10 8; }
 .flow-off-note {
     position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 5;
     padding: 6px 14px; border-radius: 9999px; font-size: 12.5px; pointer-events: none;

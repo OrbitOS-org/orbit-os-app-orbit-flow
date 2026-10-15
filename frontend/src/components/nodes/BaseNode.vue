@@ -165,7 +165,7 @@ const outputHandles = computed(() =>
 </script>
 
 <template>
-  <div class="relative" :class="{ 'opacity-45': props.disabled }">
+  <div class="relative" :class="{ 'node-off': props.disabled }">
     <!-- Action button (inject): a tab on the left, as in Node-RED -->
     <button
       v-if="props.actionButton"
@@ -268,7 +268,13 @@ const outputHandles = computed(() =>
     font-weight: 500;
     user-select: none;
 }
-.flow-node.dashed { box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.4); outline: 1px dashed rgb(0 0 0 / 0.35); outline-offset: -1px; }
+.flow-node.dashed {
+    /* Disabled, as in Node-RED: dashed outline, colour at half; the text stays readable. */
+    background-image: linear-gradient(rgb(var(--c-bg) / 0.5), rgb(var(--c-bg) / 0.5));
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.4); outline: 1px dashed rgb(0 0 0 / 0.45); outline-offset: -1px;
+}
+/* Its Inject / Debug buttons are faded, as Node-RED's disabled buttons. */
+.node-off .node-tab { opacity: 0.4; }
 .flow-node.selected { box-shadow: 0 0 0 2.5px rgb(var(--c-accent)), 0 6px 16px rgb(0 0 0 / 0.18); }
 .flow-node.highlighted { outline: 2px dashed rgb(var(--c-accent)); outline-offset: 2px; }
 .node-icon {
