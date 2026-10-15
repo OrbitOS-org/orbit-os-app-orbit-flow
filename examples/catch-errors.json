@@ -8,7 +8,7 @@
       "id": "ex-catch-errors",
       "type": "tab",
       "label": "Catch errors",
-      "info": "Every 10 seconds the Function node throws an error, as a sensor that does not answer would. The Catch node picks up errors from any node in this flow and sends them on with the error in msg._error (its message and the node it came from), so you can log them, retry or raise an alarm.",
+      "info": "Every 10 seconds the Function node throws an error, as a sensor that does not answer would. The Catch node picks up errors from any node in this flow and sends them on with the error in msg.error (its message and the node it came from), so you can log them, retry or raise an alarm.",
       "nodes": [
         {
           "id": "ex-catch-errors-n1",
@@ -87,7 +87,7 @@
           "config": {
             "active": true,
             "output": "property",
-            "property": "_error",
+            "property": "error",
             "statusEnabled": false,
             "statusOutput": "same",
             "statusProperty": ""

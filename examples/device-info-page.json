@@ -151,7 +151,7 @@
             ]
           ],
           "config": {
-            "func": "msg.statusCode = 503;\nmsg.payload = { error: msg._error && msg._error.message };\nmsg.headers = { 'Content-Type': 'application/json' };\nreturn msg;",
+            "func": "msg.statusCode = 503;\nmsg.payload = { error: msg.error && msg.error.message };\nmsg.headers = { 'Content-Type': 'application/json' };\nreturn msg;",
             "outputs": 1
           }
         }

@@ -207,6 +207,11 @@ func TestCatch_ScopeFlow_TriggeredOnError(t *testing.T) {
 	if source["type"] != "test-err" {
 		t.Errorf("_error.source.type: want %q, got %v", "test-err", source["type"])
 	}
+	// msg.error (Node-RED's field) carries the same block.
+	nrBlock, _ := got[0].Get("error").(map[string]any)
+	if nrBlock == nil || nrBlock["message"] != "intentional test error" {
+		t.Errorf("error: want the same block as _error, got %v", nrBlock)
+	}
 }
 
 func TestCatch_ScopeFlow_IgnoresOtherFlows(t *testing.T) {
