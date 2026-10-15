@@ -2,7 +2,7 @@
   "name": "REST API for a value",
   "description": "GET /api/temperature returns the last reading as JSON.",
   "category": "Data",
-  "order": 21,
+  "order": 25,
   "flows": [
     {
       "id": "ex-rest-api-for-a-value",

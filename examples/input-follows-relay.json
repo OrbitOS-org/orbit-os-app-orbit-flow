@@ -2,7 +2,7 @@
   "name": "Input follows relay",
   "description": "When input 1 of an EBYTE board turns on, relay 1 turns on.",
   "category": "Industrial",
-  "order": 12,
+  "order": 14,
   "needs": "EBYTE board, RS-485",
   "flows": [
     {

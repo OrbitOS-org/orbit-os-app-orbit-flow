@@ -2,7 +2,7 @@
   "name": "Siemens S7 read",
   "description": "Reads values from a data block of an S7-1200/1500 PLC.",
   "category": "Industrial",
-  "order": 16,
+  "order": 18,
   "needs": "Siemens PLC",
   "flows": [
     {

@@ -558,3 +558,33 @@ func TestFileRead_OldSettingsStillWork(t *testing.T) {
 		}
 	}
 }
+
+// Read from the end of the file (the default of "new lines"): the first read
+// sends nothing, and later reads send only the lines added after it.
+func TestFileRead_NewLines_FromTheEnd(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "events.log")
+	if err := os.WriteFile(path, []byte("old 1\nold 2\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	fr, _ := newFileRead(t, map[string]any{"path": path, "output": "new"})
+	withReadPers(fr)
+
+	if out, _ := fr.HandleMessage(flow.NewMessage()); out != nil {
+		t.Fatalf("first read must send nothing, got %v", payloads(out))
+	}
+	appendLine := func(s string) {
+		f, _ := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0o644)
+		_, _ = f.WriteString(s)
+		_ = f.Close()
+	}
+	appendLine("new 1\n")
+	out, _ := fr.HandleMessage(flow.NewMessage())
+	if got := payloads(out); !equalAny(got, "new 1") {
+		t.Fatalf("second read: %v, want [new 1]", got)
+	}
+	appendLine("new 2\nnew 3\n")
+	out, _ = fr.HandleMessage(flow.NewMessage())
+	if got := payloads(out); !equalAny(got, "new 2", "new 3") {
+		t.Fatalf("third read: %v", got)
+	}
+}

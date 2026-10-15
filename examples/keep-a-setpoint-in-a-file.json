@@ -1,0 +1,300 @@
+{
+  "name": "Keep a setpoint in a file",
+  "description": "Saves a value in a file so it is still there after a restart.",
+  "category": "Getting started",
+  "order": 5,
+  "flows": [
+    {
+      "id": "ex-keep-a-setpoint-in-a-file",
+      "type": "tab",
+      "label": "Keep a setpoint in a file",
+      "info": "Values in the context are lost when the app restarts; a file keeps them. At start, Read File loads setpoint.json from the app's files and the JSON node turns it into an object. The first time the file does not exist yet: the Catch node gets that error and the Function writes a default (21). Click the button of \"set 22.5\" to change the setpoint: it is saved with Write File (Action Overwrite) and used straight away. Restart the app or deploy again: the value comes back from the file.",
+      "nodes": [
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n1",
+          "type": "inject",
+          "name": "at start",
+          "x": 120,
+          "y": 100,
+          "z": "ex-keep-a-setpoint-in-a-file",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-keep-a-setpoint-in-a-file-n2"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 0,
+            "mode": "interval",
+            "once": true,
+            "props": [
+              {
+                "p": "payload",
+                "v": "rfc3339",
+                "vt": "date"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n2",
+          "type": "file-read",
+          "name": "setpoint.json",
+          "x": 320,
+          "y": 100,
+          "z": "ex-keep-a-setpoint-in-a-file",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-keep-a-setpoint-in-a-file-n3"
+            ]
+          ],
+          "config": {
+            "path": "setpoint.json",
+            "output": "string",
+            "encoding": "utf-8"
+          }
+        },
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n3",
+          "type": "json",
+          "name": "to object",
+          "x": 520,
+          "y": 100,
+          "z": "ex-keep-a-setpoint-in-a-file",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-keep-a-setpoint-in-a-file-n4"
+            ]
+          ],
+          "config": {
+            "property": "payload",
+            "action": "auto",
+            "indent": 0
+          }
+        },
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n4",
+          "type": "function",
+          "name": "use it",
+          "x": 720,
+          "y": 160,
+          "z": "ex-keep-a-setpoint-in-a-file",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-keep-a-setpoint-in-a-file-n5"
+            ]
+          ],
+          "config": {
+            "func": "flow.set('setpoint', msg.payload.setpoint);\nnode.status('green', 'setpoint ' + msg.payload.setpoint);\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n5",
+          "type": "debug",
+          "name": "setpoint",
+          "x": 920,
+          "y": 160,
+          "z": "ex-keep-a-setpoint-in-a-file",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        },
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n6",
+          "type": "catch",
+          "name": "file missing",
+          "x": 120,
+          "y": 220,
+          "z": "ex-keep-a-setpoint-in-a-file",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-keep-a-setpoint-in-a-file-n7"
+            ]
+          ],
+          "config": {
+            "scope": "flow",
+            "targetNodes": []
+          }
+        },
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n7",
+          "type": "function",
+          "name": "default 21",
+          "x": 320,
+          "y": 220,
+          "z": "ex-keep-a-setpoint-in-a-file",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-keep-a-setpoint-in-a-file-n10",
+              "ex-keep-a-setpoint-in-a-file-n4"
+            ]
+          ],
+          "config": {
+            "func": "msg.payload = { setpoint: 21 };\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n8",
+          "type": "inject",
+          "name": "set 22.5",
+          "x": 120,
+          "y": 300,
+          "z": "ex-keep-a-setpoint-in-a-file",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-keep-a-setpoint-in-a-file-n9"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 0,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "22.5",
+                "vt": "num"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n9",
+          "type": "function",
+          "name": "to JSON",
+          "x": 320,
+          "y": 300,
+          "z": "ex-keep-a-setpoint-in-a-file",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-keep-a-setpoint-in-a-file-n10",
+              "ex-keep-a-setpoint-in-a-file-n4"
+            ]
+          ],
+          "config": {
+            "func": "msg.payload = { setpoint: msg.payload };\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n10",
+          "type": "file-out",
+          "name": "save setpoint.json",
+          "x": 540,
+          "y": 260,
+          "z": "ex-keep-a-setpoint-in-a-file",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            []
+          ],
+          "config": {
+            "path": "setpoint.json",
+            "mode": "overwrite",
+            "appendNewline": false
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n1-w0--n2",
+          "sourceNode": "ex-keep-a-setpoint-in-a-file-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-keep-a-setpoint-in-a-file-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n2-w0--n3",
+          "sourceNode": "ex-keep-a-setpoint-in-a-file-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-keep-a-setpoint-in-a-file-n3",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n3-w0--n4",
+          "sourceNode": "ex-keep-a-setpoint-in-a-file-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-keep-a-setpoint-in-a-file-n4",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n4-w0--n5",
+          "sourceNode": "ex-keep-a-setpoint-in-a-file-n4",
+          "sourcePort": 0,
+          "targetNode": "ex-keep-a-setpoint-in-a-file-n5",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n6-w0--n7",
+          "sourceNode": "ex-keep-a-setpoint-in-a-file-n6",
+          "sourcePort": 0,
+          "targetNode": "ex-keep-a-setpoint-in-a-file-n7",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n7-w0--n10",
+          "sourceNode": "ex-keep-a-setpoint-in-a-file-n7",
+          "sourcePort": 0,
+          "targetNode": "ex-keep-a-setpoint-in-a-file-n10",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n7-w0--n4",
+          "sourceNode": "ex-keep-a-setpoint-in-a-file-n7",
+          "sourcePort": 0,
+          "targetNode": "ex-keep-a-setpoint-in-a-file-n4",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n8-w0--n9",
+          "sourceNode": "ex-keep-a-setpoint-in-a-file-n8",
+          "sourcePort": 0,
+          "targetNode": "ex-keep-a-setpoint-in-a-file-n9",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n9-w0--n10",
+          "sourceNode": "ex-keep-a-setpoint-in-a-file-n9",
+          "sourcePort": 0,
+          "targetNode": "ex-keep-a-setpoint-in-a-file-n10",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-keep-a-setpoint-in-a-file-n9-w0--n4",
+          "sourceNode": "ex-keep-a-setpoint-in-a-file-n9",
+          "sourcePort": 0,
+          "targetNode": "ex-keep-a-setpoint-in-a-file-n4",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": []
+}

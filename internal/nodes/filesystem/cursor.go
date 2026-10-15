@@ -81,6 +81,16 @@ func readIncremental(store flow.ContextStore, opts IncrementalOpts) (*Incrementa
 
 	// No new bytes — emit nothing unless this call detected a reset.
 	if cursor == fileSize {
+		// First read from the end of the file: remember that position, or
+		// every later read would start again from the (new) end and never
+		// send a line.
+		if !res.Reset {
+			if stored, _ := store.Get(key); stored == nil {
+				if err := saveCursor(store, key, cursor); err != nil {
+					return nil, fmt.Errorf("save cursor: %w", err)
+				}
+			}
+		}
 		if res.Reset {
 			// File was truncated to a smaller size and contains nothing new
 			// to read; persist the reset cursor and let the caller emit a

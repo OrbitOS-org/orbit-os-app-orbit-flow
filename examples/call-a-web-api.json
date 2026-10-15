@@ -2,7 +2,7 @@
   "name": "Call a web API",
   "description": "Reads a weather forecast and decides from it.",
   "category": "Data",
-  "order": 22,
+  "order": 26,
   "needs": "Internet",
   "flows": [
     {

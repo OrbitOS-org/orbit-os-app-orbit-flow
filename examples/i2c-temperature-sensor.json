@@ -2,7 +2,7 @@
   "name": "I²C temperature sensor",
   "description": "Reads a TMP102 or LM75 sensor every 10 s.",
   "category": "Device",
-  "order": 9,
+  "order": 10,
   "needs": "I²C sensor (TMP102 or LM75)",
   "flows": [
     {

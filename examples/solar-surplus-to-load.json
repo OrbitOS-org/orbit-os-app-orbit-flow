@@ -2,7 +2,7 @@
   "name": "Solar surplus to load",
   "description": "Switches a load on when the solar installation has surplus (SolaStat).",
   "category": "Projects",
-  "order": 24,
+  "order": 28,
   "needs": "Inverter or meter, EBYTE board",
   "flows": [
     {

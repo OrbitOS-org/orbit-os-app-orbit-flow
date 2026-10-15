@@ -2,7 +2,7 @@
   "name": "Device health alert",
   "description": "Sends a phone notification when temperature or memory go over a limit.",
   "category": "Device",
-  "order": 6,
+  "order": 7,
   "needs": "Phone with the Orbit OS app",
   "flows": [
     {

@@ -2,7 +2,7 @@
   "name": "Catch errors",
   "description": "A node fails on purpose and a Catch node logs the error.",
   "category": "Getting started",
-  "order": 5,
+  "order": 6,
   "flows": [
     {
       "id": "ex-catch-errors",

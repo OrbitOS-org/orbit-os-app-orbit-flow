@@ -1,0 +1,179 @@
+{
+  "name": "Follow a log file",
+  "description": "Reads only the lines added to a log since the last read.",
+  "category": "Data",
+  "order": 23,
+  "flows": [
+    {
+      "id": "ex-follow-a-log-file",
+      "type": "tab",
+      "label": "Follow a log file",
+      "info": "The top row stands for a program or device writing a log: every 3 seconds it adds a line to logs/events.log. The bottom row follows that log: every 5 seconds Read File, with Output \"new lines since the last read\", sends only the lines added since the previous read, one message per line. The first read starts at the end of the file, so old lines are not sent again; the position is kept when the app restarts.",
+      "nodes": [
+        {
+          "id": "ex-follow-a-log-file-n1",
+          "type": "inject",
+          "name": "every 3 s",
+          "x": 120,
+          "y": 100,
+          "z": "ex-follow-a-log-file",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-follow-a-log-file-n2"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 3000,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "rfc3339",
+                "vt": "date"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-follow-a-log-file-n2",
+          "type": "function",
+          "name": "an event line",
+          "x": 320,
+          "y": 100,
+          "z": "ex-follow-a-log-file",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-follow-a-log-file-n3"
+            ]
+          ],
+          "config": {
+            "func": "const events = ['door opened', 'pump started', 'pump stopped', 'level high'];\nmsg.payload = new Date().toISOString() + ' ' + events[Math.floor(Math.random() * events.length)];\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-follow-a-log-file-n3",
+          "type": "file-out",
+          "name": "logs/events.log",
+          "x": 540,
+          "y": 100,
+          "z": "ex-follow-a-log-file",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            []
+          ],
+          "config": {
+            "path": "logs/events.log",
+            "mode": "append",
+            "appendNewline": true
+          }
+        },
+        {
+          "id": "ex-follow-a-log-file-n4",
+          "type": "inject",
+          "name": "every 5 s",
+          "x": 120,
+          "y": 220,
+          "z": "ex-follow-a-log-file",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-follow-a-log-file-n5"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 5000,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "rfc3339",
+                "vt": "date"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-follow-a-log-file-n5",
+          "type": "file-read",
+          "name": "new lines",
+          "x": 320,
+          "y": 220,
+          "z": "ex-follow-a-log-file",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-follow-a-log-file-n6"
+            ]
+          ],
+          "config": {
+            "path": "logs/events.log",
+            "output": "new",
+            "encoding": "utf-8"
+          }
+        },
+        {
+          "id": "ex-follow-a-log-file-n6",
+          "type": "debug",
+          "name": "new lines",
+          "x": 540,
+          "y": 220,
+          "z": "ex-follow-a-log-file",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-follow-a-log-file-n1-w0--n2",
+          "sourceNode": "ex-follow-a-log-file-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-follow-a-log-file-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-follow-a-log-file-n2-w0--n3",
+          "sourceNode": "ex-follow-a-log-file-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-follow-a-log-file-n3",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-follow-a-log-file-n4-w0--n5",
+          "sourceNode": "ex-follow-a-log-file-n4",
+          "sourcePort": 0,
+          "targetNode": "ex-follow-a-log-file-n5",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-follow-a-log-file-n5-w0--n6",
+          "sourceNode": "ex-follow-a-log-file-n5",
+          "sourcePort": 0,
+          "targetNode": "ex-follow-a-log-file-n6",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": []
+}

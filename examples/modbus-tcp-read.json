@@ -2,7 +2,7 @@
   "name": "Modbus TCP read",
   "description": "Reads registers from an inverter, meter or PLC and scales them.",
   "category": "Industrial",
-  "order": 13,
+  "order": 15,
   "needs": "Modbus TCP device",
   "flows": [
     {

@@ -59,12 +59,13 @@ type FileWatchNode struct {
 	rootJail    string
 
 	// runtime state
-	watcher  *fsnotify.Watcher
-	resolved string
-	opMask   fsnotify.Op
-	done     chan struct{}
-	wg       sync.WaitGroup
-	flowPers flow.ContextStore
+	watcher   *fsnotify.Watcher
+	watcherMu sync.Mutex // watcher may be set by waitThenWatch while Stop runs
+	resolved  string
+	opMask    fsnotify.Op
+	done      chan struct{}
+	wg        sync.WaitGroup
+	flowPers  flow.ContextStore
 }
 
 // NewFileWatchNode is the NodeFactory for the file-watch node type.
@@ -142,41 +143,92 @@ func (n *FileWatchNode) Start() error {
 	}
 	n.resolved = resolved
 
+	// A folder that does not exist yet (e.g. created by the first file a
+	// flow writes into it) is waited for instead of failing the node.
+	if _, err := os.Stat(resolved); errors.Is(err, os.ErrNotExist) {
+		if n.Status != nil {
+			n.Status("yellow", "waiting for "+relName(resolved))
+		}
+		n.wg.Add(1)
+		go n.waitThenWatch(requiresPers)
+		return nil
+	}
+
+	if err := n.attach(requiresPers); err != nil {
+		return fmt.Errorf("file-watch %s: %w", n.cfg.ID, err)
+	}
+	n.wg.Add(1)
+	go n.watchLoop()
+	return nil
+}
+
+// attach starts watching n.resolved (and its sub-folders when recursive).
+func (n *FileWatchNode) attach(requiresPers bool) error {
 	w, err := fsnotify.NewWatcher()
 	if err != nil {
 		n.statusError("watch error")
-		return fmt.Errorf("file-watch %s: new watcher: %w", n.cfg.ID, err)
+		return fmt.Errorf("new watcher: %w", err)
 	}
-	if err := w.Add(resolved); err != nil {
+	if err := w.Add(n.resolved); err != nil {
 		_ = w.Close()
 		n.statusError("watch error")
-		return fmt.Errorf("file-watch %s: add watch: %w", n.cfg.ID, err)
+		return fmt.Errorf("add watch: %w", err)
 	}
-	n.watcher = w
 	// fsnotify watches one folder at a time: recursive needs every sub-folder.
 	if n.recursive {
-		_ = filepath.WalkDir(resolved, func(p string, d fs.DirEntry, err error) error {
-			if err == nil && d.IsDir() && p != resolved {
+		_ = filepath.WalkDir(n.resolved, func(p string, d fs.DirEntry, err error) error {
+			if err == nil && d.IsDir() && p != n.resolved {
 				_ = w.Add(p)
 			}
 			return nil
 		})
 	}
-
 	if requiresPers {
-		if err := n.initDirCursor(resolved); err != nil {
+		if err := n.initDirCursor(n.resolved); err != nil {
 			_ = w.Close()
 			n.statusError("cursor init error")
-			return fmt.Errorf("file-watch %s: %w", n.cfg.ID, err)
+			return err
 		}
 	}
 
-	if n.Status != nil {
-		n.Status("green", "watching "+relName(resolved))
+	n.watcherMu.Lock()
+	select {
+	case <-n.done: // stopped meanwhile
+		n.watcherMu.Unlock()
+		_ = w.Close()
+		return errors.New("stopped")
+	default:
 	}
-	n.wg.Add(1)
-	go n.watchLoop()
+	n.watcher = w
+	n.watcherMu.Unlock()
+
+	if n.Status != nil {
+		n.Status("green", "watching "+relName(n.resolved))
+	}
 	return nil
+}
+
+// waitThenWatch checks every 2 s for the path to appear, then watches it.
+func (n *FileWatchNode) waitThenWatch(requiresPers bool) {
+	t := time.NewTicker(2 * time.Second)
+	defer t.Stop()
+	for {
+		select {
+		case <-n.done:
+			n.wg.Done()
+			return
+		case <-t.C:
+			if _, err := os.Stat(n.resolved); err != nil {
+				continue
+			}
+			if err := n.attach(requiresPers); err != nil {
+				n.wg.Done()
+				return
+			}
+			n.watchLoop() // calls n.wg.Done when it ends
+			return
+		}
+	}
 }
 
 // Stop closes the watcher and waits for the goroutine to drain.
@@ -185,9 +237,12 @@ func (n *FileWatchNode) Stop() error {
 	if n.mode == fileWatchModeRead {
 		return nil
 	}
+	n.watcherMu.Lock()
 	close(n.done)
-	if n.watcher != nil {
-		_ = n.watcher.Close()
+	w := n.watcher
+	n.watcherMu.Unlock()
+	if w != nil {
+		_ = w.Close()
 	}
 	n.wg.Wait()
 	return nil

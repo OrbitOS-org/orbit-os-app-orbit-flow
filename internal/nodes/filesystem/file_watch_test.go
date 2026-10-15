@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -566,5 +567,61 @@ func TestFileWatch_RecursiveSeesSubFolders(t *testing.T) {
 	msg := col.wait(t, 2*time.Second)
 	if msg.Get("filename") != deep || msg.Get("event") != "create" {
 		t.Errorf("filename=%v event=%v, want %s create", msg.Get("filename"), msg.Get("event"), deep)
+	}
+}
+
+// A folder that does not exist yet is waited for: once a flow creates it,
+// the files written into it are seen.
+func TestFileWatch_WaitsForAMissingFolder(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "incoming")
+	fw, _ := newFileWatch(t, map[string]any{"path": dir, "mode": "watch", "incremental": true, "debounceMs": 20})
+	withWatchPers(fw)
+	var mu sync.Mutex
+	var first string
+	fw.SetStatus(func(fill, _ string) {
+		mu.Lock()
+		if first == "" {
+			first = fill
+		}
+		mu.Unlock()
+	})
+	col := newSendCollector()
+	fw.SetSend(col.sendFn())
+	if err := fw.Start(); err != nil {
+		t.Fatalf("Start must not fail for a missing folder: %v", err)
+	}
+	t.Cleanup(func() { _ = fw.Stop() })
+	mu.Lock()
+	if first != "yellow" {
+		t.Fatalf("first status = %q, want yellow (waiting)", first)
+	}
+	mu.Unlock()
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(2500 * time.Millisecond) // the node checks every 2 s
+	if err := os.WriteFile(filepath.Join(dir, "order.csv"), []byte("x"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	msg := col.wait(t, 3*time.Second)
+	if msg.Get("file") != "order.csv" || msg.Get("event") != "create" {
+		t.Fatalf("file=%v event=%v", msg.Get("file"), msg.Get("event"))
+	}
+}
+
+// Stopping while it waits ends cleanly.
+func TestFileWatch_StopWhileWaiting(t *testing.T) {
+	fw, _ := newFileWatch(t, map[string]any{"path": filepath.Join(t.TempDir(), "never"), "mode": "watch", "incremental": true})
+	withWatchPers(fw)
+	fw.SetSend(newSendCollector().sendFn())
+	if err := fw.Start(); err != nil {
+		t.Fatal(err)
+	}
+	done := make(chan struct{})
+	go func() { _ = fw.Stop(); close(done) }()
+	select {
+	case <-done:
+	case <-time.After(3 * time.Second):
+		t.Fatal("Stop hangs while waiting for the folder")
 	}
 }

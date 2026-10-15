@@ -1,0 +1,271 @@
+{
+  "name": "Process new files in a folder",
+  "description": "Watches a folder, reads each new CSV file and deletes it when done.",
+  "category": "Data",
+  "order": 24,
+  "flows": [
+    {
+      "id": "ex-process-new-files",
+      "type": "tab",
+      "label": "Process new files in a folder",
+      "info": "The top row stands for files arriving from outside: every 20 seconds it writes a small order as a CSV file in incoming/. The Watch node sends a message for each file created there. The Switch lets through only new and changed files (not deletions); Read File, with File empty, reads msg.filename; the CSV node turns it into one message per line; and a second Write File, with Action Delete, removes the file once it was read, so each file is handled once. Files already in incoming/ when the flow starts are left as they are; if incoming/ does not exist yet, Watch waits for it.",
+      "nodes": [
+        {
+          "id": "ex-process-new-files-n1",
+          "type": "inject",
+          "name": "every 20 s",
+          "x": 120,
+          "y": 80,
+          "z": "ex-process-new-files",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-process-new-files-n2"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 20000,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "rfc3339",
+                "vt": "date"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-process-new-files-n2",
+          "type": "function",
+          "name": "an order file",
+          "x": 320,
+          "y": 80,
+          "z": "ex-process-new-files",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-process-new-files-n3"
+            ]
+          ],
+          "config": {
+            "func": "const id = Date.now();\nmsg.filename = 'incoming/order-' + id + '.csv';\nmsg.payload = 'item,qty\\nvalve,2\\npump,1\\n';\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-process-new-files-n3",
+          "type": "file-out",
+          "name": "write the order",
+          "x": 540,
+          "y": 80,
+          "z": "ex-process-new-files",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            []
+          ],
+          "config": {
+            "path": "",
+            "mode": "overwrite",
+            "appendNewline": false
+          }
+        },
+        {
+          "id": "ex-process-new-files-n4",
+          "type": "file-watch",
+          "name": "incoming",
+          "x": 120,
+          "y": 220,
+          "z": "ex-process-new-files",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-process-new-files-n5"
+            ]
+          ],
+          "config": {
+            "mode": "watch",
+            "path": "incoming",
+            "recursive": false,
+            "incremental": true
+          }
+        },
+        {
+          "id": "ex-process-new-files-n5",
+          "type": "switch",
+          "name": "not deleted",
+          "x": 320,
+          "y": 220,
+          "z": "ex-process-new-files",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-process-new-files-n6"
+            ]
+          ],
+          "config": {
+            "checkall": false,
+            "property": "event",
+            "propertyType": "msg",
+            "rules": [
+              {
+                "id": "r1",
+                "t": "neq",
+                "v": "remove",
+                "vt": "str"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-process-new-files-n6",
+          "type": "file-read",
+          "name": "read it",
+          "x": 520,
+          "y": 220,
+          "z": "ex-process-new-files",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-process-new-files-n7",
+              "ex-process-new-files-n9"
+            ]
+          ],
+          "config": {
+            "path": "",
+            "output": "string",
+            "encoding": "utf-8"
+          }
+        },
+        {
+          "id": "ex-process-new-files-n7",
+          "type": "csv",
+          "name": "to objects",
+          "x": 720,
+          "y": 180,
+          "z": "ex-process-new-files",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-process-new-files-n8"
+            ]
+          ],
+          "config": {
+            "property": "payload",
+            "action": "parse",
+            "header": true,
+            "headerOnce": true,
+            "columns": "",
+            "delimiter": ",",
+            "quoteChar": "\"",
+            "comment": "",
+            "trimSpaces": false,
+            "skipEmptyLines": true,
+            "forceQuote": false,
+            "newline": "\n",
+            "output": "rows",
+            "cast": true
+          }
+        },
+        {
+          "id": "ex-process-new-files-n8",
+          "type": "debug",
+          "name": "order lines",
+          "x": 920,
+          "y": 180,
+          "z": "ex-process-new-files",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        },
+        {
+          "id": "ex-process-new-files-n9",
+          "type": "file-out",
+          "name": "delete it",
+          "x": 720,
+          "y": 270,
+          "z": "ex-process-new-files",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            []
+          ],
+          "config": {
+            "path": "",
+            "mode": "delete",
+            "appendNewline": false
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-process-new-files-n1-w0--n2",
+          "sourceNode": "ex-process-new-files-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-process-new-files-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-process-new-files-n2-w0--n3",
+          "sourceNode": "ex-process-new-files-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-process-new-files-n3",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-process-new-files-n4-w0--n5",
+          "sourceNode": "ex-process-new-files-n4",
+          "sourcePort": 0,
+          "targetNode": "ex-process-new-files-n5",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-process-new-files-n5-w0--n6",
+          "sourceNode": "ex-process-new-files-n5",
+          "sourcePort": 0,
+          "targetNode": "ex-process-new-files-n6",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-process-new-files-n6-w0--n7",
+          "sourceNode": "ex-process-new-files-n6",
+          "sourcePort": 0,
+          "targetNode": "ex-process-new-files-n7",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-process-new-files-n6-w0--n9",
+          "sourceNode": "ex-process-new-files-n6",
+          "sourcePort": 0,
+          "targetNode": "ex-process-new-files-n9",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-process-new-files-n7-w0--n8",
+          "sourceNode": "ex-process-new-files-n7",
+          "sourcePort": 0,
+          "targetNode": "ex-process-new-files-n8",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": []
+}
