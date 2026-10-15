@@ -72,6 +72,7 @@ func RegisterRoutes(r chi.Router, deps *Deps) {
 
 			r.Get("/files", deps.handleListFiles)
 			r.Get("/files/download", deps.handleDownloadFile)
+			r.Get("/files/view", deps.handleViewFile)
 			r.Get("/uart/ports", deps.handleListUartPorts)
 			r.Get("/gpio/pins", deps.handleListGpioPins)
 			r.Get("/i2c/buses", deps.handleListI2CBuses)

@@ -161,6 +161,19 @@ export interface AppFile {
   isDir: boolean
 }
 
+/** What GET /files/view returns: the end of a file, or the part before an offset. */
+export interface FileView {
+  path: string
+  size: number
+  modified: string
+  kind: 'csv' | 'json' | 'text' | 'binary'
+  /** First line of a CSV file (the column names). */
+  header?: string
+  text: string
+  /** Byte offset where text begins; 0 = from the start of the file. */
+  start: number
+}
+
 export interface FilesResponse {
   files: AppFile[]
   used: number
@@ -452,6 +465,12 @@ export function useApi() {
   /** The app's files (Settings → Files and the file pickers). */
   async function listFiles(): Promise<FilesResponse> {
     return request<FilesResponse>('/files')
+  }
+
+  /** The end of a file (or the lines before `before`), to look at it. */
+  async function viewFile(path: string, before?: number): Promise<FileView> {
+    const q = before !== undefined ? `&before=${before}` : ''
+    return request<FileView>(`/files/view?path=${encodeURIComponent(path)}${q}`)
   }
 
   async function deleteFile(path: string): Promise<void> {
@@ -781,6 +800,7 @@ export function useApi() {
     getFlowsState,
     listFiles,
     deleteFile,
+    viewFile,
     fileDownloadUrl,
     setFlowsState,
     login,

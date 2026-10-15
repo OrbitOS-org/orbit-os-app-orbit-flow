@@ -13,6 +13,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useApi, type AppFile, type ApiError } from '@/composables/useApi'
 import { useAuthStore } from '@/stores/authStore'
 import { useSettingsAction } from '@/views/settings/action'
+import FileViewer from '@/views/settings/FileViewer.vue'
 
 const api = useApi()
 const auth = useAuthStore()
@@ -42,6 +43,9 @@ async function load() {
 }
 onMounted(load)
 useSettingsAction({ label: 'Refresh', run: load, primary: false })
+
+// The file open in the viewer (Open), if any.
+const viewing = ref<string | null>(null)
 
 const deleting = ref<AppFile | null>(null)
 const deleteError = ref<string | null>(null)
@@ -106,6 +110,7 @@ const share = computed(() => {
                 <div class="text-[12.5px] text-terminal-text-dim tabular-nums">{{ size(f.size) }} · {{ when(f.modified) }}</div>
               </div>
               <div class="flex items-center gap-2 shrink-0">
+                <button class="pill pill-plain text-accent" @click="viewing = f.path">Open</button>
                 <a class="pill pill-plain" :href="api.fileDownloadUrl(f.path)" download>Download</a>
                 <button v-if="canDelete" class="pill pill-bad" @click="deleting = f; deleteError = null">Delete</button>
               </div>
@@ -120,10 +125,12 @@ const share = computed(() => {
         </div>
         <p class="settings-note">
           The flows read and write only these files: Write File, Read File and Watch cannot reach anything else
-          on the device. They stay on the device; download a copy here.
+          on the device. They stay on the device: open one to look at it here, or download a copy.
         </p>
       </div>
     </div>
+
+    <FileViewer v-if="viewing" :key="viewing" :path="viewing" @close="viewing = null" />
 
     <div
       v-if="deleting"
