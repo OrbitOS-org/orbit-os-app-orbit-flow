@@ -268,7 +268,8 @@ onMounted(async () => {
 <template>
     <div
         ref="flowContainer"
-        class="w-full h-full bg-terminal-bg"
+        class="relative w-full h-full bg-terminal-bg"
+        :class="{ 'flow-off': flowStore.activeFlow?.disabled }"
         @dragover="onDragOver"
         @drop="onDrop"
         @mousemove="onMouseMove"
@@ -870,11 +871,23 @@ onMounted(async () => {
                 </div>
             </Panel>
         </VueFlow>
+        <!-- As in Node-RED: a disabled flow is shown faded, with a note -->
+        <div v-if="flowStore.activeFlow?.disabled" class="flow-off-note" role="status">
+            This flow is disabled{{ flowStore.flowState(flowStore.activeFlow.id) === 'stopped' ? '' : ' — it stops running when you deploy' }}
+        </div>
     </div>
 </template>
 
 <style scoped>
 .vue-flow {
     background-color: rgb(var(--c-bg));
+}
+.flow-off :deep(.vue-flow__node) { opacity: 0.4; }
+.flow-off :deep(.vue-flow__edge) { opacity: 0.35; }
+.flow-off-note {
+    position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 5;
+    padding: 6px 14px; border-radius: 9999px; font-size: 12.5px; pointer-events: none;
+    color: rgb(var(--c-text)); background: rgb(var(--c-surface-alt));
+    border: 1px dashed rgb(var(--c-text-dim) / 0.6);
 }
 </style>

@@ -292,7 +292,7 @@ export function useApi() {
     return request<Record<string, any>>('/system')
   }
 
-  /** Flows saved with "Save and close", in the app's data folder. */
+  /** Flows exported with Export…, in the app's data folder. */
   async function listLibrary(): Promise<LibrarySummary[]> {
     const res = await request<{ flows: LibrarySummary[] }>('/library')
     return res.flows ?? []

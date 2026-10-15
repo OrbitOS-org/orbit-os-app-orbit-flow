@@ -43,6 +43,11 @@ function openMenu(id: string, e: MouseEvent) {
   menuPos.value = { x: Math.min(r.left - 8, window.innerWidth - 270), y: r.bottom + 8 }
   menuFor.value = id
 }
+// Right-click on a tab opens the same menu at the pointer, as in Node-RED.
+function openContextMenu(id: string, e: MouseEvent) {
+  menuPos.value = { x: Math.min(e.clientX, window.innerWidth - 270), y: Math.min(e.clientY, window.innerHeight - 320) }
+  menuFor.value = id
+}
 function showToast(text: string, bad = false) {
   toast.value = text
   toastBad.value = bad
@@ -60,16 +65,64 @@ function toggleDisabled() {
     ? `“${flow.label}” will stop when you deploy`
     : `“${flow.label}” will run when you deploy`)
 }
-function rename() {
+function editProperties() {
   const id = menuFor.value
   menuFor.value = null
   if (id) ui.openFlowEditProperties(id)
 }
-function closeFlow() {
+function addFlowFromMenu() {
+  menuFor.value = null
+  newFlow()
+}
+// Hide, as in Node-RED: only the tab goes away; the flow keeps running.
+const canHide = computed(() => flowStore.visibleFlows.length > 1)
+function hideFlow() {
+  const flow = menuFlow.value
+  menuFor.value = null
+  if (!flow) return
+  flowStore.hideFlow(flow.id)
+  showToast(`“${flow.label}” hidden — it keeps running. Show it again from the flows list`)
+}
+// Export saves the flow and the connections it uses to the app's library
+// (reopen it with + → Open…). The flow stays where it is.
+async function exportFlow() {
+  const id = menuFor.value
+  menuFor.value = null
+  if (!id) return
+  const entry = flowStore.exportFlow(id)
+  if (!entry) return
+  try {
+    await api.saveLibraryFlow(entry)
+    showToast(`“${entry.name}” exported to the library (+ → Open…)`)
+  } catch (err) {
+    showToast(err instanceof Error ? err.message : 'The flow could not be exported', true)
+  }
+}
+function deleteFromMenu() {
   const id = menuFor.value
   menuFor.value = null
   if (id) askDelete(id)
 }
+
+// Flows list (the ▾ at the end of the tabs), as in Node-RED: every flow,
+// hidden ones included; choosing one shows it and opens it.
+const listOpen = ref(false)
+const listPos = ref({ right: 12, top: 0 })
+function toggleList(e: MouseEvent) {
+  const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+  listPos.value = { right: Math.max(8, window.innerWidth - r.right), top: r.bottom + 8 }
+  listOpen.value = !listOpen.value
+}
+function openFromList(id: string) {
+  listOpen.value = false
+  flowStore.showFlow(id)
+  ui.clearFlowProperties()
+}
+function closeListOutside(e: MouseEvent) {
+  if (!(e.target as HTMLElement).closest('.flows-list')) listOpen.value = false
+}
+onMounted(() => document.addEventListener('click', closeListOutside))
+onUnmounted(() => document.removeEventListener('click', closeListOutside))
 function closeMenuOnOutside(e: MouseEvent) {
   const t = e.target as HTMLElement
   if (!t.closest('.flow-menu') && !t.closest('.tab-more')) menuFor.value = null
@@ -77,8 +130,9 @@ function closeMenuOnOutside(e: MouseEvent) {
 onMounted(() => document.addEventListener('click', closeMenuOnOutside))
 onUnmounted(() => document.removeEventListener('click', closeMenuOnOutside))
 
-// Each tab is a flow; "Close…" deletes or saves it after a confirmation. The last
-// flow cannot be deleted, and only users who can deploy can delete.
+// "Delete flow…" removes the flow from the workspace after a confirmation; it
+// stops on the device at the next Deploy. There is no undo, hence the dialog.
+// The last flow cannot be deleted, and only users who can deploy can delete.
 const canDelete = computed(() => auth.can('deploy') && flowStore.flows.length > 1)
 const deletingId = ref<string | null>(null)
 const deleting = computed(() => flowStore.flows.find((f) => f.id === deletingId.value) ?? null)
@@ -87,30 +141,9 @@ const deletingNodes = computed(() => {
   return deleting.value.id === flowStore.activeFlowId ? flowStore.nodes.length : deleting.value.nodes.length
 })
 function askDelete(id: string) {
-  closeError.value = null
   deletingId.value = id
 }
 const api = useApi()
-const saving = ref(false)
-const closeError = ref<string | null>(null)
-
-// Saves the flow (and the connections it uses) to the app's data folder,
-// then removes it from the editor.
-async function saveAndClose() {
-  if (!deletingId.value) return
-  const entry = flowStore.exportFlow(deletingId.value)
-  if (!entry) return
-  saving.value = true
-  closeError.value = null
-  try {
-    await api.saveLibraryFlow(entry)
-    confirmDelete()
-  } catch (err) {
-    closeError.value = err instanceof Error ? err.message : 'The flow could not be saved'
-  } finally {
-    saving.value = false
-  }
-}
 
 function confirmDelete() {
   if (!deletingId.value) return
@@ -182,7 +215,7 @@ function onDragEnd() {
     <div class="ios-seg">
     <!-- Flow Tabs -->
     <div
-      v-for="(flow, idx) in flowStore.flows"
+      v-for="(flow, idx) in flowStore.visibleFlows"
       :key="flow.id"
       role="tab"
       tabindex="0"
@@ -201,6 +234,7 @@ function onDragEnd() {
       @keydown.enter.prevent="switchFlow(flow.id)"
       @keydown.space.prevent="switchFlow(flow.id)"
       @dblclick="handleDblClick(flow.id)"
+      @contextmenu.prevent="openContextMenu(flow.id, $event)"
       @dragstart="onDragStart(idx, $event)"
       @dragover="onDragOver(idx, $event)"
       @drop="onDrop(idx)"
@@ -248,13 +282,42 @@ function onDragEnd() {
         <button class="menu-item" role="menuitem" @click="fromExample">Open…</button>
       </div>
     </div>
+    <!-- Flows list: every flow, hidden ones included (as in Node-RED) -->
+    <div class="flows-list relative shrink-0 ml-auto">
+      <button
+        class="flex items-center gap-1 h-7 px-2 rounded-full text-[12px] text-terminal-text-dim hover:text-terminal-text bg-terminal-surface-alt/70 hover:bg-terminal-surface-alt transition-colors duration-100"
+        title="List flows"
+        aria-label="List flows"
+        :aria-expanded="listOpen"
+        @click="toggleList"
+      >
+        <span v-if="flowStore.flows.length > flowStore.visibleFlows.length" class="tabular-nums">{{ flowStore.flows.length - flowStore.visibleFlows.length }} hidden</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+      </button>
+      <div v-if="listOpen" class="ios-menu fixed w-64 z-50 p-1 max-h-[60vh] overflow-y-auto" :style="{ right: listPos.right + 'px', top: listPos.top + 'px', background: 'rgb(var(--c-surface))', backdropFilter: 'none' }" role="menu">
+        <button
+          v-for="f in flowStore.flows"
+          :key="f.id"
+          class="menu-item"
+          role="menuitem"
+          @click="openFromList(f.id)"
+        >
+          <span class="flex items-center gap-2 min-w-0">
+            <span class="state-mark" :class="flowStore.flowState(f.id)" aria-hidden="true" />
+            <span class="truncate" :class="{ 'line-through': f.disabled }">{{ f.label }}</span>
+          </span>
+          <small v-if="flowStore.isFlowHidden(f.id)">hidden</small>
+          <small v-else-if="f.id === flowStore.activeFlowId">open</small>
+        </button>
+      </div>
+    </div>
   </div>
   <OpenFlowSheet v-if="examplesOpen" @close="examplesOpen = false" />
 
   <!-- Flow menu -->
   <div
     v-if="menuFlow"
-    class="flow-menu ios-menu fixed z-50 w-64 p-1"
+    class="flow-menu ios-menu fixed z-50 w-64 p-1" style="background: rgb(var(--c-surface)); backdrop-filter: none"
     :style="{ left: menuPos.x + 'px', top: menuPos.y + 'px' }"
     role="menu"
   >
@@ -263,13 +326,18 @@ function onDragEnd() {
       {{ STATE_LABEL[menuState] }}
     </div>
     <template v-if="auth.can('deploy')">
+      <button class="menu-item" role="menuitem" @click="editProperties">Edit flow properties</button>
+      <div class="menu-sep" />
+      <button class="menu-item" role="menuitem" @click="addFlowFromMenu">Add flow</button>
+      <button v-if="canHide" class="menu-item" role="menuitem" @click="hideFlow">Hide flow<small>keeps running</small></button>
+      <div class="menu-sep" />
       <button class="menu-item" role="menuitem" @click="toggleDisabled">
         {{ menuFlow.disabled ? 'Enable flow' : 'Disable flow' }}<small>on the next deploy</small>
       </button>
       <div class="menu-sep" />
-      <button class="menu-item" role="menuitem" @click="rename">Rename…</button>
+      <button class="menu-item" role="menuitem" @click="exportFlow">Export…<small>to the library</small></button>
       <div v-if="canDelete" class="menu-sep" />
-      <button v-if="canDelete" class="menu-item danger" role="menuitem" @click="closeFlow">Close…</button>
+      <button v-if="canDelete" class="menu-item danger" role="menuitem" @click="deleteFromMenu">Delete flow…</button>
     </template>
   </div>
 
@@ -285,16 +353,14 @@ function onDragEnd() {
     @click.self="deletingId = null"
   >
     <div class="ios-dialog w-[340px] max-w-[90vw] p-5 text-center" role="dialog" aria-modal="true" aria-labelledby="del-title">
-      <h2 id="del-title">Close “{{ deleting.label }}”?</h2>
+      <h2 id="del-title">Delete “{{ deleting.label }}”?</h2>
       <p class="mt-2 text-[13px] text-terminal-text-dim">
-        Its {{ deletingNodes }} node{{ deletingNodes === 1 ? '' : 's' }} stop running when you deploy.
-        Save it to reopen it later with + → Open…
+        The flow and its {{ deletingNodes }} node{{ deletingNodes === 1 ? '' : 's' }} are removed from the workspace and stop running on the device when you deploy.
+        To keep a copy, use Export first.
       </p>
-      <p v-if="closeError" class="mt-3 settings-error">{{ closeError }}</p>
       <div class="mt-4 grid gap-2">
-        <button class="pill pill-primary py-2" :disabled="saving" @click="saveAndClose">{{ saving ? 'Saving…' : 'Save and close' }}</button>
-        <button class="pill py-2 bg-status-error/10 text-status-error font-semibold" :disabled="saving" @click="confirmDelete">Delete</button>
-        <button class="pill pill-plain py-2" :disabled="saving" @click="deletingId = null">Cancel</button>
+        <button class="pill py-2 bg-status-error/10 text-status-error font-semibold" @click="confirmDelete">Delete</button>
+        <button class="pill pill-plain py-2" @click="deletingId = null">Cancel</button>
       </div>
     </div>
   </div>

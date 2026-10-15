@@ -62,16 +62,29 @@ export const useFlowStore = defineStore("flow", () => {
   const dirtyNodeIds = ref(new Set<string>());
   const dirtyFlowIds = ref(new Set<string>());
   const deployedFlows = ref<Flow[]>([]);
+  const deployedConfigs = ref<ConfigNode[]>([]);
   const revision = ref<string | null>(null);
   const deploying = ref(false);
 
-  // Deploy mode: persisted in localStorage
+  // Deploy mode: persisted in localStorage. Full by default, as in Node-RED.
+  // "Restart Flows" is an action, not a mode (see restartFlows).
   const savedMode = localStorage.getItem('orbit-flow-deploy-mode');
   const deployMode = ref<DeployModeType>(
-    savedMode && ['nodes', 'flows', 'full', 'restart'].includes(savedMode)
+    savedMode && ['nodes', 'flows', 'full'].includes(savedMode)
       ? (savedMode as DeployModeType)
-      : 'nodes',
+      : 'full',
   );
+
+  // Hidden flows, as in Node-RED: only the tab is hidden; the flow stays
+  // deployed and keeps running. Kept per browser, like Node-RED's editor state.
+  const HIDDEN_KEY = 'orbit-flow-hidden-flows';
+  const hiddenFlowIds = ref<Set<string>>(new Set(readHidden()));
+  function readHidden(): string[] {
+    try { return JSON.parse(localStorage.getItem(HIDDEN_KEY) ?? '[]'); } catch { return []; }
+  }
+  function saveHidden(): void {
+    try { localStorage.setItem(HIDDEN_KEY, JSON.stringify([...hiddenFlowIds.value])); } catch { /* storage unavailable */ }
+  }
 
   // --------------- Getters ---------------
 
@@ -88,6 +101,40 @@ export const useFlowStore = defineStore("flow", () => {
   );
 
   const hasUnsavedChanges = computed(() => dirty.value);
+
+  /** Flows shown as tabs (hidden ones left out). */
+  const visibleFlows = computed<Flow[]>(() =>
+    flows.value.filter((f) => !hiddenFlowIds.value.has(f.id)),
+  );
+
+  function isFlowHidden(flowId: string): boolean {
+    return hiddenFlowIds.value.has(flowId);
+  }
+
+  /** Hides a tab. At least one tab stays visible. */
+  function hideFlow(flowId: string): void {
+    if (visibleFlows.value.length <= 1) return;
+    hiddenFlowIds.value = new Set([...hiddenFlowIds.value, flowId]);
+    saveHidden();
+    if (activeFlowId.value === flowId) {
+      syncCanvasToActiveFlow();
+      setActiveFlow(visibleFlows.value[0].id);
+    }
+  }
+
+  /** Shows a hidden tab again and opens it. */
+  function showFlow(flowId: string): void {
+    if (hiddenFlowIds.value.has(flowId)) {
+      const next = new Set(hiddenFlowIds.value);
+      next.delete(flowId);
+      hiddenFlowIds.value = next;
+      saveHidden();
+    }
+    if (activeFlowId.value !== flowId) {
+      syncCanvasToActiveFlow();
+      setActiveFlow(flowId);
+    }
+  }
 
   // --------------- Helpers ---------------
 
@@ -123,6 +170,7 @@ export const useFlowStore = defineStore("flow", () => {
 
   function snapshotDeployedState(): void {
     deployedFlows.value = JSON.parse(JSON.stringify(toRaw(flows.value)));
+    deployedConfigs.value = JSON.parse(JSON.stringify(toRaw(configs.value)));
   }
 
   // --------------- Deployment state of each flow ---------------
@@ -289,7 +337,7 @@ export const useFlowStore = defineStore("flow", () => {
 
   /**
    * One flow and the connections its nodes use, in the format of the
-   * examples and the library, for "Save and close".
+   * examples and the library, for Export….
    */
   function exportFlow(flowId: string): { name: string; flows: Flow[]; configs: ConfigNode[] } | null {
     if (flowId === activeFlowId.value) syncCanvasToActiveFlow();
@@ -313,15 +361,20 @@ export const useFlowStore = defineStore("flow", () => {
   function removeFlow(flowId: string): void {
     if (flows.value.length <= 1) return;
 
-    const idx = flows.value.findIndex((f) => f.id === flowId);
     flows.value = flows.value.filter((f) => f.id !== flowId);
+    if (hiddenFlowIds.value.has(flowId)) {
+      const next = new Set(hiddenFlowIds.value);
+      next.delete(flowId);
+      hiddenFlowIds.value = next;
+      saveHidden();
+    }
 
     if (activeFlowId.value === flowId) {
-      // Switch to the next flow, or the previous one if we removed the last tab
-      const nextIdx = Math.min(idx, flows.value.length - 1);
-      setActiveFlow(flows.value[nextIdx].id);
+      const shown = visibleFlows.value.length > 0 ? visibleFlows.value : flows.value;
+      setActiveFlow(shown[0].id);
     }
-    markDirty();
+    // Mark the removed flow itself, so the deploy counts it as a change.
+    markDirty(flowId);
   }
 
   function reorderFlows(fromIndex: number, toIndex: number): void {
@@ -674,6 +727,35 @@ export const useFlowStore = defineStore("flow", () => {
     }
   }
 
+  /**
+   * "Restart Flows", as in Node-RED: restarts what is deployed on the device,
+   * without deploying the changes in the editor (they stay pending).
+   */
+  async function restartFlows(): Promise<boolean> {
+    if (deploying.value) return false;
+    const ui = useUiStore();
+    deploying.value = true;
+    ui.setDeployStatus('deploying');
+    try {
+      const api = useApi();
+      const result = await api.deployFlows({
+        flows: deployedFlows.value,
+        configs: deployedConfigs.value.length > 0 ? deployedConfigs.value : undefined,
+        rev: revision.value ?? undefined,
+        deployMode: 'restart',
+      });
+      revision.value = result.rev;
+      ui.setDeployStatus('deployed');
+      return true;
+    } catch (err) {
+      console.error("[FlowStore] Restart error:", err);
+      ui.setDeployStatus('failed');
+      return false;
+    } finally {
+      deploying.value = false;
+    }
+  }
+
   // --------------- Internal Converters ---------------
 
   function apiNodeToVueFlowNode(apiNode: ApiNode): FlowNode {
@@ -890,6 +972,11 @@ export const useFlowStore = defineStore("flow", () => {
     setActiveFlow,
     exportFlow,
     flowState,
+    visibleFlows,
+    isFlowHidden,
+    hideFlow,
+    showFlow,
+    restartFlows,
     changedFlowCount,
     importExample,
     addFlow,

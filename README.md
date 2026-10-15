@@ -18,13 +18,14 @@ Runs on Raspberry Pi, Arduino UNO Q and other ARM64 devices with Orbit OS (free 
 ## Features
 
 - **Visual editor** — drag, connect and deploy; several flows in tabs, with a live debug panel and a log view; light by default, with a dark theme
+- **Works like Node-RED** — Deploy with *Full*, *Modified Flows* or *Modified Nodes*, and *Restart Flows*; right-click a tab to edit its properties, hide it (it keeps running), disable it (applied on the next Deploy), export or delete it; the list at the end of the tabs shows every flow, hidden ones included
 - **Industrial protocols built in** — Modbus TCP and RTU, OPC UA (read, subscribe, write), Siemens S7 and MQTT
 - **The device's own I/O** — GPIO, I²C, SPI and the serial ports, through the Orbit OS API
 - **Logic without code, or with it** — switch, change, delay, template and state-machine nodes; JavaScript, expressions or Go when you need them
 - **Data in and out** — HTTP, TCP and UDP nodes; JSON, XML and CSV; files in the app's data folder
 - **Notifications on your phone** — a node that sends a push notification through the Orbit OS mobile app
 - **Users and roles** — admin, editor and viewer accounts; credentials stored encrypted
-- **Examples and saved flows** — the **+** next to the flow tabs → *Open…* adds a ready-made example (for instance, switching the relays of an EBYTE RS-485 relay board) or a flow you closed with *Save and close*; saved flows are kept in the app's data folder
+- **Examples and saved flows** — the **+** next to the flow tabs → *Open…* adds a ready-made example (for instance, switching the relays of an EBYTE RS-485 relay board) or a flow you exported with *Export…* from a tab's menu; exported flows are kept in the app's data folder
 
 ## Install
 

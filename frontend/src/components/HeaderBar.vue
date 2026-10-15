@@ -29,32 +29,36 @@ const connectionLabel = computed(() => {
   }
 })
 
-const deployModeLabel: Record<DeployModeType, string> = {
-  nodes: 'Deploy',
-  flows: 'Deploy flows',
-  full: 'Full deploy',
-  restart: 'Restart',
-}
-
+// As in Node-RED: the button always reads "Deploy"; the menu sets the mode.
 const deployLabel = computed(() => {
   switch (uiStore.deployStatus) {
     case 'deploying': return 'Deploying'
     case 'deployed':  return 'Deployed'
     case 'failed':    return 'Failed'
-    default:          return deployModeLabel[flowStore.deployMode]
+    default:          return 'Deploy'
   }
 })
 
-const deployDisabled = computed(() => uiStore.deployStatus === 'deploying')
+// As in Node-RED: with nothing to deploy the button is greyed out and does
+// nothing; it lights up as soon as there is a change.
+const hasChanges = computed(() => flowStore.hasUnsavedChanges || flowStore.changedFlowCount > 0)
+const deployBusy = computed(() => uiStore.deployStatus === 'deploying')
+const deployIdle = computed(() => !hasChanges.value && uiStore.deployStatus !== 'deployed' && uiStore.deployStatus !== 'failed')
+const deployDisabled = computed(() => deployBusy.value || !hasChanges.value)
 
 const showDeployMenu = ref(false)
 
+// Same modes, names and order as Node-RED's Deploy menu.
 const deployModes: { value: DeployModeType; label: string; description: string }[] = [
-  { value: 'nodes', label: 'Modified Nodes', description: 'Only changed nodes' },
-  { value: 'flows', label: 'Modified Flows', description: 'Entire changed flows' },
-  { value: 'full',  label: 'Full Deploy',    description: 'Restart all nodes' },
-  { value: 'restart', label: 'Restart',      description: 'Full engine restart' },
+  { value: 'full',  label: 'Full',           description: 'Deploys everything in the workspace' },
+  { value: 'flows', label: 'Modified Flows', description: 'Only deploys flows that contain changed nodes' },
+  { value: 'nodes', label: 'Modified Nodes', description: 'Only deploys nodes that have changed' },
 ]
+
+async function handleRestart(): Promise<void> {
+  showDeployMenu.value = false
+  await flowStore.restartFlows()
+}
 
 function handleClickOutside(event: MouseEvent) {
   const target = event.target as HTMLElement
@@ -234,12 +238,13 @@ function selectMode(mode: DeployModeType): void {
             class="h-8 flex items-center gap-1.5 pl-3.5 pr-3 text-[13px] font-semibold transition-all duration-150 rounded-l-full"
             :disabled="deployDisabled"
             :class="{
-              'opacity-50 cursor-not-allowed': deployDisabled,
+              'opacity-60 cursor-not-allowed': deployBusy,
+              'bg-terminal-surface-alt text-terminal-text-dim cursor-default': deployIdle,
               'bg-status-success text-white': uiStore.deployStatus === 'deployed',
               'bg-status-error text-white': uiStore.deployStatus === 'failed',
-              'bg-accent text-white hover:bg-accent-dim': uiStore.deployStatus !== 'deployed' && uiStore.deployStatus !== 'failed',
+              'bg-accent text-white hover:bg-accent-dim': !deployIdle && uiStore.deployStatus !== 'deployed' && uiStore.deployStatus !== 'failed',
             }"
-            title="Deploy flows"
+            :title="hasChanges ? 'Deploy changes' : 'No changes to deploy'"
             @click="handleDeploy"
           >
             <!-- Spinning icon while deploying -->
@@ -289,14 +294,15 @@ function selectMode(mode: DeployModeType): void {
           <!-- Dropdown toggle -->
           <button
             class="h-8 flex items-center pl-1.5 pr-2.5 transition-all duration-150 rounded-r-full border-l border-l-white/25"
-            :disabled="deployDisabled"
+            :disabled="deployBusy"
             :class="{
-              'opacity-50 cursor-not-allowed': deployDisabled,
+              'opacity-60 cursor-not-allowed': deployBusy,
+              'bg-terminal-surface-alt text-terminal-text-dim hover:text-terminal-text border-l-terminal-border': deployIdle,
               'bg-status-success text-white': uiStore.deployStatus === 'deployed',
               'bg-status-error text-white': uiStore.deployStatus === 'failed',
-              'bg-accent text-white hover:bg-accent-dim': uiStore.deployStatus !== 'deployed' && uiStore.deployStatus !== 'failed',
+              'bg-accent text-white hover:bg-accent-dim': !deployIdle && uiStore.deployStatus !== 'deployed' && uiStore.deployStatus !== 'failed',
             }"
-            title="Select deploy mode"
+            title="Deploy options"
             @click.stop="showDeployMenu = !showDeployMenu"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -308,7 +314,7 @@ function selectMode(mode: DeployModeType): void {
         <!-- Dropdown menu -->
         <div
           v-if="showDeployMenu"
-          class="ios-menu absolute right-0 top-full mt-2 w-60 z-50 overflow-hidden"
+          class="ios-menu absolute right-0 top-full mt-2 w-72 z-50 overflow-hidden" style="background: rgb(var(--c-surface)); backdrop-filter: none"
         >
           <button
             v-for="mode in deployModes"
@@ -323,6 +329,18 @@ function selectMode(mode: DeployModeType): void {
             <div>
               <div class="text-terminal-text font-medium">{{ mode.label }}</div>
               <div class="text-terminal-text-dim text-[10px] mt-0.5">{{ mode.description }}</div>
+            </div>
+          </button>
+          <div class="h-px mx-2 my-1 bg-terminal-border" />
+          <button
+            class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-xs hover:bg-terminal-surface-alt transition-colors duration-100 disabled:opacity-50"
+            :disabled="deployBusy"
+            @click="handleRestart"
+          >
+            <span class="w-2 h-2 shrink-0" />
+            <div>
+              <div class="text-terminal-text font-medium">Restart Flows</div>
+              <div class="text-terminal-text-dim text-[10px] mt-0.5">Restarts the deployed flows; changes in the editor stay pending</div>
             </div>
           </button>
         </div>

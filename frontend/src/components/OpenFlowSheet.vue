@@ -3,7 +3,7 @@
   Licensed under the GNU Affero General Public License v3.0 or later.
   See LICENSE file for details.
 
-  "Open…": the flows saved with "Save and close" (in the app's data folder)
+  "Open…": the flows exported with Export… (in the app's data folder)
   and the examples that ship with the app. The chosen one is added as a
   new, undeployed flow.
 -->
@@ -133,7 +133,7 @@ function savedOn(iso: string): string {
 
         <template v-if="!loading && tab === 'saved'">
           <div v-if="shownSaved.length === 0" class="list px-4 py-6 text-center text-[13px] text-terminal-text-dim">
-            {{ saved.length === 0 ? 'No saved flows. Close a flow with “Save and close” to keep it here.' : 'No saved flows match.' }}
+            {{ saved.length === 0 ? 'No saved flows. Use Export… in a flow tab’s menu to keep a copy here.' : 'No saved flows match.' }}
           </div>
           <div v-else class="list">
             <div v-for="f in shownSaved" :key="f.id" class="row">
