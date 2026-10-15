@@ -172,6 +172,8 @@ export interface NodeCatalogEntry {
   inputs: number
   outputs: number
   defaults?: Record<string, any>
+  /** Other words the palette search finds the node by (e.g. "uart"). */
+  keywords?: string[]
 }
 
 export interface NodeCatalog {

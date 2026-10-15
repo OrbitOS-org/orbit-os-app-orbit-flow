@@ -2,7 +2,7 @@
   "name": "Machine state machine",
   "description": "Stopped, starting, running and fault, driven by messages.",
   "category": "Industrial",
-  "order": 16,
+  "order": 17,
   "flows": [
     {
       "id": "ex-machine-state-machine",

@@ -19,6 +19,7 @@ import (
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/flow"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/logbuffer"
 	flownats "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nats"
+	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes/serial"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/storage"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/ws"
 	"github.com/go-chi/chi/v5"
@@ -111,6 +112,14 @@ func (d *Deps) handleDeployFlows(w http.ResponseWriter, r *http.Request) {
 		"config_count", len(req.Configs),
 		"client_rev", req.Rev,
 	)
+
+	// A serial port can have only one connection: refuse the deploy before
+	// anything is saved or started.
+	if err := serial.Conflicts(req.Flows, req.Configs); err != nil {
+		slog.Warn("deploy refused", "error", err)
+		jsonError(w, http.StatusConflict, err.Error())
+		return
+	}
 
 	d.broadcast(ws.EventDeploy, map[string]any{"action": "deploying", "revision": ""})
 

@@ -26,5 +26,6 @@ import (
 	_ "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes/opcua"
 	_ "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes/orbit"
 	_ "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes/s7"
+	_ "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes/serial"
 	_ "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes/spi"
 )

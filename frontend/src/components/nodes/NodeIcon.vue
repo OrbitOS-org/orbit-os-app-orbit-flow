@@ -77,6 +77,10 @@ const icons: Record<string, string[]> = {
   'system-metrics':  ['M3 3v18h18', 'M7 15l4-5 3 3 5-7'], // line chart (gauge/trend)
   'device-identity': ['M4 4h16v16H4z', 'M4 9h16', 'M8 13h3', 'M8 16h6'], // ID card
   'i2c-transfer':    ['M12 3v4', 'M12 17v4', 'M5 12a7 7 0 1 1 14 0a7 7 0 1 1-14 0', 'M9 12h6', 'M9 9v6', 'M15 9v6'], // bus loop (shared address bus) + data
+  // D-sub serial connector with its pins
+  'serial-in':       ['M2.5 7h19l-2.2 9.2a1.5 1.5 0 0 1-1.5 1.1H6.2a1.5 1.5 0 0 1-1.5-1.1z', 'M7 10.5h.01', 'M10.3 10.5h.01', 'M13.7 10.5h.01', 'M17 10.5h.01', 'M8.7 14h.01', 'M12 14h.01', 'M15.3 14h.01'],
+  'serial-out':      ['M2.5 7h19l-2.2 9.2a1.5 1.5 0 0 1-1.5 1.1H6.2a1.5 1.5 0 0 1-1.5-1.1z', 'M7 10.5h.01', 'M10.3 10.5h.01', 'M13.7 10.5h.01', 'M17 10.5h.01', 'M8.7 14h.01', 'M12 14h.01', 'M15.3 14h.01'],
+  'serial-request':  ['M2.5 7h19l-2.2 9.2a1.5 1.5 0 0 1-1.5 1.1H6.2a1.5 1.5 0 0 1-1.5-1.1z', 'M7 10.5h.01', 'M10.3 10.5h.01', 'M13.7 10.5h.01', 'M17 10.5h.01', 'M8.7 14h.01', 'M12 14h.01', 'M15.3 14h.01'],
   'spi-transfer':    ['M4 8h6', 'M4 16h6', 'M14 8h6', 'M14 16h6', 'M10 8l4 8', 'M10 16l4-8'], // full-duplex cross (MOSI/MISO)
 
   // ── Context ──────────────────────────────

@@ -29,7 +29,8 @@ const filteredNodes = computed(() => {
   const q = filterText.value.trim().toLowerCase()
   if (!q) return nodes.value
   return nodes.value.filter(n =>
-    n.label.toLowerCase().includes(q) || n.type.toLowerCase().includes(q)
+    n.label.toLowerCase().includes(q) || n.type.toLowerCase().includes(q) ||
+    (n.keywords ?? []).some(k => k.includes(q))
   )
 })
 

@@ -273,6 +273,10 @@ type NodeTypeInfo struct {
 
 	// Outputs is the number of output ports (0 for sink nodes like debug, 1+ for others).
 	Outputs int `json:"outputs"`
+
+	// Keywords are other words the palette search finds the node by
+	// (e.g. "uart" for the Serial nodes).
+	Keywords []string `json:"keywords,omitempty"`
 }
 
 // NodeConfig holds the configuration for a specific node instance within a flow.

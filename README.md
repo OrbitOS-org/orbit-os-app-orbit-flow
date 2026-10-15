@@ -20,12 +20,12 @@ Runs on Raspberry Pi, Arduino UNO Q and other ARM64 devices with Orbit OS (free 
 - **Visual editor** — drag, connect and deploy; several flows in tabs, with a live debug panel and a log view; light by default, with a dark theme
 - **Works like Node-RED** — Deploy with *Full*, *Modified Flows* or *Modified Nodes*, and *Restart Flows*; right-click a tab to edit its properties, hide it (it keeps running), disable it (applied on the next Deploy), export or delete it; the list at the end of the tabs shows every flow, hidden ones included
 - **Industrial protocols built in** — Modbus TCP and RTU, OPC UA (read, subscribe, write), Siemens S7 and MQTT
-- **The device's own I/O** — GPIO, I²C, SPI and the serial ports, through the Orbit OS API
+- **The device's own I/O** — GPIO, I²C, SPI and the serial ports, through the Orbit OS API; *Serial In*, *Serial Out* and *Serial Request* work like Node-RED's serial nodes, on the board's UARTs, RS-232/RS-485 ports and USB-serial adapters
 - **Logic without code, or with it** — switch, change, delay, template and state-machine nodes; JavaScript, expressions or Go when you need them
 - **Data in and out** — HTTP, TCP and UDP nodes; JSON, XML and CSV; files in the app's data folder
 - **Notifications on your phone** — a node that sends a push notification through the Orbit OS mobile app
 - **Users and roles** — admin, editor and viewer accounts; credentials stored encrypted
-- **Examples and saved flows** — the **+** next to the flow tabs → *Open…* adds a ready-made example (for instance, switching the relays of an EBYTE RS-485 relay board) or a flow you exported with *Export…* from a tab's menu; exported flows are kept in the app's data folder
+- **Examples and saved flows** — the **+** next to the flow tabs → *Open…* adds a ready-made example (for instance, switching the relays of an EBYTE RS-485 relay board, or reading a GPS on a serial port) or a flow you exported with *Export…* from a tab's menu; exported flows are kept in the app's data folder
 
 ## Install
 
@@ -56,7 +56,7 @@ You need [VS Code](https://code.visualstudio.com/) with the Orbit Studio extensi
 | `cmd/orbit_flow/` | app entry point (`main.go`), the node groups built into the app (`groups.go`), `metadata.json` (manifest and permissions) |
 | `cmd/orbit_flow/orb/icon.svg` | Launcher and Store icon |
 | `internal/flow/`, `internal/server/`, `internal/api/` | flow engine, HTTP server and API |
-| `internal/nodes/` | the nodes, one folder per group; `gpio`, `i2c`, `spi` and `orbit` use the Orbit OS API |
+| `internal/nodes/` | the nodes, one folder per group; `gpio`, `i2c`, `spi`, `serial` and `orbit` use the Orbit OS API |
 | `internal/auth/`, `internal/credentials/` | users, sessions and encrypted credentials |
 | `frontend/` | the editor (Vue 3); `npm run build` writes it to `web/dist/`, which is embedded in the app |
 | `examples/` | example flows shipped inside the app, one JSON file each (see `examples/examples.go`) |

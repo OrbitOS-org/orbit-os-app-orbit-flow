@@ -382,6 +382,51 @@ export const nodeHelpDocs: Record<string, NodeHelpDoc> = {
     ],
   },
 
+  'serial-in': {
+    overview:
+      'Sends a message for each piece of data received on a serial port: an on-board UART, an RS-232 or RS-485 port, or a USB-serial adapter. Use it for devices that talk on their own, such as a GPS sending NMEA lines, a barcode reader or a scale that streams its weight.',
+    outputs: ['msg.payload — the data received, as text or as a list of bytes (0-255).', 'msg.port — the port it came from (e.g. ttyS3).'],
+    properties: [
+      { key: 'Serial Port', desc: 'The port and its settings (baud rate, data bits, parity, stop bits), shared by every Serial node that uses it.' },
+      { key: 'Split input', desc: 'Where one message ends: on a character (\\n by default), after a silence (no byte for N ms), or at a fixed length.' },
+      { key: 'Keep the character', desc: 'For "On character": keep it at the end of each message.' },
+      { key: 'Output', desc: 'Text, or Bytes (a list of numbers) for binary protocols.' },
+    ],
+    tips: [
+      'Search the palette for uart, rs485 or rs232 to find the Serial nodes.',
+      'The port opens on Deploy and closes when no Serial node uses it. If another app holds it, the node turns red and tries again every 5 seconds.',
+      'A port can only have one connection: a Modbus RTU server and a Serial Port on the same port are refused at Deploy.',
+    ],
+  },
+
+  'serial-out': {
+    overview: 'Writes msg.payload to a serial port.',
+    inputs: ['msg.payload — text is sent as it is, a list of numbers (0-255) as bytes, numbers and true/false as text, objects as JSON.'],
+    properties: [
+      { key: 'Serial Port', desc: 'The port and its settings, shared by every Serial node that uses it.' },
+      { key: 'Add at the end', desc: 'Characters added after each payload: nothing, \\n, \\r\\n, or others (e.g. \\x03 or 0x0D 0x0A).' },
+    ],
+    tips: ['A Serial In on the same port receives what the device sends back.'],
+  },
+
+  'serial-request': {
+    overview:
+      'Writes msg.payload to a serial port and waits for the reply, for devices that answer questions: AT commands, scales, meters with a text protocol.',
+    inputs: ['msg.payload — what to send, as for Serial Out.', 'msg.timeout — optional; replaces the timeout of the node (ms).'],
+    outputs: ['The same message with the reply in msg.payload and the port in msg.port.'],
+    properties: [
+      { key: 'Serial Port', desc: 'The port and its settings, shared by every Serial node that uses it.' },
+      { key: 'Add at the end of the request', desc: 'Characters added after the payload (\\r\\n by default).' },
+      { key: 'Reply ends', desc: 'On a character, after a silence, or at a fixed length, as in Serial In.' },
+      { key: 'Timeout', desc: 'How long to wait for the reply. With no reply in time the node raises an error that a Catch node can handle.' },
+      { key: 'Output', desc: 'Text, or Bytes (a list of numbers).' },
+    ],
+    tips: [
+      'Messages that arrive while the node waits are sent one after the other; requests from all nodes on a port never overlap.',
+      'While a request waits, what the port receives goes to it and not to the Serial In nodes on that port.',
+    ],
+  },
+
   'context-watch': {
     overview:
       'Watches a context store for changes and emits a message every time a matching key is set or deleted. Acts like a reactive trigger sourced from context.',

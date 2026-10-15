@@ -2,7 +2,7 @@
   "name": "MQTT command to relay",
   "description": "An on/off MQTT message switches relay 1 of an EBYTE board.",
   "category": "Data",
-  "order": 18,
+  "order": 19,
   "needs": "MQTT broker, EBYTE board",
   "flows": [
     {

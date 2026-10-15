@@ -73,8 +73,11 @@ func TestExamplesAreComplete(t *testing.T) {
 						}
 					}
 				}
-				if srv, ok := n.Config["server"].(string); ok && srv != "" && !configs[srv] {
-					t.Errorf("%s: node %s uses connection %s, which is not in the example", s.ID, n.ID, srv)
+				for _, key := range []string{"server", "bus", "port"} {
+					// "port" is a number on network nodes; only strings name a connection.
+					if id, ok := n.Config[key].(string); ok && id != "" && !configs[id] {
+						t.Errorf("%s: node %s uses connection %s, which is not in the example", s.ID, n.ID, id)
+					}
 				}
 			}
 		}

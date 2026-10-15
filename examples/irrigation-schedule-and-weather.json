@@ -2,7 +2,7 @@
   "name": "Irrigation by schedule and weather",
   "description": "Waters on a schedule and skips the cycle when rain is coming (Sprinqua).",
   "category": "Projects",
-  "order": 22,
+  "order": 23,
   "needs": "EBYTE board, internet",
   "flows": [
     {

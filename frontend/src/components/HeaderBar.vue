@@ -354,7 +354,7 @@ function selectMode(mode: DeployModeType): void {
         role="status"
       >
         <span class="mark" :class="uiStore.deployStatus === 'failed' ? 'bad' : ''">{{ uiStore.deployStatus === 'failed' ? '!' : '✓' }}</span>
-        <span>{{ uiStore.deployStatus === 'failed' ? 'Deploy failed — see the log' : 'Deployed' }}</span>
+        <span>{{ uiStore.deployStatus === 'failed' ? (uiStore.deployError ? 'Deploy refused: ' + uiStore.deployError : 'Deploy failed — see the log') : 'Deployed' }}</span>
       </div>
     </Transition>
   </header>
@@ -367,9 +367,10 @@ function selectMode(mode: DeployModeType): void {
   background: var(--bar-bg); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
   border: 1px solid rgb(var(--c-border)); border-radius: 16px; font-size: 13px; font-weight: 500;
   color: rgb(var(--c-text)); box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+  max-width: min(640px, calc(100vw - 32px)); line-height: 1.35;
 }
 .ios-banner .mark {
-  width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center;
+  flex: none; width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center;
   background: rgb(var(--c-success)); color: #fff; font-size: 13px; font-weight: 700;
 }
 .ios-banner .mark.bad { background: rgb(var(--c-error)); }

@@ -2,7 +2,7 @@
   "name": "EBYTE relay board",
   "description": "Switch the 4 relays of an EBYTE MA01-AXCX4040 board over Modbus RTU (RS-485) and read its inputs.",
   "category": "Industrial",
-  "order": 10,
+  "order": 11,
   "needs": "EBYTE board, RS-485",
   "flows": [
     {

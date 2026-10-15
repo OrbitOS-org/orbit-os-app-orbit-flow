@@ -1,0 +1,206 @@
+{
+  "name": "GPS position from a serial port",
+  "description": "Reads the NMEA lines of a GPS receiver and turns them into position, speed and satellites.",
+  "category": "Device",
+  "order": 10,
+  "needs": "GPS receiver with NMEA output (serial or USB)",
+  "flows": [
+    {
+      "id": "ex-gps-nmea",
+      "type": "tab",
+      "label": "GPS position",
+      "info": "The Serial In node receives one NMEA line at a time from the GPS (each line ends with \\r\\n). The Switch sends RMC sentences (position, speed, date) and GGA sentences (fix, satellites, altitude) to two Function nodes, which check the line's checksum and turn it into an object; the Debug panel shows the results. Lines from any satellite system ($GP, $GN, $GL…) are accepted. Set your GPS port in the Serial Port connection: most USB receivers appear as ttyUSB0 or ttyACM0 and use 9600 baud; on-board UART modules use a ttyS port. Until the receiver has a fix, RMC lines say no fix and nothing is shown for the position.",
+      "nodes": [
+        {
+          "id": "ex-gps-nmea-n1",
+          "type": "serial-in",
+          "name": "GPS",
+          "x": 120,
+          "y": 160,
+          "z": "ex-gps-nmea",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-gps-nmea-n2"
+            ]
+          ],
+          "config": {
+            "port": "ex-gps-nmea-c1",
+            "split": "char",
+            "splitChar": "\\r\\n",
+            "keepChar": false,
+            "splitGap": 50,
+            "splitLength": 16,
+            "output": "text"
+          }
+        },
+        {
+          "id": "ex-gps-nmea-n2",
+          "type": "switch",
+          "name": "sentence type",
+          "x": 330,
+          "y": 160,
+          "z": "ex-gps-nmea",
+          "inputs": 1,
+          "outputs": 2,
+          "wires": [
+            [
+              "ex-gps-nmea-n3"
+            ],
+            [
+              "ex-gps-nmea-n4"
+            ]
+          ],
+          "config": {
+            "checkall": false,
+            "property": "payload",
+            "propertyType": "msg",
+            "rules": [
+              {
+                "id": "r1",
+                "t": "regex",
+                "v": "^\\$G[A-Z]RMC,",
+                "vt": "str"
+              },
+              {
+                "id": "r2",
+                "t": "regex",
+                "v": "^\\$G[A-Z]GGA,",
+                "vt": "str"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-gps-nmea-n3",
+          "type": "function",
+          "name": "position (RMC)",
+          "x": 550,
+          "y": 120,
+          "z": "ex-gps-nmea",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-gps-nmea-n5"
+            ]
+          ],
+          "config": {
+            "func": "// NMEA checksum: XOR of the characters between $ and *\nfunction valid(line) {\n  const star = line.indexOf('*');\n  if (line[0] !== '$' || star < 0) return false;\n  let sum = 0;\n  for (let i = 1; i < star; i++) sum ^= line.charCodeAt(i);\n  return sum === parseInt(line.slice(star + 1, star + 3), 16);\n}\n// ddmm.mmmm + N/S/E/W to signed decimal degrees\nfunction degrees(v, hemi) {\n  if (!v) return null;\n  const n = parseFloat(v), d = Math.floor(n / 100);\n  const deg = d + (n - d * 100) / 60;\n  return (hemi === 'S' || hemi === 'W') ? -deg : deg;\n}\n\nif (!valid(msg.payload)) return null;\n// $GPRMC,time,status,lat,N/S,lon,E/W,speed (knots),course,date,...\nconst f = msg.payload.split('*')[0].split(',');\nif (f[2] !== 'A') return null; // A = valid fix, V = no fix yet\nconst yy = Number(f[9].slice(4, 6));\nmsg.payload = {\n  lat: Number(degrees(f[3], f[4]).toFixed(6)),\n  lon: Number(degrees(f[5], f[6]).toFixed(6)),\n  speedKmh: Math.round(parseFloat(f[7] || '0') * 1.852 * 10) / 10,\n  course: f[8] ? parseFloat(f[8]) : null,\n  utc: `${yy < 80 ? 2000 + yy : 1900 + yy}-${f[9].slice(2, 4)}-${f[9].slice(0, 2)}T${f[1].slice(0, 2)}:${f[1].slice(2, 4)}:${f[1].slice(4, 6)}Z`,\n};\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-gps-nmea-n4",
+          "type": "function",
+          "name": "fix (GGA)",
+          "x": 550,
+          "y": 200,
+          "z": "ex-gps-nmea",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-gps-nmea-n6"
+            ]
+          ],
+          "config": {
+            "func": "// NMEA checksum: XOR of the characters between $ and *\nfunction valid(line) {\n  const star = line.indexOf('*');\n  if (line[0] !== '$' || star < 0) return false;\n  let sum = 0;\n  for (let i = 1; i < star; i++) sum ^= line.charCodeAt(i);\n  return sum === parseInt(line.slice(star + 1, star + 3), 16);\n}\n// ddmm.mmmm + N/S/E/W to signed decimal degrees\nfunction degrees(v, hemi) {\n  if (!v) return null;\n  const n = parseFloat(v), d = Math.floor(n / 100);\n  const deg = d + (n - d * 100) / 60;\n  return (hemi === 'S' || hemi === 'W') ? -deg : deg;\n}\n\nif (!valid(msg.payload)) return null;\n// $GPGGA,time,lat,N/S,lon,E/W,fix quality,satellites,hdop,altitude,M,...\nconst f = msg.payload.split('*')[0].split(',');\nmsg.payload = {\n  fix: Number(f[6]) > 0,\n  satellites: Number(f[7] || 0),\n  hdop: f[8] ? parseFloat(f[8]) : null,\n  altitudeM: f[9] ? parseFloat(f[9]) : null,\n};\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "ex-gps-nmea-n5",
+          "type": "debug",
+          "name": "position",
+          "x": 770,
+          "y": 120,
+          "z": "ex-gps-nmea",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        },
+        {
+          "id": "ex-gps-nmea-n6",
+          "type": "debug",
+          "name": "satellites",
+          "x": 770,
+          "y": 200,
+          "z": "ex-gps-nmea",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "active": true,
+            "output": "property",
+            "property": "payload",
+            "statusEnabled": false,
+            "statusOutput": "same",
+            "statusProperty": ""
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-gps-nmea-n1-w0--n2",
+          "sourceNode": "ex-gps-nmea-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-gps-nmea-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-gps-nmea-n2-w0--n3",
+          "sourceNode": "ex-gps-nmea-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-gps-nmea-n3",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-gps-nmea-n2-w1--n4",
+          "sourceNode": "ex-gps-nmea-n2",
+          "sourcePort": 1,
+          "targetNode": "ex-gps-nmea-n4",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-gps-nmea-n3-w0--n5",
+          "sourceNode": "ex-gps-nmea-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-gps-nmea-n5",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-gps-nmea-n4-w0--n6",
+          "sourceNode": "ex-gps-nmea-n4",
+          "sourcePort": 0,
+          "targetNode": "ex-gps-nmea-n6",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": [
+    {
+      "id": "ex-gps-nmea-c1",
+      "type": "serial-port",
+      "name": "GPS · ttyUSB0 9600 8N1",
+      "config": {
+        "port": "ttyUSB0",
+        "baudRate": 9600,
+        "dataBits": 8,
+        "parity": "none",
+        "stopBits": 1,
+        "name": "GPS · ttyUSB0 9600 8N1"
+      }
+    }
+  ]
+}

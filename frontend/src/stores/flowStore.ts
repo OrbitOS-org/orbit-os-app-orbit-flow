@@ -720,7 +720,9 @@ export const useFlowStore = defineStore("flow", () => {
       return result;
     } catch (err) {
       console.error("[FlowStore] Deploy error:", err);
-      ui.setDeployStatus('failed');
+      // 409: the server refused the workspace and says why.
+      const apiErr = err as { status?: number; message?: string };
+      ui.setDeployStatus('failed', apiErr.status === 409 ? apiErr.message ?? null : null);
       return null;
     } finally {
       deploying.value = false;

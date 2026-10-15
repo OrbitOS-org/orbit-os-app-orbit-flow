@@ -367,6 +367,7 @@ const NODE_FILL: Record<string, string> = {
   's7-read': '#b5cde8', 's7-write': '#b5cde8', 's7-parser': '#b5cde8',
   'gpio-read': '#c6dbef', 'gpio-write': '#c6dbef',
   'i2c-transfer': '#c6dbef', 'spi-transfer': '#c6dbef',
+  'serial-in': '#c6dbef', 'serial-out': '#c6dbef', 'serial-request': '#c6dbef',
   'system-metrics': '#cfd4e6', 'device-identity': '#cfd4e6',
   'mobile-notify': '#f0c3d4',
   'file-read': '#deb887', 'file-out': '#deb887', 'file-watch': '#deb887',

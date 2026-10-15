@@ -105,6 +105,9 @@ const typeLabel = computed(() => {
         "device-identity": "Device Info",
         "i2c-transfer": "I2C Transfer",
         "spi-transfer": "SPI Transfer",
+        "serial-in": "Serial In",
+        "serial-out": "Serial Out",
+        "serial-request": "Serial Request",
     };
     return labels[props.nodeType] ?? props.nodeType;
 });

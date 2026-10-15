@@ -37,6 +37,7 @@ import SystemMetricsNode from "@/components/nodes/SystemMetricsNode.vue";
 import DeviceIdentityNode from "@/components/nodes/DeviceIdentityNode.vue";
 import I2CTransferNode from "@/components/nodes/I2CTransferNode.vue";
 import SpiTransferNode from "@/components/nodes/SpiTransferNode.vue";
+import SerialNode from "@/components/nodes/SerialNode.vue";
 
 import "@vue-flow/core/dist/style.css";
 import "@vue-flow/core/dist/theme-default.css";
@@ -798,6 +799,18 @@ onMounted(async () => {
 
             <template #node-spi-transfer="nodeProps">
                 <SpiTransferNode v-bind="nodeProps as any" />
+            </template>
+
+            <template #node-serial-in="nodeProps">
+                <SerialNode v-bind="nodeProps as any" />
+            </template>
+
+            <template #node-serial-out="nodeProps">
+                <SerialNode v-bind="nodeProps as any" />
+            </template>
+
+            <template #node-serial-request="nodeProps">
+                <SerialNode v-bind="nodeProps as any" />
             </template>
 
             <template #node-json="nodeProps">

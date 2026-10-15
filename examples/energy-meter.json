@@ -2,7 +2,7 @@
   "name": "Energy meter",
   "description": "Reads voltage, current and power from an Eastron SDM meter.",
   "category": "Industrial",
-  "order": 13,
+  "order": 14,
   "needs": "Energy meter, RS-485",
   "flows": [
     {

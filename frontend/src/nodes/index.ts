@@ -21,6 +21,7 @@ import { manifest as networkManifest } from './network'
 import { manifest as opcuaManifest } from './opcua'
 import { manifest as orbitManifest } from './orbit'
 import { manifest as s7Manifest } from './s7'
+import { manifest as serialManifest } from './serial'
 import { manifest as spiManifest } from './spi'
 
 export const GROUPS: NodeGroupManifest[] = [
@@ -34,6 +35,7 @@ export const GROUPS: NodeGroupManifest[] = [
   opcuaManifest,
   orbitManifest,
   s7Manifest,
+  serialManifest,
   spiManifest,
 ]
 

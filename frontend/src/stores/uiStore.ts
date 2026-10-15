@@ -37,6 +37,9 @@ export const useUiStore = defineStore('ui', () => {
   const selectedStateMachineNodeID = ref<string | null>(null)
   const connectionStatus = ref<ConnectionStatus>('disconnected')
   const deployStatus = ref<DeployStatus>('idle')
+  // Why the last deploy failed, when the server said (e.g. a serial port
+  // used by two connections); shown in the banner.
+  const deployError = ref<string | null>(null)
   const propertiesContext = ref<PropertiesContext>(null)
   const logsPanelOpen = ref<boolean>(false)
   const logsLimit = ref<LogsLimit>(loadLogsLimit())
@@ -151,7 +154,8 @@ export const useUiStore = defineStore('ui', () => {
     localStorage.setItem('orbit-flow-logs-limit', String(n))
   }
 
-  function setDeployStatus(status: DeployStatus) {
+  function setDeployStatus(status: DeployStatus, error: string | null = null) {
+    deployError.value = status === 'failed' ? error : null
     if (deployResetTimer !== null) {
       clearTimeout(deployResetTimer)
       deployResetTimer = null
@@ -180,6 +184,7 @@ export const useUiStore = defineStore('ui', () => {
     selectedStateMachineNodeID,
     connectionStatus,
     deployStatus,
+    deployError,
     logsPanelOpen,
     logsLimit,
 
