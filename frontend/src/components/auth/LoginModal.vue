@@ -39,7 +39,7 @@ async function handleSubmit() {
         errorMessage.value = apiErr.message || 'Login failed.'
       }
     } else {
-      errorMessage.value = 'Login failed; please try again.'
+      errorMessage.value = "Can't reach Orbit Flow. Check that the app is running on the device."
     }
     // Clear the password field on any error so a stuck-keys keystroke
     // does not slowly walk through wrong passwords.
@@ -82,7 +82,6 @@ async function handleSubmit() {
       <button type="submit" class="auth-btn" :disabled="!canSubmit">
         {{ submitting ? 'Signing in…' : 'Sign in' }}
       </button>
-      <p class="auth-foot">Orbit OS</p>
     </form>
   </div>
 </template>

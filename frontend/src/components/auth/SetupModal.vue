@@ -39,7 +39,7 @@ async function handleSubmit() {
     const apiErr = err as ApiError
     errorMessage.value = api.isApiError(err)
       ? apiErr.message
-      : 'Setup failed; please try again.'
+      : "Can't reach Orbit Flow. Check that the app is running on the device."
   } finally {
     submitting.value = false
   }
@@ -91,7 +91,6 @@ async function handleSubmit() {
       <button type="submit" class="auth-btn" :disabled="!canSubmit">
         {{ submitting ? 'Creating…' : 'Create account' }}
       </button>
-      <p class="auth-foot">Orbit OS</p>
     </form>
   </div>
 </template>
