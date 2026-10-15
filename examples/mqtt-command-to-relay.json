@@ -1,15 +1,15 @@
 {
   "name": "MQTT command to relay",
-  "description": "An on/off MQTT message switches relay 1 of an EBYTE board.",
+  "description": "An on/off MQTT message switches a relay on a GPIO pin.",
   "category": "Data",
   "order": 21,
-  "needs": "MQTT broker, EBYTE board",
+  "needs": "MQTT broker, relay module on a GPIO",
   "flows": [
     {
       "id": "ex-mqtt-command-to-relay",
       "type": "tab",
       "label": "MQTT command to relay",
-      "info": "Send \"on\" or \"off\" to the topic orbit-os/relay1/set and relay 1 of the EBYTE board follows. Any other text is ignored. Set the broker in the MQTT connection and the serial port, baud rate and unit ID of the board in the Modbus connection.",
+      "info": "Send \"on\" or \"off\" to the topic orbit-os/relay1/set and the relay on the GPIO pin follows. Any other text is ignored. Set the broker in the MQTT connection, and in the GPIO pin connection the chip and line where the relay module is wired (line 22 here).",
       "nodes": [
         {
           "id": "ex-mqtt-command-to-relay-n1",
@@ -129,8 +129,8 @@
         },
         {
           "id": "ex-mqtt-command-to-relay-n5",
-          "type": "modbus-write",
-          "name": "relay 1 (coil 0)",
+          "type": "gpio-write",
+          "name": "relay (GPIO)",
           "x": 720,
           "y": 140,
           "z": "ex-mqtt-command-to-relay",
@@ -138,16 +138,8 @@
           "outputs": 0,
           "wires": [],
           "config": {
-            "address": 0,
-            "byteOrder": "bigEndian",
-            "dataType": "raw",
-            "emitAck": false,
-            "fc": 5,
-            "offset": 0,
-            "scale": 1,
-            "server": "ex-mqtt-command-to-relay-c2",
-            "unitId": 32,
-            "wordOrder": "bigEndian"
+            "action": "payload",
+            "pin": "ex-mqtt-command-to-relay-c2"
           }
         }
       ],
@@ -223,21 +215,13 @@
     },
     {
       "id": "ex-mqtt-command-to-relay-c2",
-      "type": "modbus-server",
-      "name": "RS-485 #2 (ttyS2) · EBYTE 4DI+4DO · unit 32",
+      "type": "gpio-pin",
+      "name": "Relay (GPIO 22)",
       "config": {
-        "baudRate": 115200,
-        "dataBits": 8,
-        "defaultUnitId": 32,
-        "host": "localhost",
-        "idleTimeout": 60,
-        "parity": "none",
-        "port": 502,
-        "reconnectBackoff": 5,
-        "serialPort": "ttyS2",
-        "stopBits": 1,
-        "timeout": 1000,
-        "transport": "rtu"
+        "chip": 0,
+        "direction": "output",
+        "line": 22,
+        "name": "Relay (GPIO 22)"
       }
     }
   ]

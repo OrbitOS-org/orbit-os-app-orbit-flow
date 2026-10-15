@@ -1,6 +1,6 @@
 {
   "name": "EBYTE relay board",
-  "description": "Switch the 4 relays of an EBYTE MA01-AXCX4040 board over Modbus RTU (RS-485) and read its inputs.",
+  "description": "Switch the 4 relays of an EBYTE MA01-AXCX4040 board over Modbus RTU (RS-485), run them one after the other, and read its inputs.",
   "category": "Industrial",
   "order": 12,
   "needs": "EBYTE board, RS-485",
@@ -70,7 +70,7 @@
           "id": "er-write1",
           "type": "modbus-write",
           "name": "Relay 1 (coil 0)",
-          "x": 330,
+          "x": 560,
           "y": 82,
           "z": "ebyte-relays",
           "inputs": 1,
@@ -153,7 +153,7 @@
           "id": "er-write2",
           "type": "modbus-write",
           "name": "Relay 2 (coil 1)",
-          "x": 330,
+          "x": 560,
           "y": 182,
           "z": "ebyte-relays",
           "inputs": 1,
@@ -236,7 +236,7 @@
           "id": "er-write3",
           "type": "modbus-write",
           "name": "Relay 3 (coil 2)",
-          "x": 330,
+          "x": 560,
           "y": 282,
           "z": "ebyte-relays",
           "inputs": 1,
@@ -319,7 +319,7 @@
           "id": "er-write4",
           "type": "modbus-write",
           "name": "Relay 4 (coil 3)",
-          "x": 330,
+          "x": 560,
           "y": 382,
           "z": "ebyte-relays",
           "inputs": 1,
@@ -375,7 +375,7 @@
           "type": "inject",
           "name": "All off",
           "x": 80,
-          "y": 504,
+          "y": 500,
           "z": "ebyte-relays",
           "inputs": 0,
           "outputs": 1,
@@ -402,8 +402,8 @@
           "id": "er-writeall",
           "type": "modbus-write",
           "name": "All 4 relays (coils 0–3)",
-          "x": 330,
-          "y": 482,
+          "x": 560,
+          "y": 560,
           "z": "ebyte-relays",
           "inputs": 1,
           "outputs": 1,
@@ -429,8 +429,8 @@
           "id": "er-ack",
           "type": "debug",
           "name": "write confirmation",
-          "x": 590,
-          "y": 230,
+          "x": 800,
+          "y": 280,
           "z": "ebyte-relays",
           "inputs": 1,
           "outputs": 0,
@@ -448,8 +448,8 @@
           "id": "er-coils",
           "type": "modbus-read",
           "name": "Relay state (every 5 s)",
-          "x": 330,
-          "y": 560,
+          "x": 560,
+          "y": 740,
           "z": "ebyte-relays",
           "inputs": 0,
           "outputs": 1,
@@ -479,8 +479,8 @@
           "id": "er-state",
           "type": "debug",
           "name": "relay state",
-          "x": 590,
-          "y": 560,
+          "x": 800,
+          "y": 740,
           "z": "ebyte-relays",
           "inputs": 1,
           "outputs": 0,
@@ -498,8 +498,8 @@
           "id": "er-inputs",
           "type": "modbus-read",
           "name": "Inputs DI1–DI4 (every 30 s)",
-          "x": 330,
-          "y": 640,
+          "x": 560,
+          "y": 800,
           "z": "ebyte-relays",
           "inputs": 0,
           "outputs": 1,
@@ -529,8 +529,8 @@
           "id": "er-di",
           "type": "debug",
           "name": "inputs",
-          "x": 590,
-          "y": 640,
+          "x": 800,
+          "y": 800,
           "z": "ebyte-relays",
           "inputs": 1,
           "outputs": 0,
@@ -543,130 +543,287 @@
             "statusOutput": "same",
             "statusProperty": ""
           }
+        },
+        {
+          "id": "er-chase-start",
+          "type": "inject",
+          "name": "Start relay chase",
+          "x": 80,
+          "y": 560,
+          "z": "ebyte-relays",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-chase-onoff"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 0,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "true",
+                "vt": "bool"
+              }
+            ]
+          }
+        },
+        {
+          "id": "er-chase-stop",
+          "type": "inject",
+          "name": "Stop relay chase",
+          "x": 80,
+          "y": 600,
+          "z": "ebyte-relays",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-chase-onoff"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 0,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "false",
+                "vt": "bool"
+              }
+            ]
+          }
+        },
+        {
+          "id": "er-chase-onoff",
+          "type": "function",
+          "name": "chase on/off",
+          "x": 330,
+          "y": 580,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-writeall"
+            ]
+          ],
+          "config": {
+            "func": "// Start / Stop the relay chase. Stop also switches all 4 relays off.\nflow.set('chase', msg.payload === true);\nif (msg.payload === true) {\n  node.status('green', 'running');\n  return null; // the next tick switches relay 1 on\n}\nnode.status('grey', 'stopped');\nmsg.payload = [false, false, false, false];\nreturn msg;",
+            "outputs": 1
+          }
+        },
+        {
+          "id": "er-chase-tick",
+          "type": "inject",
+          "name": "every 1 s",
+          "x": 80,
+          "y": 660,
+          "z": "ebyte-relays",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-chase-next"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 1000,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "rfc3339",
+                "vt": "date"
+              }
+            ]
+          }
+        },
+        {
+          "id": "er-chase-next",
+          "type": "function",
+          "name": "next relay",
+          "x": 330,
+          "y": 660,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-writeall"
+            ]
+          ],
+          "config": {
+            "func": "// One step of the chase on each tick: only the next relay is on (1, 2, 3, 4, 1…).\nif (flow.get('chase') !== true) return null;\nconst prev = context.get('step');\nconst step = prev === undefined ? 0 : (prev + 1) % 4;\ncontext.set('step', step);\nmsg.payload = [0, 1, 2, 3].map(i => i === step);\nnode.status('blue', 'relay ' + (step + 1));\nreturn msg;",
+            "outputs": 1
+          }
         }
       ],
       "wires": [
         {
-          "id": "er-w0",
+          "id": "er-on1-0-er-write1",
           "sourceNode": "er-on1",
           "sourcePort": 0,
           "targetNode": "er-write1",
           "targetPort": 0
         },
         {
-          "id": "er-w1",
+          "id": "er-off1-0-er-write1",
           "sourceNode": "er-off1",
           "sourcePort": 0,
           "targetNode": "er-write1",
           "targetPort": 0
         },
         {
-          "id": "er-w2",
+          "id": "er-write1-0-er-ack",
           "sourceNode": "er-write1",
           "sourcePort": 0,
           "targetNode": "er-ack",
           "targetPort": 0
         },
         {
-          "id": "er-w3",
+          "id": "er-on2-0-er-write2",
           "sourceNode": "er-on2",
           "sourcePort": 0,
           "targetNode": "er-write2",
           "targetPort": 0
         },
         {
-          "id": "er-w4",
+          "id": "er-off2-0-er-write2",
           "sourceNode": "er-off2",
           "sourcePort": 0,
           "targetNode": "er-write2",
           "targetPort": 0
         },
         {
-          "id": "er-w5",
+          "id": "er-write2-0-er-ack",
           "sourceNode": "er-write2",
           "sourcePort": 0,
           "targetNode": "er-ack",
           "targetPort": 0
         },
         {
-          "id": "er-w6",
+          "id": "er-on3-0-er-write3",
           "sourceNode": "er-on3",
           "sourcePort": 0,
           "targetNode": "er-write3",
           "targetPort": 0
         },
         {
-          "id": "er-w7",
+          "id": "er-off3-0-er-write3",
           "sourceNode": "er-off3",
           "sourcePort": 0,
           "targetNode": "er-write3",
           "targetPort": 0
         },
         {
-          "id": "er-w8",
+          "id": "er-write3-0-er-ack",
           "sourceNode": "er-write3",
           "sourcePort": 0,
           "targetNode": "er-ack",
           "targetPort": 0
         },
         {
-          "id": "er-w9",
+          "id": "er-on4-0-er-write4",
           "sourceNode": "er-on4",
           "sourcePort": 0,
           "targetNode": "er-write4",
           "targetPort": 0
         },
         {
-          "id": "er-w10",
+          "id": "er-off4-0-er-write4",
           "sourceNode": "er-off4",
           "sourcePort": 0,
           "targetNode": "er-write4",
           "targetPort": 0
         },
         {
-          "id": "er-w11",
+          "id": "er-write4-0-er-ack",
           "sourceNode": "er-write4",
           "sourcePort": 0,
           "targetNode": "er-ack",
           "targetPort": 0
         },
         {
-          "id": "er-w12",
+          "id": "er-allon-0-er-writeall",
           "sourceNode": "er-allon",
           "sourcePort": 0,
           "targetNode": "er-writeall",
           "targetPort": 0
         },
         {
-          "id": "er-w13",
+          "id": "er-alloff-0-er-writeall",
           "sourceNode": "er-alloff",
           "sourcePort": 0,
           "targetNode": "er-writeall",
           "targetPort": 0
         },
         {
-          "id": "er-w14",
+          "id": "er-writeall-0-er-ack",
           "sourceNode": "er-writeall",
           "sourcePort": 0,
           "targetNode": "er-ack",
           "targetPort": 0
         },
         {
-          "id": "er-w15",
+          "id": "er-coils-0-er-state",
           "sourceNode": "er-coils",
           "sourcePort": 0,
           "targetNode": "er-state",
           "targetPort": 0
         },
         {
-          "id": "er-w16",
+          "id": "er-inputs-0-er-di",
           "sourceNode": "er-inputs",
           "sourcePort": 0,
           "targetNode": "er-di",
           "targetPort": 0
+        },
+        {
+          "id": "er-chase-start-0-er-chase-onoff",
+          "sourceNode": "er-chase-start",
+          "sourcePort": 0,
+          "targetNode": "er-chase-onoff",
+          "targetPort": 0
+        },
+        {
+          "id": "er-chase-stop-0-er-chase-onoff",
+          "sourceNode": "er-chase-stop",
+          "sourcePort": 0,
+          "targetNode": "er-chase-onoff",
+          "targetPort": 0
+        },
+        {
+          "id": "er-chase-onoff-0-er-writeall",
+          "sourceNode": "er-chase-onoff",
+          "sourcePort": 0,
+          "targetNode": "er-writeall",
+          "targetPort": 0
+        },
+        {
+          "id": "er-chase-tick-0-er-chase-next",
+          "sourceNode": "er-chase-tick",
+          "sourcePort": 0,
+          "targetNode": "er-chase-next",
+          "targetPort": 0
+        },
+        {
+          "id": "er-chase-next-0-er-writeall",
+          "sourceNode": "er-chase-next",
+          "sourcePort": 0,
+          "targetNode": "er-writeall",
+          "targetPort": 0
         }
       ],
-      "info": "Controls an EBYTE MA01-AXCX4040 board (4 digital inputs, 4 relays) over Modbus RTU on RS-485. Press the button next to an inject node to switch a relay on or off (function 5, coils 0 to 3) or all four at once (function 15). The relay state is read every 5 s (function 1) and the inputs every 30 s (function 2). Before deploying, set the serial port, baud rate and unit ID of the board in the Modbus connection."
+      "info": "Controls an EBYTE MA01-AXCX4040 board (4 digital inputs, 4 relays) over Modbus RTU on RS-485. Press the button next to an inject node to switch a relay on or off (function 5, coils 0 to 3) or all four at once (function 15). \"Start relay chase\" switches the relays on one after the other, one per second (1, 2, 3, 4, 1…); \"Stop relay chase\" stops and switches them all off; change the time in \"every 1 s\". The relay state is read every 5 s (function 1) and the inputs every 30 s (function 2). Before deploying, set the serial port, baud rate and unit ID of the board in the Modbus connection."
     }
   ],
   "configs": [

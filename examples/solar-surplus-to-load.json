@@ -3,13 +3,13 @@
   "description": "Switches a load on when the solar installation has surplus (SolaStat).",
   "category": "Projects",
   "order": 28,
-  "needs": "Inverter or meter, EBYTE board",
+  "needs": "Inverter or meter, relay module on a GPIO",
   "flows": [
     {
       "id": "ex-solar-surplus-to-load",
       "type": "tab",
       "label": "Solar surplus to load",
-      "info": "Every 10 seconds the grid power is read from the inverter or meter over Modbus TCP (negative = exporting). When more than 1500 W are exported, the load on relay 1 turns on; when export drops below 300 W, or power is imported, it turns off. It never switches more often than every 2 minutes. Set the register of your device in the Read node and its address in the connection. This is the idea behind SolaStat.",
+      "info": "Every 10 seconds the grid power is read from the inverter or meter over Modbus TCP (negative = exporting). When more than 1500 W are exported, the load (a relay module on a GPIO pin) turns on; when export drops below 300 W, or power is imported, it turns off. It never switches more often than every 2 minutes. Set the register of your device in the Read node, its address in the Modbus connection, and the chip and line of the relay in the GPIO pin connection (line 22 here). This is the idea behind SolaStat.",
       "nodes": [
         {
           "id": "ex-solar-surplus-to-load-n1",
@@ -64,8 +64,8 @@
         },
         {
           "id": "ex-solar-surplus-to-load-n3",
-          "type": "modbus-write",
-          "name": "load (relay 1)",
+          "type": "gpio-write",
+          "name": "load (GPIO)",
           "x": 600,
           "y": 140,
           "z": "ex-solar-surplus-to-load",
@@ -73,16 +73,8 @@
           "outputs": 0,
           "wires": [],
           "config": {
-            "address": 0,
-            "byteOrder": "bigEndian",
-            "dataType": "raw",
-            "emitAck": false,
-            "fc": 5,
-            "offset": 0,
-            "scale": 1,
-            "server": "ex-solar-surplus-to-load-c2",
-            "unitId": 32,
-            "wordOrder": "bigEndian"
+            "action": "payload",
+            "pin": "ex-solar-surplus-to-load-c2"
           }
         },
         {
@@ -152,21 +144,13 @@
     },
     {
       "id": "ex-solar-surplus-to-load-c2",
-      "type": "modbus-server",
-      "name": "RS-485 #2 (ttyS2) · EBYTE 4DI+4DO · unit 32",
+      "type": "gpio-pin",
+      "name": "Load relay (GPIO 22)",
       "config": {
-        "baudRate": 115200,
-        "dataBits": 8,
-        "defaultUnitId": 32,
-        "host": "localhost",
-        "idleTimeout": 60,
-        "parity": "none",
-        "port": 502,
-        "reconnectBackoff": 5,
-        "serialPort": "ttyS2",
-        "stopBits": 1,
-        "timeout": 1000,
-        "transport": "rtu"
+        "chip": 0,
+        "direction": "output",
+        "line": 22,
+        "name": "Load relay (GPIO 22)"
       }
     }
   ]
