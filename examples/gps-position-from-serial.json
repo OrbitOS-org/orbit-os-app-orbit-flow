@@ -2,7 +2,7 @@
   "name": "GPS position from a serial port",
   "description": "Reads the NMEA lines of a GPS receiver and turns them into position, speed and satellites.",
   "category": "Device",
-  "order": 11,
+  "order": 12,
   "needs": "GPS receiver with NMEA output (serial or USB)",
   "flows": [
     {
