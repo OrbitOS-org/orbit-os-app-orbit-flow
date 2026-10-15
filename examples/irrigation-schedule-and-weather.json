@@ -272,7 +272,7 @@
         "chip": 0,
         "direction": "output",
         "line": 22,
-        "name": "Valve relay (GPIO 22)"
+        "name": ""
       }
     }
   ]

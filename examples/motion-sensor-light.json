@@ -184,7 +184,7 @@
         "chip": 0,
         "direction": "input",
         "line": 17,
-        "name": "Motion sensor (GPIO 17)"
+        "name": ""
       }
     },
     {
@@ -195,7 +195,7 @@
         "chip": 0,
         "direction": "output",
         "line": 22,
-        "name": "Light relay (GPIO 22)"
+        "name": ""
       }
     }
   ]

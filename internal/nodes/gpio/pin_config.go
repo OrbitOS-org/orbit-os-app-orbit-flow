@@ -7,6 +7,7 @@ package gpio
 import (
 	"fmt"
 	"log/slog"
+	"strings"
 	"sync"
 
 	orbitclient "github.com/OrbitOS-org/orbit-os-sdk-go/v26/client"
@@ -92,7 +93,18 @@ func (c *GpioPinConfig) Start() error {
 		slog.Warn("gpio-pin start: OrbitOS SDK client not connected", "id", c.id)
 		return nil
 	}
-	if err := orbit.GpioManager.SetDirection(c.pin, c.direction); err != nil {
+	err := orbit.GpioManager.SetDirection(c.pin, c.direction)
+	// A name the device does not know (often a label typed in the name
+	// field, e.g. "Button") makes the runtime look the pin up by that name
+	// and fail; the chip and line are always saved, so use them instead.
+	if err != nil && c.pin.Name != "" && strings.Contains(err.Error(), "not found") {
+		byLine := &orbitclient.GpioPin{Number: c.pin.Number, ChipNumber: c.pin.ChipNumber}
+		if err2 := orbit.GpioManager.SetDirection(byLine, c.direction); err2 == nil {
+			slog.Info("gpio-pin: name unknown to the device, using chip and line", "id", c.id, "name", c.pin.Name, "chip", c.pin.ChipNumber, "line", c.pin.Number)
+			c.pin, err = byLine, nil
+		}
+	}
+	if err != nil {
 		c.setStatus("red", err.Error())
 		slog.Warn("gpio-pin set direction failed", "id", c.id, "pin", c.PinLabel(), "error", err)
 		return nil
