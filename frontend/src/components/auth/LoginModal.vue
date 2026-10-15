@@ -51,65 +51,38 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-  >
-    <form
-      class="w-[380px] max-w-[90vw] bg-terminal-surface border border-terminal-border rounded shadow-xl"
-      @submit.prevent="handleSubmit"
-    >
-      <header class="px-6 py-6 border-b border-terminal-border flex justify-center">
-        <div class="flex items-center gap-3">
-          <AppMark class="w-10 h-10 text-accent" />
-          <span class="text-terminal-text-bright text-3xl font-semibold tracking-wide">Orbit Flow</span>
-        </div>
-      </header>
+  <div class="auth-screen">
+    <form class="auth-card" @submit.prevent="handleSubmit">
+      <div class="auth-icon"><AppMark class="w-9 h-9" /></div>
+      <h1 class="auth-title">Orbit Flow</h1>
+      <p class="auth-sub">Sign in to edit and deploy flows on this device.</p>
 
-      <div class="px-6 py-5 space-y-4">
-        <div>
-          <label class="block text-[10px] uppercase tracking-wider text-terminal-text-dim mb-1">
-            Username
-          </label>
-          <input
-            v-model="username"
-            type="text"
-            autocomplete="username"
-            autofocus
-            :disabled="submitting"
-            class="w-full bg-terminal-bg border border-terminal-border text-terminal-text px-3 py-2 text-sm outline-none focus:border-accent transition-colors disabled:opacity-50"
-          />
-        </div>
-
-        <div>
-          <label class="block text-[10px] uppercase tracking-wider text-terminal-text-dim mb-1">
-            Password
-          </label>
-          <input
-            v-model="password"
-            type="password"
-            autocomplete="current-password"
-            :disabled="submitting"
-            class="w-full bg-terminal-bg border border-terminal-border text-terminal-text px-3 py-2 text-sm outline-none focus:border-accent transition-colors disabled:opacity-50"
-          />
-        </div>
-
-        <div
-          v-if="errorMessage"
-          class="text-[12px] text-status-error bg-status-error/10 border border-status-error/40 px-3 py-2 rounded-sm"
-        >
-          {{ errorMessage }}
-        </div>
+      <div class="auth-fields">
+        <input
+          v-model="username"
+          type="text"
+          placeholder="Username"
+          aria-label="Username"
+          autocomplete="username"
+          autofocus
+          :disabled="submitting"
+        />
+        <input
+          v-model="password"
+          type="password"
+          placeholder="Password"
+          aria-label="Password"
+          autocomplete="current-password"
+          :disabled="submitting"
+        />
       </div>
 
-      <footer class="px-6 py-4 border-t border-terminal-border flex justify-end">
-        <button
-          type="submit"
-          :disabled="!canSubmit"
-          class="px-4 py-1.5 text-sm bg-accent text-terminal-bg font-medium rounded-sm hover:bg-accent-dim transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          {{ submitting ? 'Signing in…' : 'Sign in' }}
-        </button>
-      </footer>
+      <p v-if="errorMessage" class="settings-error mt-3" role="alert">{{ errorMessage }}</p>
+
+      <button type="submit" class="auth-btn" :disabled="!canSubmit">
+        {{ submitting ? 'Signing in…' : 'Sign in' }}
+      </button>
+      <p class="auth-foot">Orbit OS</p>
     </form>
   </div>
 </template>

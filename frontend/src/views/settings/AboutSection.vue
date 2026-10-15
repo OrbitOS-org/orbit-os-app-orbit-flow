@@ -113,7 +113,6 @@ useSettingsAction({ label: 'Refresh', run: loadSystem, primary: false })
           <div class="info-list">
             <div class="info-row"><span class="text-terminal-text">Version</span><span class="text-terminal-text-dim">{{ appVersion ? `v${appVersion}` : '—' }}</span></div>
             <div class="info-row"><span class="text-terminal-text">Node types</span><span class="text-terminal-text-dim tabular-nums">{{ nodeTypes ?? '—' }}</span></div>
-            <div class="info-row"><span class="text-terminal-text">Built with</span><span class="text-terminal-text-dim">Go and Vue</span></div>
             <div class="info-row">
               <span class="text-terminal-text">License</span>
               <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline">AGPL-3.0-or-later</a>

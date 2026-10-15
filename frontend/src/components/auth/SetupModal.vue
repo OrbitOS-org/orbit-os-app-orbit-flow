@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppMark from '@/components/AppMark.vue'
 import { computed, ref } from 'vue'
 
 import { useAuthStore } from '@/stores/authStore'
@@ -46,100 +47,51 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-  >
-    <form
-      class="w-[420px] max-w-[90vw] bg-terminal-surface border border-terminal-border rounded shadow-xl"
-      @submit.prevent="handleSubmit"
-    >
-      <header class="px-6 py-4 border-b border-terminal-border">
-        <h1 class="text-base text-terminal-text-bright font-medium">
-          Welcome to Orbit Flow
-        </h1>
-        <p class="mt-1 text-xs text-terminal-text-dim">
-          No administrator account exists yet. Create the first one to continue.
-        </p>
-      </header>
+  <div class="auth-screen">
+    <form class="auth-card" @submit.prevent="handleSubmit">
+      <div class="auth-icon"><AppMark class="w-9 h-9" /></div>
+      <h1 class="auth-title">Welcome to Orbit Flow</h1>
+      <p class="auth-sub">Create the administrator account to get started.</p>
 
-      <div class="px-6 py-5 space-y-4">
-        <div>
-          <label class="block text-[10px] uppercase tracking-wider text-terminal-text-dim mb-1">
-            Username
-          </label>
-          <input
-            v-model="username"
-            type="text"
-            autocomplete="username"
-            autofocus
-            :disabled="submitting"
-            class="w-full bg-terminal-bg border border-terminal-border text-terminal-text px-3 py-2 text-sm outline-none focus:border-accent transition-colors disabled:opacity-50"
-          />
-        </div>
-
-        <div>
-          <label class="block text-[10px] uppercase tracking-wider text-terminal-text-dim mb-1">
-            Password
-          </label>
-          <input
-            v-model="password"
-            type="password"
-            autocomplete="new-password"
-            :disabled="submitting"
-            class="w-full bg-terminal-bg border text-terminal-text px-3 py-2 text-sm outline-none focus:border-accent transition-colors disabled:opacity-50"
-            :class="passwordTooShort ? 'border-status-error' : 'border-terminal-border'"
-          />
-          <p
-            v-if="passwordTooShort"
-            class="mt-1 text-[11px] text-status-error"
-          >
-            Password must be at least 8 characters.
-          </p>
-          <p
-            v-else
-            class="mt-1 text-[11px] text-terminal-text-dim"
-          >
-            Minimum 8 characters. No other complexity rules.
-          </p>
-        </div>
-
-        <div>
-          <label class="block text-[10px] uppercase tracking-wider text-terminal-text-dim mb-1">
-            Confirm password
-          </label>
-          <input
-            v-model="passwordConfirm"
-            type="password"
-            autocomplete="new-password"
-            :disabled="submitting"
-            class="w-full bg-terminal-bg border text-terminal-text px-3 py-2 text-sm outline-none focus:border-accent transition-colors disabled:opacity-50"
-            :class="passwordsDiffer ? 'border-status-error' : 'border-terminal-border'"
-          />
-          <p
-            v-if="passwordsDiffer"
-            class="mt-1 text-[11px] text-status-error"
-          >
-            Passwords do not match.
-          </p>
-        </div>
-
-        <div
-          v-if="errorMessage"
-          class="text-[12px] text-status-error bg-status-error/10 border border-status-error/40 px-3 py-2 rounded-sm"
-        >
-          {{ errorMessage }}
-        </div>
+      <div class="auth-fields">
+        <input
+          v-model="username"
+          type="text"
+          placeholder="Username"
+          aria-label="Username"
+          autocomplete="username"
+          autofocus
+          :disabled="submitting"
+        />
+        <input
+          v-model="password"
+          type="password"
+          placeholder="Password"
+          aria-label="Password"
+          autocomplete="new-password"
+          :disabled="submitting"
+          :class="{ bad: passwordTooShort }"
+        />
+        <input
+          v-model="passwordConfirm"
+          type="password"
+          placeholder="Confirm password"
+          aria-label="Confirm password"
+          autocomplete="new-password"
+          :disabled="submitting"
+          :class="{ bad: passwordsDiffer }"
+        />
       </div>
+      <p v-if="passwordTooShort" class="auth-hint bad">Password must be at least 8 characters.</p>
+      <p v-else-if="passwordsDiffer" class="auth-hint bad">Passwords do not match.</p>
+      <p v-else class="auth-hint">At least 8 characters.</p>
 
-      <footer class="px-6 py-4 border-t border-terminal-border flex justify-end">
-        <button
-          type="submit"
-          :disabled="!canSubmit"
-          class="px-4 py-1.5 text-sm bg-accent text-terminal-bg font-medium rounded-sm hover:bg-accent-dim transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          {{ submitting ? 'Creating…' : 'Create admin' }}
-        </button>
-      </footer>
+      <p v-if="errorMessage" class="settings-error mt-3" role="alert">{{ errorMessage }}</p>
+
+      <button type="submit" class="auth-btn" :disabled="!canSubmit">
+        {{ submitting ? 'Creating…' : 'Create account' }}
+      </button>
+      <p class="auth-foot">Orbit OS</p>
     </form>
   </div>
 </template>
