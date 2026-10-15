@@ -46,6 +46,22 @@ const deployBusy = computed(() => uiStore.deployStatus === 'deploying')
 const deployIdle = computed(() => !hasChanges.value && uiStore.deployStatus !== 'deployed' && uiStore.deployStatus !== 'failed')
 const deployDisabled = computed(() => deployBusy.value || !hasChanges.value)
 
+// "2 flows · 1 deleted": what the next Deploy changes. The tooltip names them.
+const pendingLabel = computed(() => {
+  const { changed, deleted } = flowStore.pendingFlows
+  const parts: string[] = []
+  if (changed.length) parts.push(`${changed.length} ${changed.length === 1 ? 'flow' : 'flows'}`)
+  if (deleted.length) parts.push(`${deleted.length} deleted`)
+  return parts.join(' · ')
+})
+const pendingTitle = computed(() => {
+  const { changed, deleted } = flowStore.pendingFlows
+  const lines: string[] = []
+  if (changed.length) lines.push(`Changed: ${changed.join(', ')}`)
+  if (deleted.length) lines.push(`Deleted, still on the device until you deploy: ${deleted.join(', ')}`)
+  return lines.join('\n')
+})
+
 const showDeployMenu = ref(false)
 
 // Same modes, names and order as Node-RED's Deploy menu.
@@ -287,8 +303,8 @@ function selectMode(mode: DeployModeType): void {
             <span
               v-if="flowStore.changedFlowCount > 0 && uiStore.deployStatus !== 'deploying' && uiStore.deployStatus !== 'deployed' && uiStore.deployStatus !== 'failed'"
               class="rounded-full bg-white/25 px-1.5 text-[11.5px] font-medium tabular-nums"
-              :title="`${flowStore.changedFlowCount} flow(s) with changes not deployed`"
-            >{{ flowStore.changedFlowCount }} {{ flowStore.changedFlowCount === 1 ? 'flow' : 'flows' }}</span>
+              :title="pendingTitle"
+            >{{ pendingLabel }}</span>
           </button>
 
           <!-- Dropdown toggle -->

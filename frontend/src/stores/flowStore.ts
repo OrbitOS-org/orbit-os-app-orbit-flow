@@ -191,6 +191,21 @@ export const useFlowStore = defineStore("flow", () => {
   }
 
   /** Number of flows with changes not deployed (removed ones included). */
+  // What the next Deploy changes, by flow: flows edited or added here, and
+  // flows deleted here that are still on the device. The Deploy button shows
+  // both, so a deleted tab does not read as one more open flow.
+  const pendingFlows = computed(() => {
+    const changed: string[] = [];
+    const deleted: string[] = [];
+    for (const id of dirtyFlowIds.value) {
+      const here = flows.value.find((f) => f.id === id);
+      const there = deployedFlows.value.find((f) => f.id === id);
+      if (here) changed.push(here.label || 'Untitled');
+      else if (there) deleted.push(there.label || 'Untitled');
+    }
+    return { changed, deleted };
+  });
+
   const changedFlowCount = computed(() => {
     let n = 0;
     for (const id of dirtyFlowIds.value) {
@@ -987,6 +1002,7 @@ export const useFlowStore = defineStore("flow", () => {
     showFlow,
     restartFlows,
     changedFlowCount,
+    pendingFlows,
     importExample,
     addFlow,
     removeFlow,
