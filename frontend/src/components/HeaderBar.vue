@@ -46,19 +46,18 @@ const deployBusy = computed(() => uiStore.deployStatus === 'deploying')
 const deployIdle = computed(() => !hasChanges.value && uiStore.deployStatus !== 'deployed' && uiStore.deployStatus !== 'failed')
 const deployDisabled = computed(() => deployBusy.value || !hasChanges.value)
 
-// "2 flows · 1 deleted": what the next Deploy changes. The tooltip names them.
+// The count matches the tabs: flows changed or added. Deleted flows are not
+// counted (with only a deletion pending, Deploy lights up without a number,
+// as in Node-RED); the tooltip names them.
 const pendingLabel = computed(() => {
-  const { changed, deleted } = flowStore.pendingFlows
-  const parts: string[] = []
-  if (changed.length) parts.push(`${changed.length} ${changed.length === 1 ? 'flow' : 'flows'}`)
-  if (deleted.length) parts.push(`${deleted.length} deleted`)
-  return parts.join(' · ')
+  const n = flowStore.pendingFlows.changed.length
+  return n ? `${n} ${n === 1 ? 'flow' : 'flows'}` : ''
 })
 const pendingTitle = computed(() => {
   const { changed, deleted } = flowStore.pendingFlows
   const lines: string[] = []
   if (changed.length) lines.push(`Changed: ${changed.join(', ')}`)
-  if (deleted.length) lines.push(`Deleted, still on the device until you deploy: ${deleted.join(', ')}`)
+  if (deleted.length) lines.push(`Deletes from the device: ${deleted.join(', ')}`)
   return lines.join('\n')
 })
 
@@ -260,7 +259,7 @@ function selectMode(mode: DeployModeType): void {
               'bg-status-error text-white': uiStore.deployStatus === 'failed',
               'bg-accent text-white hover:bg-accent-dim': !deployIdle && uiStore.deployStatus !== 'deployed' && uiStore.deployStatus !== 'failed',
             }"
-            :title="hasChanges ? 'Deploy changes' : 'No changes to deploy'"
+            :title="hasChanges ? (pendingTitle || 'Deploy changes') : 'No changes to deploy'"
             @click="handleDeploy"
           >
             <!-- Spinning icon while deploying -->
@@ -301,9 +300,8 @@ function selectMode(mode: DeployModeType): void {
             </svg>
             <span>{{ deployLabel }}</span>
             <span
-              v-if="flowStore.changedFlowCount > 0 && uiStore.deployStatus !== 'deploying' && uiStore.deployStatus !== 'deployed' && uiStore.deployStatus !== 'failed'"
+              v-if="pendingLabel && uiStore.deployStatus !== 'deploying' && uiStore.deployStatus !== 'deployed' && uiStore.deployStatus !== 'failed'"
               class="rounded-full bg-white/25 px-1.5 text-[11.5px] font-medium tabular-nums"
-              :title="pendingTitle"
             >{{ pendingLabel }}</span>
           </button>
 

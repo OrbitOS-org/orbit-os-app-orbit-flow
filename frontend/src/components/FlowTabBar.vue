@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, watch, onMounted, onUnmounted, ref } from 'vue'
 import { useFlowStore } from '@/stores/flowStore'
 import { useUiStore } from '@/stores/uiStore'
 import { useAuthStore } from '@/stores/authStore'
@@ -54,6 +54,15 @@ function showToast(text: string, bad = false) {
   clearTimeout(toastTimer)
   toastTimer = setTimeout(() => { toast.value = null }, bad ? 5000 : 2500)
 }
+// A deleted flow keeps running on the device until the next Deploy, as in
+// Node-RED; say so when it happens (from the tab menu or the flow properties).
+watch(
+  () => flowStore.pendingFlows.deleted,
+  (now, before) => {
+    // By count, not name: two flows can share a name ("Flow 1").
+    if (now.length > before.length) showToast(`“${now[now.length - 1]}” keeps running on the device until you deploy.`)
+  },
+)
 // Disable / Enable, as in Node-RED: a change like any other, applied on
 // the next Deploy together with the rest.
 function toggleDisabled() {
