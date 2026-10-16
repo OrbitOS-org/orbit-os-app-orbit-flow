@@ -30,9 +30,9 @@ Runs on Raspberry Pi, Arduino UNO Q and other ARM64 devices with Orbit OS (free 
 ## Install
 
 <p>
-  <a href="https://store.orbit-os.org/app/orbit-flow?ref=github-orbit-flow"><img src="https://www.orbit-os.org/images/badges/get-it-on-orbit-os-store@3x.png" height="48" alt="Get it on Orbit OS Store"></a>
+  <a href="https://store.orbit-os.org/app/orbit-flow?ref=github-orbit-flow"><img src="https://www.orbit-os.org/images/badges/get-it-on-orbit-os-store@3x.png" height="64" align="middle" alt="Get it on Orbit OS Store"></a>
   &nbsp;
-  <a href="https://marketplace.visualstudio.com/items?itemName=orbit-os.orbit-studio"><img src="https://www.orbit-os.org/images/vscode/orbit-studio-logo.png" height="48" alt="Orbit Studio for VS Code"></a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=orbit-os.orbit-studio"><img src="https://www.orbit-os.org/images/vscode/orbit-studio-logo.png" height="48" align="middle" alt="Orbit Studio for VS Code"></a>
 </p>
 
 **From the Orbit OS Store (recommended):** install [Orbit Flow](https://store.orbit-os.org/app/orbit-flow?ref=github-orbit-flow) on your device in one click.
