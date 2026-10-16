@@ -13,7 +13,7 @@ import "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes"
 func init() {
 	nodes.RegisterGroup(nodes.Group{
 		Name:        "core",
-		Description: "Core nodes: inject, debug, function, change, switch, link, delay, template, status, catch, statemachine, json, xml, csv, context-watch",
+		Description: "Core nodes: inject, debug, function, change, switch, link, delay, trigger, filter, range, split, join, batch, template, status, catch, statemachine, json, xml, csv, context-watch",
 		Nodes: []nodes.FlowNodeRegistration{
 			{Type: "inject", Factory: NewInjectNode, Info: InjectTypeInfo()},
 			{Type: "debug", Factory: NewDebugNode, Info: DebugTypeInfo()},
@@ -27,6 +27,12 @@ func init() {
 			{Type: "catch", Factory: NewCatchNode, Info: CatchTypeInfo()},
 			{Type: "change", Factory: NewChangeNode, Info: ChangeTypeInfo()},
 			{Type: "delay", Factory: NewDelayNode, Info: DelayTypeInfo()},
+			{Type: "trigger", Factory: NewTriggerNode, Info: TriggerTypeInfo()},
+			{Type: "filter", Factory: NewFilterNode, Info: FilterTypeInfo()},
+			{Type: "range", Factory: NewRangeNode, Info: RangeTypeInfo()},
+			{Type: "split", Factory: NewSplitNode, Info: SplitTypeInfo()},
+			{Type: "join", Factory: NewJoinNode, Info: JoinTypeInfo()},
+			{Type: "batch", Factory: NewBatchNode, Info: BatchTypeInfo()},
 			{Type: "link-in", Factory: NewLinkInNode, Info: LinkInTypeInfo()},
 			{Type: "link-out", Factory: NewLinkOutNode, Info: LinkOutTypeInfo()},
 			{Type: "link-call", Factory: NewLinkCallNode, Info: LinkCallTypeInfo()},

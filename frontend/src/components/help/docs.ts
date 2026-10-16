@@ -147,6 +147,105 @@ export const nodeHelpDocs: Record<string, NodeHelpDoc> = {
     ],
   },
 
+  trigger: {
+    overview:
+      'Sends a message when one arrives, waits, then sends a second message. Typical uses: switch a light on and off again 60 s after the last motion, a watchdog that alarms when messages stop, a pulse on a relay. Works like the Node-RED trigger node.',
+    inputs: [
+      'Any message starts it. While it is waiting, new messages are ignored, or restart the wait when "extend" is on.',
+      'msg.reset (or a payload equal to the reset value) stops it without sending the second message.',
+      'msg.delay (ms) sets the wait for this message when "override" is on.',
+    ],
+    outputs: [
+      'The first message straight away, the second after the wait. Each is a copy of the message that started it, with msg.payload set — or the original or latest message itself.',
+      'With "second output" on, the second message leaves through output 2.',
+    ],
+    properties: [
+      { key: 'send',      desc: 'First message: text, number, true/false, JSON, timestamp, the original message, or nothing.' },
+      { key: 'then',      desc: 'wait for a time and send the second message · wait to be reset · resend the first message every period until reset.' },
+      { key: 'extend',    desc: 'A new message during the wait starts the wait again (so the light stays on while there is motion).' },
+      { key: 'then send', desc: 'Second message: as the first, or the latest message received during the wait.' },
+      { key: 'handle',    desc: 'all messages share one trigger, or each msg.topic has its own.' },
+    ],
+    examples: [
+      { title: 'Light on for 60 s after the last motion', config: 'send true · wait 60 s · extend · then send false', result: 'GPIO Out gets true on the first motion and false 60 s after the last one.' },
+      { title: 'Watchdog', config: 'send nothing · wait 30 s · extend · then send "sensor silent"', result: 'An alert leaves only when no message arrived for 30 s.' },
+    ],
+  },
+
+  filter: {
+    overview:
+      'Passes a message only when the value changes (report by exception). The band modes pass only bigger changes (deadband) or block sudden jumps (narrowband). Works like the Node-RED filter (rbe) node.',
+    inputs: ['Any message with the property set. Messages without it are dropped. msg.reset clears the stored value of its topic (or all), then the message is handled.'],
+    outputs: ['The message, unchanged, when it passes.'],
+    properties: [
+      { key: 'mode',          desc: 'block unless the value changes · the same, ignoring the first value · block unless it changes by more than (or by at least) the gap · block if it changes by more than (or by at least) the gap.' },
+      { key: 'change',        desc: 'The gap for the band modes: a number, or a percentage of the last value (10%).' },
+      { key: 'compare with',  desc: 'The last value sent (default) or the last value received.' },
+      { key: 'property',      desc: 'The value watched, msg.payload by default. Lists and objects are compared by content.' },
+      { key: 'separate topics', desc: 'Each msg.topic keeps its own last value (on by default).' },
+    ],
+    examples: [
+      { title: 'Inputs that rarely change', config: 'Modbus Read every 100 ms → filter (block unless changes)', result: 'Only the changes reach the next nodes.' },
+      { title: 'Temperature to MQTT', config: 'filter deadband 0.5', result: 'A new value is published when it moved 0.5 °C or more from the last one sent.' },
+    ],
+  },
+
+  range: {
+    overview: 'Maps a number from one range to another, e.g. a 12-bit ADC reading (0–4095) to a percentage (0–100). Works like the Node-RED range node.',
+    inputs: ['A message whose property is a number, or text that starts with a number. Anything else is dropped (the node shows "not a number").'],
+    outputs: ['The message with the property replaced by the scaled value.'],
+    properties: [
+      { key: 'action', desc: 'scale (values outside the input range go outside the target range) · limit to the target range · wrap around within it · drop values outside the input range.' },
+      { key: 'input range',  desc: 'The two ends of the input range. They must be different; the order can be reversed to invert the scale.' },
+      { key: 'target range', desc: 'The two ends of the result.' },
+      { key: 'round',        desc: 'Round the result to a whole number.' },
+    ],
+    examples: [
+      { title: 'Tank level from an ADC', config: '0–4095 → 0–100 · limit · round', result: '2048 becomes 50.' },
+      { title: '4–20 mA sensor', config: '4–20 → 0–10 (bar)', result: '12 mA becomes 5 bar.' },
+    ],
+  },
+
+  split: {
+    overview: 'Splits one message into a sequence: one message per item of a list, per line (or other separator) of a text, per key of an object, or per chunk of bytes. Works like the Node-RED split node.',
+    inputs: ['A message whose property is a list, text, object or bytes. A single value passes as it is.'],
+    outputs: ['One message per item, each a copy of the original with the property set to the item and msg.parts = { id, index, count, type, … }. For objects, msg.parts.key is the key.'],
+    properties: [
+      { key: 'text and bytes', desc: 'Split at a separator (\\n by default; \\t, \\r and any text work) or every N characters/bytes.' },
+      { key: 'lists',          desc: 'Items per message: 1 sends each item, 2 or more send smaller lists.' },
+      { key: 'objects',        desc: 'Optionally copy each key to a message property, e.g. msg.topic.' },
+    ],
+    tips: ['Put a Join in automatic mode after the nodes that handle each item to get the list, text or object back.'],
+  },
+
+  join: {
+    overview: 'Joins a sequence of messages into one. Automatic mode undoes a Split or Batch; manual mode builds a list, text, bytes or object from any messages. Works like the Node-RED join node.',
+    inputs: ['Messages of a sequence (automatic) or any messages (manual). msg.complete sends what has been collected; msg.reset discards it.'],
+    outputs: ['One message: the last message received, with the property set to the joined value (msg.parts removed, or set back to the outer sequence).'],
+    properties: [
+      { key: 'mode',          desc: 'automatic (uses msg.parts) or manual.' },
+      { key: 'combine each',  desc: '(manual) A message property, or the whole message.' },
+      { key: 'to create',     desc: '(manual) a list · a text joined with a separator · bytes · an object with msg.topic (or another property) as the key · one object merging the values.' },
+      { key: 'send',          desc: '(manual) After N parts (keys for an object), and/or after a time from the first message.' },
+    ],
+    examples: [
+      { title: 'Readings of three sensors in one object', config: 'manual · object · key msg.topic · after 3 parts', result: '{ "temp": 21.5, "humidity": 60, "pressure": 1013 }' },
+    ],
+  },
+
+  batch: {
+    overview: 'Groups messages into sequences, by number or by time. The messages come out unchanged, each with msg.parts; a Join in automatic mode after it turns each sequence into one list. Works like the Node-RED batch node.',
+    inputs: ['Any messages. msg.reset discards the messages waiting.'],
+    outputs: ['The messages of each sequence, with msg.parts = { id, index, count }.'],
+    properties: [
+      { key: 'by number', desc: 'A sequence every N messages, optionally repeating the last messages at the start of the next (overlap) for moving windows.' },
+      { key: 'by time',   desc: 'A sequence of what arrived in each interval; optionally an empty message when nothing arrived.' },
+    ],
+    examples: [
+      { title: 'One CSV write per minute', config: 'reading every second → batch by time 60 s → join (automatic) → CSV → Write File', result: 'One write of 60 lines instead of 60 writes.' },
+    ],
+  },
+
   function: {
     overview:
       'Executes JavaScript code for each incoming message. The variable msg holds the message; return msg (or an array for multiple outputs) to send it on. Returning null suppresses the message.',

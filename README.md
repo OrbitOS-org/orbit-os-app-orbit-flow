@@ -21,7 +21,7 @@ Runs on Raspberry Pi, Arduino UNO Q and other ARM64 devices with Orbit OS (free 
 - **Works like Node-RED** — Deploy with *Full*, *Modified Flows* or *Modified Nodes*, and *Restart Flows*; right-click a tab to edit its properties, hide it (it keeps running), disable it (applied on the next Deploy), export or delete it; the list at the end of the tabs shows every flow, hidden ones included
 - **Industrial protocols built in** — Modbus TCP and RTU, OPC UA (read, subscribe, write), Siemens S7 and MQTT
 - **The device's own I/O** — GPIO, I²C, SPI and the serial ports, through the Orbit OS API; *Serial In*, *Serial Out* and *Serial Request* work like Node-RED's serial nodes, on the board's UARTs, RS-232/RS-485 ports and USB-serial adapters
-- **Logic without code, or with it** — switch, change, delay, template and state-machine nodes; JavaScript, expressions or Go when you need them
+- **Logic without code, or with it** — switch, change, delay, trigger, filter, range, template and state-machine nodes; split, join and batch for sequences; JavaScript, expressions or Go when you need them
 - **Data in and out** — HTTP, TCP and UDP nodes; JSON, XML and CSV; Write File, Read File and Watch on the app's own files, which you can see, download and delete in Settings → Files
 - **Notifications on your phone** — a node that sends a push notification through the Orbit OS mobile app
 - **Users and roles** — admin, editor and viewer accounts; credentials stored encrypted

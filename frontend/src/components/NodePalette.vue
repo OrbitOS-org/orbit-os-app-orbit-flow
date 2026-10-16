@@ -34,7 +34,7 @@ const filteredNodes = computed(() => {
   )
 })
 
-const CATEGORY_ORDER = ['common', 'function', 'network', 'industrial', 'hardware', 'device', 'cloud', 'parser', 'storage', 'other']
+const CATEGORY_ORDER = ['common', 'function', 'sequence', 'network', 'industrial', 'hardware', 'device', 'cloud', 'parser', 'storage', 'other']
 
 // Names shown in the palette; the key is the node's category.
 const CATEGORY_LABEL: Record<string, string> = { cloud: 'Cloud Services' }

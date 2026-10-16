@@ -1068,13 +1068,32 @@ func (e *Engine) makeSendFunc(sourceID string, wires [][]string, targets map[str
 				continue
 			}
 			// COW clone: the target shares data until first mutation.
-			select {
-			case targetNode.inputCh <- msg.COWClone():
-			default:
-				slog.Warn("message dropped, target buffer full",
-					"source", sourceID, "target", targetID)
-			}
+			deliver(sourceID, targetID, targetNode, msg.COWClone())
 		}
+	}
+}
+
+// deliverWait is how long a message waits for room in a busy node's input
+// buffer before it is dropped. A Split of a long list sends many messages
+// at once; a short wait lets the next node keep up instead of losing them.
+const deliverWait = time.Second
+
+// deliver puts msg in the target's input buffer, waiting up to deliverWait
+// when the buffer is full.
+func deliver(sourceID, targetID string, target *runningNode, msg *Message) {
+	select {
+	case target.inputCh <- msg:
+		return
+	default:
+	}
+	timer := time.NewTimer(deliverWait)
+	defer timer.Stop()
+	select {
+	case target.inputCh <- msg:
+	case <-target.stopCh:
+	case <-timer.C:
+		slog.Warn("message dropped, target buffer full",
+			"source", sourceID, "target", targetID)
 	}
 }
 
@@ -1299,12 +1318,7 @@ func (e *Engine) nodeLoop(nodeID string, rn *runningNode) {
 					}
 					for _, outMsg := range msgs {
 						// COW clone: the target shares data until first mutation.
-						select {
-						case targetNode.inputCh <- outMsg.COWClone():
-						default:
-							slog.Warn("message dropped, target buffer full",
-								"source", nodeID, "target", targetID)
-						}
+						deliver(nodeID, targetID, targetNode, outMsg.COWClone())
 					}
 				}
 			}

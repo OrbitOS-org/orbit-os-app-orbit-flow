@@ -227,6 +227,64 @@ const summaries: Record<string, NodeSummaryFn> = {
     return mode === 'delete' ? `deletes ${path}` : `${mode === 'append' ? 'appends to' : 'overwrites'} ${path}`
   },
 
+  trigger(cfg) {
+    const unit: Record<string, string> = { ms: 'ms', s: 's', min: 'min', hr: 'h' }
+    const d = `${Number(cfg.duration ?? 250)} ${unit[(cfg.units as string) ?? 'ms'] ?? 'ms'}`
+    const val = (v: unknown, t: unknown) => {
+      switch (t) {
+        case 'pay': return 'msg'
+        case 'payl': return 'latest msg'
+        case 'nul': return 'nothing'
+        case 'date': return 'timestamp'
+        case 'str': case undefined: return `"${v ?? ''}"`
+        default: return String(v ?? '')
+      }
+    }
+    const first = val(cfg.op1 ?? '1', cfg.op1type)
+    const then = (cfg.then as string) ?? 'wait'
+    if (then === 'reset') return `${first} · until reset`
+    if (then === 'resend') return `${first} every ${d}`
+    return `${first} · ${d} · ${val(cfg.op2 ?? '0', cfg.op2type)}`
+  },
+
+  filter(cfg) {
+    const gap = (cfg.gap as string) || '0'
+    switch ((cfg.func as string) ?? 'rbe') {
+      case 'rbei': return 'only when it changes, not the first'
+      case 'deadband': return `when it changes by more than ${gap}`
+      case 'deadbandEq': return `when it changes by ${gap} or more`
+      case 'narrowband': return `ignores jumps of more than ${gap}`
+      case 'narrowbandEq': return `ignores jumps of ${gap} or more`
+      default: return 'only when it changes'
+    }
+  },
+
+  range(cfg) {
+    const tail: Record<string, string> = { clamp: ' · limit', roll: ' · wrap', drop: ' · drop outside' }
+    return `${cfg.minin ?? 0}–${cfg.maxin ?? 4095} → ${cfg.minout ?? 0}–${cfg.maxout ?? 100}${tail[(cfg.action as string) ?? 'scale'] ?? ''}`
+  },
+
+  split(cfg) {
+    const n = Number(cfg.arraySplt ?? 1)
+    if (cfg.spltType === 'len') return `text: every ${cfg.splt} characters`
+    return n > 1 ? `${n} items per message` : 'one message per item'
+  },
+
+  join(cfg) {
+    if ((cfg.mode as string ?? 'auto') === 'auto') return 'undo a split'
+    const what: Record<string, string> = { string: 'text', buffer: 'bytes', array: 'list', object: 'object', merged: 'merged object' }
+    const parts = [what[(cfg.build as string) ?? 'array'] ?? 'list']
+    if (Number(cfg.count)) parts.push(`of ${cfg.count}`)
+    if (Number(cfg.timeout)) parts.push(`or after ${cfg.timeout} s`)
+    return parts.join(' ')
+  },
+
+  batch(cfg) {
+    if (cfg.mode === 'interval') return `every ${cfg.interval ?? 10} s`
+    const overlap = Number(cfg.overlap ?? 0)
+    return `every ${cfg.count ?? 10} messages${overlap ? `, ${overlap} overlap` : ''}`
+  },
+
   delay(cfg) {
     const mode = (cfg.mode as string) ?? 'delay'
     const fmt = (n: number, unit: string) => `${n}${unit === 'milliseconds' ? 'ms' : unit === 'day' ? 'd' : unit[0]}`

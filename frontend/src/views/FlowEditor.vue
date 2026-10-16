@@ -37,6 +37,7 @@ import DeviceIdentityNode from "@/components/nodes/DeviceIdentityNode.vue";
 import I2CTransferNode from "@/components/nodes/I2CTransferNode.vue";
 import SpiTransferNode from "@/components/nodes/SpiTransferNode.vue";
 import SerialNode from "@/components/nodes/SerialNode.vue";
+import SequenceNode from "@/components/nodes/SequenceNode.vue";
 
 import "@vue-flow/core/dist/style.css";
 import "@vue-flow/core/dist/theme-default.css";
@@ -352,8 +353,28 @@ onMounted(async () => {
                 <DelayNode v-bind="nodeProps as any" />
             </template>
 
+            <template #node-trigger="nodeProps">
+                <SequenceNode v-bind="nodeProps as any" />
+            </template>
+
             <template #node-filter="nodeProps">
-                <BaseNode v-bind="nodeProps as any" />
+                <SequenceNode v-bind="nodeProps as any" />
+            </template>
+
+            <template #node-range="nodeProps">
+                <SequenceNode v-bind="nodeProps as any" />
+            </template>
+
+            <template #node-split="nodeProps">
+                <SequenceNode v-bind="nodeProps as any" />
+            </template>
+
+            <template #node-join="nodeProps">
+                <SequenceNode v-bind="nodeProps as any" />
+            </template>
+
+            <template #node-batch="nodeProps">
+                <SequenceNode v-bind="nodeProps as any" />
             </template>
 
             <template #node-http-in="nodeProps">

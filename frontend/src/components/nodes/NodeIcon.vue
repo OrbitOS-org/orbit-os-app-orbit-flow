@@ -38,6 +38,13 @@ const icons: Record<string, string[]> = {
   template:      ['M4 4h16v16H4z', 'M8 8h8', 'M8 12h8', 'M8 16h4'],                  // document with lines
   delay:         ['M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z', 'M12 6v6l4 2'],         // clock
   filter:        ['M3 4h18l-7 8v6l-4 2V12L3 4z'],                                     // funnel
+  trigger:       ['M3 18h4V6h8v12h6'],                                                // one pulse
+  range:         ['M4 7h16', 'M4 17h10', 'M7 4v6', 'M11 14v6', 'M17 4l3 3-3 3'],      // two scales
+
+  // ── Sequence ──────────────────────────────
+  split:         ['M3 12h7', 'M10 12l8-6', 'M10 12h8', 'M10 12l8 6'],                 // one into three
+  join:          ['M21 12h-7', 'M14 12L6 6', 'M14 12H6', 'M14 12l-8 6'],              // three into one
+  batch:         ['M4 6h4v4H4z', 'M10 6h4v4h-4z', 'M16 6h4v4h-4z', 'M4 16h16'],       // items grouped
 
   // ── Network ───────────────────────────────
   'http-in':     ['M3 12h12', 'M11 8l4 4-4 4', 'M19 4v16'],                           // arrow into wall
