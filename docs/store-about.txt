@@ -1,0 +1,26 @@
+Orbit Flow lets you build automation by wiring blocks in your browser: read a Modbus register, switch a relay when an input closes, publish a value over MQTT, show a gauge on your phone. The flows run on the Orbit OS device itself.
+
+You drag nodes onto a canvas, connect them and press Deploy. If you have used Node-RED, you will find the same way of working: the same node names (Inject, Debug, Function, Switch, Change, Trigger, Split, Join…), the same msg.payload and msg.topic, Deploy with Full, Modified Flows or Modified Nodes, and Stop and Start Flows.
+
+What you can connect:
+
+- Industrial devices: Modbus TCP and RTU, OPC UA, Siemens S7 and MQTT
+- The device's own hardware, through the Orbit OS API: GPIO, PWM, I²C, SPI and serial ports (RS-232, RS-485, USB adapters)
+- HTTP, TCP and UDP, with JSON, XML and CSV
+- Files on the device, which you can view and download from the app
+- Your phone, with push notifications through the Orbit OS mobile app
+
+What you get:
+
+- A dashboard: gauges, charts, text, switches, sliders and buttons, made for the phone and updated live
+- Logic without code (switch, change, delay, trigger, filter, range, state machine), or with code in JavaScript, expressions or Go
+- Outputs that go off when the flows stop: GPIO and PWM outputs return to a safe state, off by default
+- Ready-made examples, from first steps to Modbus relay boards, energy meters, GPS on a serial port and irrigation
+- Accounts with roles: admins, editors, and viewers who can use the dashboard without changing the flows
+- A light and a dark theme
+
+The flows, accounts and files stay on the device. There is no cloud service and no account to create elsewhere, and the device does not need internet access unless a flow uses it.
+
+Orbit Flow is based on LOOPZE by Dennis Bleul. Its source code is open (AGPL-3.0).
+
+After installation, open the device portal at http://<device_ip>, select the Orbit Flow icon and create the administrator account.

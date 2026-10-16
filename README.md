@@ -6,6 +6,10 @@
 
 <p align="center"><b>Build industrial automation by wiring blocks in your browser — Modbus, OPC UA, S7 and MQTT, running on the device itself.</b></p>
 
+<p align="center">
+  <img src="docs/store-screenshots/desktop-1-editor.png" width="720" alt="Orbit Flow: a pump-station flow with Modbus, OPC UA, S7, MQTT, GPIO and a phone notification">
+</p>
+
 Orbit Flow is a visual flow editor for [Orbit OS](https://www.orbit-os.org/?ref=github-orbit-flow). You drag nodes onto a canvas, connect them and deploy: read a Modbus register every 30 seconds, switch a relay when an input closes, publish a value over MQTT, send a notification to your phone. The flows run on the device, with no cloud service.
 
 It is also an example of a complete Orbit OS app in Go: it uses the [Orbit OS Go SDK](https://github.com/OrbitOS-org/orbit-os-sdk-go) for the serial ports, GPIO, PWM, I²C, SPI, system metrics and mobile notifications.
@@ -13,7 +17,7 @@ It is also an example of a complete Orbit OS app in Go: it uses the [Orbit OS Go
 Runs on Raspberry Pi, Arduino UNO Q and other ARM64 devices with Orbit OS (free Community Edition).
 
 > [!NOTE]
-> Orbit Flow is based on [LOOPZE](https://github.com/loopzedev/loopze-edge) by Dennis Bleul and is licensed under the AGPL-3.0. This is an early version.
+> Orbit Flow is based on [LOOPZE](https://github.com/loopzedev/loopze-edge) by Dennis Bleul and is licensed under the AGPL-3.0.
 
 ## Features
 
@@ -27,6 +31,12 @@ Runs on Raspberry Pi, Arduino UNO Q and other ARM64 devices with Orbit OS (free 
 - **Notifications on your phone** — a node that sends a push notification through the Orbit OS mobile app
 - **Users and roles** — admin, editor and viewer accounts; credentials stored encrypted
 - **Examples and saved flows** — the **+** next to the flow tabs → *Open…* adds a ready-made example (for instance, switching the relays of an EBYTE RS-485 relay board, or reading a GPS on a serial port) or a flow you exported with *Export…* from a tab's menu; exported flows are kept in the app's data folder
+
+<p align="center">
+  <img src="docs/store-screenshots/desktop-2-dashboard.png" width="720" alt="The dashboard: a gauge, a chart with two lines, a switch, a slider and a button, updated live">
+</p>
+
+How it works inside (the page, the engine, what the app keeps on the device, the code map): [docs/how-it-works.md](docs/how-it-works.md).
 
 ## Install
 
