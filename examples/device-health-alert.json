@@ -1,6 +1,6 @@
 {
   "name": "Device health alert",
-  "description": "Sends a phone notification when temperature or memory go over a limit; the temperature, memory and CPU on the dashboard.",
+  "description": "Sends a phone notification when temperature or memory go over a limit.",
   "category": "Device",
   "order": 8,
   "needs": "Phone with the Orbit OS app",
@@ -9,12 +9,12 @@
       "id": "ex-device-health-alert",
       "type": "tab",
       "label": "Device health alert",
-      "info": "Every 10 seconds the System Metrics node reads the device. The Function node checks the processor temperature (over 75 °C) and the memory in use (over 90 %), and sends one notification when a limit is crossed and another when things are back to normal, never one per reading. Notifications go to the phones linked to this device through the Orbit OS app. Change the limits at the top of the Function node. The same readings go to the dashboard (the button with four squares at the top of the editor): a gauge each and a chart of the last hour.",
+      "info": "Every 30 seconds the System Metrics node reads the device. The Function node checks the processor temperature (over 75 °C) and the memory in use (over 90 %), and sends one notification when a limit is crossed and another when things are back to normal, never one per reading. Notifications go to the phones linked to this device through the Orbit OS app. Change the limits at the top of the Function node.",
       "nodes": [
         {
           "id": "ex-device-health-alert-n1",
           "type": "inject",
-          "name": "every 10 s",
+          "name": "every 30 s",
           "x": 100,
           "y": 140,
           "z": "ex-device-health-alert",
@@ -27,7 +27,7 @@
           ],
           "config": {
             "cron": "",
-            "interval": 10000,
+            "interval": 30000,
             "mode": "interval",
             "once": false,
             "props": [
@@ -50,8 +50,7 @@
           "outputs": 1,
           "wires": [
             [
-              "ex-device-health-alert-n3",
-              "ex-device-health-alert-n6"
+              "ex-device-health-alert-n3"
             ]
           ],
           "config": {}
@@ -114,112 +113,6 @@
             "statusOutput": "same",
             "statusProperty": ""
           }
-        },
-        {
-          "id": "ex-device-health-alert-n6",
-          "type": "function",
-          "name": "for the dashboard",
-          "x": 520,
-          "y": 260,
-          "z": "ex-device-health-alert",
-          "inputs": 1,
-          "outputs": 3,
-          "wires": [
-            [
-              "ex-device-health-alert-n7",
-              "ex-device-health-alert-n10"
-            ],
-            [
-              "ex-device-health-alert-n8",
-              "ex-device-health-alert-n10"
-            ],
-            [
-              "ex-device-health-alert-n9",
-              "ex-device-health-alert-n10"
-            ]
-          ],
-          "config": {
-            "func": "// One reading per output, each with its own topic: a line on the chart.\nconst p = msg.payload;\nreturn [\n  { topic: 'temperature °C', payload: Math.round(p.socTemperatureC * 10) / 10 },\n  { topic: 'memory %', payload: Math.round(p.memoryUsagePercent) },\n  { topic: 'CPU %', payload: Math.round(p.cpuUsagePercent) },\n];",
-            "outputs": 3
-          }
-        },
-        {
-          "id": "ex-device-health-alert-n7",
-          "type": "ui-gauge",
-          "name": "Temperature",
-          "x": 780,
-          "y": 220,
-          "z": "ex-device-health-alert",
-          "inputs": 1,
-          "outputs": 0,
-          "wires": [],
-          "config": {
-            "group": "ex-device-health-alert-g1",
-            "order": 1,
-            "width": 4,
-            "min": 0,
-            "max": 100,
-            "units": "°C"
-          }
-        },
-        {
-          "id": "ex-device-health-alert-n8",
-          "type": "ui-gauge",
-          "name": "Memory",
-          "x": 780,
-          "y": 260,
-          "z": "ex-device-health-alert",
-          "inputs": 1,
-          "outputs": 0,
-          "wires": [],
-          "config": {
-            "group": "ex-device-health-alert-g1",
-            "order": 2,
-            "width": 4,
-            "min": 0,
-            "max": 100,
-            "units": "%"
-          }
-        },
-        {
-          "id": "ex-device-health-alert-n9",
-          "type": "ui-gauge",
-          "name": "CPU",
-          "x": 780,
-          "y": 300,
-          "z": "ex-device-health-alert",
-          "inputs": 1,
-          "outputs": 0,
-          "wires": [],
-          "config": {
-            "group": "ex-device-health-alert-g1",
-            "order": 3,
-            "width": 4,
-            "min": 0,
-            "max": 100,
-            "units": "%"
-          }
-        },
-        {
-          "id": "ex-device-health-alert-n10",
-          "type": "ui-chart",
-          "name": "Last hour",
-          "x": 780,
-          "y": 360,
-          "z": "ex-device-health-alert",
-          "inputs": 1,
-          "outputs": 0,
-          "wires": [],
-          "config": {
-            "group": "ex-device-health-alert-g2",
-            "order": 1,
-            "width": 12,
-            "chartType": "line",
-            "units": "",
-            "removeOlder": 1,
-            "removeOlderUnit": "3600",
-            "removeOlderPoints": 1000
-          }
         }
       ],
       "wires": [
@@ -250,87 +143,9 @@
           "sourcePort": 0,
           "targetNode": "ex-device-health-alert-n5",
           "targetPort": 0
-        },
-        {
-          "id": "ex-device-health-alert-n6-w0--n7",
-          "sourceNode": "ex-device-health-alert-n6",
-          "sourcePort": 0,
-          "targetNode": "ex-device-health-alert-n7",
-          "targetPort": 0
-        },
-        {
-          "id": "ex-device-health-alert-n6-w0--n10",
-          "sourceNode": "ex-device-health-alert-n6",
-          "sourcePort": 0,
-          "targetNode": "ex-device-health-alert-n10",
-          "targetPort": 0
-        },
-        {
-          "id": "ex-device-health-alert-n6-w1--n8",
-          "sourceNode": "ex-device-health-alert-n6",
-          "sourcePort": 1,
-          "targetNode": "ex-device-health-alert-n8",
-          "targetPort": 0
-        },
-        {
-          "id": "ex-device-health-alert-n6-w1--n10",
-          "sourceNode": "ex-device-health-alert-n6",
-          "sourcePort": 1,
-          "targetNode": "ex-device-health-alert-n10",
-          "targetPort": 0
-        },
-        {
-          "id": "ex-device-health-alert-n6-w2--n9",
-          "sourceNode": "ex-device-health-alert-n6",
-          "sourcePort": 2,
-          "targetNode": "ex-device-health-alert-n9",
-          "targetPort": 0
-        },
-        {
-          "id": "ex-device-health-alert-n6-w2--n10",
-          "sourceNode": "ex-device-health-alert-n6",
-          "sourcePort": 2,
-          "targetNode": "ex-device-health-alert-n10",
-          "targetPort": 0
-        },
-        {
-          "id": "ex-device-health-alert-n2-w0--n6",
-          "sourceNode": "ex-device-health-alert-n2",
-          "sourcePort": 0,
-          "targetNode": "ex-device-health-alert-n6",
-          "targetPort": 0
         }
       ]
     }
   ],
-  "configs": [
-    {
-      "id": "ex-device-health-alert-p1",
-      "type": "ui-page",
-      "name": "Device health",
-      "config": {
-        "order": 1
-      }
-    },
-    {
-      "id": "ex-device-health-alert-g1",
-      "type": "ui-group",
-      "name": "Now",
-      "config": {
-        "page": "ex-device-health-alert-p1",
-        "width": 12,
-        "order": 1
-      }
-    },
-    {
-      "id": "ex-device-health-alert-g2",
-      "type": "ui-group",
-      "name": "Last hour",
-      "config": {
-        "page": "ex-device-health-alert-p1",
-        "width": 12,
-        "order": 2
-      }
-    }
-  ]
+  "configs": []
 }
