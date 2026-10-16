@@ -29,8 +29,14 @@ the history of the repository above. In summary:
 
 - runs as an Orbit OS app and registers its page with the Orbit OS Launcher;
 - Modbus RTU runs over the Orbit OS UART API instead of opening serial devices;
-- new nodes for the device's own hardware and services: GPIO, I2C, SPI, system
-  metrics, device identity and mobile notifications;
+- new nodes for the device's own hardware and services: GPIO, PWM, serial
+  ports, I2C, SPI, system metrics, device identity and mobile notifications;
+- GPIO and PWM outputs go to a safe state (off by default) when the flows stop;
+- new nodes named and behaving like Node-RED's: trigger, filter, range, split,
+  join and batch, and a dashboard (gauge, chart, text, switch, slider, button,
+  pages and groups);
+- the editor and its behaviour follow Node-RED (deploy modes, Stop/Start Flows,
+  node names, msg.error in Catch, several messages per output in Function);
 - the file nodes are limited to the app's data folder;
 - the embedded NATS server opens no network port by default;
 - the page's port is chosen in the range Orbit OS reserves for app pages;
