@@ -79,7 +79,14 @@ const icons: Record<string, string[]> = {
   // ── OrbitOS ───────────────────────────────
   'mobile-notify': ['M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9', 'M13.73 21a2 2 0 0 1-3.46 0'], // bell
   'gpio-read':  ['M7 8h10v8H7z', 'M9 8V4', 'M15 8V4', 'M9 16v4', 'M15 16v4', 'M2 12h5', 'M4 9l3 3-3 3'], // chip + arrow in
-  'pwm-out':    ['M2 17h3V7h4v10h3V7h4v10h3V7h3'],                                  // PWM square wave
+  'pwm-out':    ['M2 17h3V7h4v10h3V7h4v10h3V7h3'],
+  // ── Dashboard ─────────────────────────────
+  'ui-gauge':   ['M4 17a8 8 0 1 1 16 0', 'M12 17l4-5'],                                 // dial
+  'ui-chart':   ['M3 19h18', 'M4 15l5-5 4 3 7-7'],                                     // trend line
+  'ui-text':    ['M5 6h14', 'M12 6v13'],                                               // T
+  'ui-switch':  ['M7 7h10a5 5 0 0 1 0 10H7A5 5 0 0 1 7 7z', 'M16 12h.01'],               // toggle
+  'ui-slider':  ['M3 12h18', 'M9 9v6'],                                                // slider
+  'ui-button':  ['M4 8h16v8H4z', 'M9 12h6'],                                           // button                                  // PWM square wave
   'gpio-write': ['M7 8h10v8H7z', 'M9 8V4', 'M15 8V4', 'M9 16v4', 'M15 16v4', 'M17 12h5', 'M20 9l3 3-3 3'], // chip + arrow out
   'system-metrics':  ['M3 3v18h18', 'M7 15l4-5 3 3 5-7'], // line chart (gauge/trend)
   'device-identity': ['M4 4h16v16H4z', 'M4 9h16', 'M8 13h3', 'M8 16h6'], // ID card

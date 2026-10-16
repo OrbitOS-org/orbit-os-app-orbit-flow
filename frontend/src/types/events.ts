@@ -2,7 +2,7 @@
  * WebSocket event types for Orbit Flow real-time communication.
  */
 
-export type WebSocketEventType = 'debug' | 'status' | 'deploy' | 'notification' | 'log'
+export type WebSocketEventType = 'debug' | 'status' | 'deploy' | 'notification' | 'log' | 'dashboard'
 
 export interface WebSocketEnvelope<T extends WebSocketEventType = WebSocketEventType> {
   type: T
@@ -60,12 +60,21 @@ export interface LogEntry {
   attrs?: Record<string, unknown>
 }
 
+/** Dashboard changes, sent at most every 100 ms. */
+export interface DashboardUpdate {
+  layout?: boolean
+  values?: Record<string, unknown>
+  points?: Record<string, Record<string, { t: number; v: number }[]>>
+  clears?: string[]
+}
+
 export interface WebSocketPayloadMap {
   debug: DebugMessage
   status: StatusEvent
   deploy: DeployEvent
   notification: NotificationEvent
   log: LogEntry
+  dashboard: DashboardUpdate
 }
 
 export type WebSocketMessageHandler<T extends WebSocketEventType> = (

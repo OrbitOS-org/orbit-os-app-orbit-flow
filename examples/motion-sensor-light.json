@@ -2,7 +2,7 @@
   "name": "Motion sensor light",
   "description": "A motion sensor turns a light on for 60 s and sends a notification to your phone.",
   "category": "Device",
-  "order": 10,
+  "order": 11,
   "needs": "Motion sensor and relay module on GPIO pins, Orbit OS mobile app",
   "flows": [
     {

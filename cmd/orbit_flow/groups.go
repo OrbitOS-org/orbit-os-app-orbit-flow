@@ -17,6 +17,7 @@ package main
 
 import (
 	_ "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes/core"
+	_ "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes/dashboard"
 	_ "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes/filesystem"
 	_ "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes/gpio"
 	_ "github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/nodes/i2c"

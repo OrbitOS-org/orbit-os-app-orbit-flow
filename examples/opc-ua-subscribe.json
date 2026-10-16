@@ -2,7 +2,7 @@
   "name": "OPC UA subscribe",
   "description": "Subscribes to variables on an OPC UA server.",
   "category": "Industrial",
-  "order": 17,
+  "order": 18,
   "needs": "OPC UA server",
   "flows": [
     {

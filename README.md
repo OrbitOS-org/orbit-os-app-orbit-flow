@@ -23,6 +23,7 @@ Runs on Raspberry Pi, Arduino UNO Q and other ARM64 devices with Orbit OS (free 
 - **The device's own I/O** — GPIO, PWM, I²C, SPI and the serial ports, through the Orbit OS API; outputs (GPIO Write, PWM Out) go to a safe state, off by default, when the flows stop; *Serial In*, *Serial Out* and *Serial Request* work like Node-RED's serial nodes, on the board's UARTs, RS-232/RS-485 ports and USB-serial adapters
 - **Logic without code, or with it** — switch, change, delay, trigger, filter, range, template and state-machine nodes; split, join and batch for sequences; JavaScript, expressions or Go when you need them
 - **Data in and out** — HTTP, TCP and UDP nodes; JSON, XML and CSV; Write File, Read File and Watch on the app's own files, which you can see, download and delete in Settings → Files
+- **Dashboard** — gauge, chart, text, switch, slider and button nodes, as in Node-RED Dashboard 2.0; the dashboard is a page of the app, by page and group, updated live and made for the phone; viewer accounts can use it without editing the flows
 - **Notifications on your phone** — a node that sends a push notification through the Orbit OS mobile app
 - **Users and roles** — admin, editor and viewer accounts; credentials stored encrypted
 - **Examples and saved flows** — the **+** next to the flow tabs → *Open…* adds a ready-made example (for instance, switching the relays of an EBYTE RS-485 relay board, or reading a GPS on a serial port) or a flow you exported with *Export…* from a tab's menu; exported flows are kept in the app's data folder
@@ -56,7 +57,7 @@ You need [VS Code](https://code.visualstudio.com/) with the Orbit Studio extensi
 | `cmd/orbit_flow/` | app entry point (`main.go`), the node groups built into the app (`groups.go`), `metadata.json` (manifest and permissions) |
 | `cmd/orbit_flow/orb/icon.svg` | Launcher and Store icon |
 | `internal/flow/`, `internal/server/`, `internal/api/` | flow engine, HTTP server and API |
-| `internal/nodes/` | the nodes, one folder per group; `gpio`, `pwm`, `i2c`, `spi`, `serial` and `orbit` use the Orbit OS API |
+| `internal/nodes/` | the nodes, one folder per group; `gpio`, `pwm`, `i2c`, `spi`, `serial` and `orbit` use the Orbit OS API; `dashboard` holds the dashboard widgets (state in `internal/dashboard`) |
 | `internal/auth/`, `internal/credentials/` | users, sessions and encrypted credentials |
 | `frontend/` | the editor (Vue 3); `npm run build` writes it to `web/dist/`, which is embedded in the app |
 | `examples/` | example flows shipped inside the app, one JSON file each (see `examples/examples.go`) |

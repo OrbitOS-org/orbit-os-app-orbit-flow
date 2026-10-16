@@ -2,7 +2,7 @@
   "name": "Log readings to CSV",
   "description": "Writes readings to one CSV file per day in the app's files.",
   "category": "Data",
-  "order": 22,
+  "order": 23,
   "flows": [
     {
       "id": "ex-log-readings-to-csv",

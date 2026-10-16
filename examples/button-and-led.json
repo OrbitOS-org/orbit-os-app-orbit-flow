@@ -2,7 +2,7 @@
   "name": "Button and LED",
   "description": "A button on one GPIO switches an LED on another.",
   "category": "Device",
-  "order": 9,
+  "order": 10,
   "needs": "2 GPIO pins",
   "flows": [
     {

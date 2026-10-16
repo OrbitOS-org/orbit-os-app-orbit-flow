@@ -2,7 +2,7 @@
   "name": "Device info page",
   "description": "A /status web page with the device name, version and metrics.",
   "category": "Device",
-  "order": 8,
+  "order": 9,
   "flows": [
     {
       "id": "ex-device-info-page",

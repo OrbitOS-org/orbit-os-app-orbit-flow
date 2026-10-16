@@ -2,7 +2,7 @@
   "name": "Solar surplus to load",
   "description": "Switches a load on when the solar installation has surplus (SolaStat).",
   "category": "Projects",
-  "order": 28,
+  "order": 29,
   "needs": "Inverter or meter, relay module on a GPIO",
   "flows": [
     {

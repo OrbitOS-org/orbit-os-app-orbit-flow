@@ -372,6 +372,8 @@ const NODE_FILL: Record<string, string> = {
   'serial-in': '#c6dbef', 'serial-out': '#c6dbef', 'serial-request': '#c6dbef',
   'system-metrics': '#cfd4e6', 'device-identity': '#cfd4e6',
   'mobile-notify': '#f0c3d4',
+  'ui-gauge': '#b9e4d3', 'ui-chart': '#b9e4d3', 'ui-text': '#b9e4d3',
+  'ui-switch': '#b9e4d3', 'ui-slider': '#b9e4d3', 'ui-button': '#b9e4d3',
   'file-read': '#deb887', 'file-out': '#deb887', 'file-watch': '#deb887',
 }
 

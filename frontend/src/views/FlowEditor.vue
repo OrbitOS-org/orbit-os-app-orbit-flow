@@ -39,6 +39,7 @@ import SpiTransferNode from "@/components/nodes/SpiTransferNode.vue";
 import SerialNode from "@/components/nodes/SerialNode.vue";
 import SequenceNode from "@/components/nodes/SequenceNode.vue";
 import PwmOutNode from "@/components/nodes/PwmOutNode.vue";
+import DashboardNode from "@/components/nodes/DashboardNode.vue";
 
 import "@vue-flow/core/dist/style.css";
 import "@vue-flow/core/dist/theme-default.css";
@@ -352,6 +353,30 @@ onMounted(async () => {
 
             <template #node-delay="nodeProps">
                 <DelayNode v-bind="nodeProps as any" />
+            </template>
+
+            <template #node-ui-gauge="nodeProps">
+                <DashboardNode v-bind="nodeProps as any" />
+            </template>
+
+            <template #node-ui-chart="nodeProps">
+                <DashboardNode v-bind="nodeProps as any" />
+            </template>
+
+            <template #node-ui-text="nodeProps">
+                <DashboardNode v-bind="nodeProps as any" />
+            </template>
+
+            <template #node-ui-switch="nodeProps">
+                <DashboardNode v-bind="nodeProps as any" />
+            </template>
+
+            <template #node-ui-slider="nodeProps">
+                <DashboardNode v-bind="nodeProps as any" />
+            </template>
+
+            <template #node-ui-button="nodeProps">
+                <DashboardNode v-bind="nodeProps as any" />
             </template>
 
             <template #node-pwm-out="nodeProps">

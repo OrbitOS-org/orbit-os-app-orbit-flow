@@ -2,7 +2,7 @@
   "name": "EBYTE inputs log to CSV",
   "description": "Records every change of the 4 inputs of the EBYTE board in a CSV file per day.",
   "category": "Industrial",
-  "order": 14,
+  "order": 15,
   "needs": "EBYTE board, RS-485",
   "flows": [
     {

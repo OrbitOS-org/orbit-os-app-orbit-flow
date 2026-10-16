@@ -42,6 +42,7 @@ const (
 	EventDeploy       = "deploy"
 	EventNotification = "notification"
 	EventLog          = "log"
+	EventDashboard    = "dashboard"
 )
 
 // newUpgrader builds an Upgrader whose CheckOrigin enforces the

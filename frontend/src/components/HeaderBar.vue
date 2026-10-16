@@ -154,6 +154,18 @@ function selectMode(mode: DeployModeType): void {
       <!-- Separator -->
       <div class="w-px h-5 bg-terminal-border mx-1" />
 
+      <!-- Dashboard link -->
+      <router-link
+        to="/dashboard"
+        class="p-1.5 rounded transition-all duration-100 text-terminal-text-dim hover:text-terminal-text hover:bg-terminal-surface-alt"
+        title="Dashboard"
+        aria-label="Open the dashboard"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4h7v9H4zM13 4h7v5h-7zM13 11h7v9h-7zM4 15h7v5H4z" />
+        </svg>
+      </router-link>
+
       <!-- Settings link -->
       <router-link
         to="/settings"

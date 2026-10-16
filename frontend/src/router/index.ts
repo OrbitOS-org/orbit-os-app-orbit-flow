@@ -12,6 +12,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/FlowEditor.vue'),
   },
   {
+    // The dashboard: the ui-* widgets of the running flows.
+    path: '/dashboard',
+    name: 'dashboard',
+    component: () => import('@/views/DashboardView.vue'),
+  },
+  {
     // One Settings area; each section is a child route.
     path: '/settings',
     name: 'settings',

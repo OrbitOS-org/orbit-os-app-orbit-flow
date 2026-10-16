@@ -145,6 +145,21 @@ export interface OpcuaReadResponse {
   result?: OpcuaReadResult
 }
 
+export interface DashboardPage { id: string; name: string; order: number }
+export interface DashboardGroup { id: string; page: string; name: string; width: number; order: number }
+export interface DashboardWidget {
+  id: string
+  type: string
+  group: string
+  label: string
+  width: number
+  order: number
+  props: Record<string, unknown>
+  value?: unknown
+  series?: Record<string, { t: number; v: number }[]>
+}
+export interface DashboardLayout { pages: DashboardPage[]; groups: DashboardGroup[]; widgets: DashboardWidget[] }
+
 export interface PwmChannelInfo {
   channel: number
   name: string
@@ -673,6 +688,19 @@ export function useApi() {
     return res.pins ?? []
   }
 
+  /** The dashboard: pages, groups and running widgets with their values. */
+  async function getDashboard(): Promise<DashboardLayout> {
+    return request<DashboardLayout>('/dashboard')
+  }
+
+  /** Pass a switch, slider or button use to its node. */
+  async function dashboardAction(id: string, value: unknown): Promise<void> {
+    await request<void>(`/dashboard/widgets/${encodeURIComponent(id)}/action`, {
+      method: 'POST',
+      body: JSON.stringify({ value }),
+    })
+  }
+
   /**
    * List the PWM channels the OrbitOS device reports, for the PWM Out
    * channel picker. Empty when the device has none.
@@ -832,6 +860,8 @@ export function useApi() {
     listUartPorts,
     listGpioPins,
     listPwmChannels,
+    getDashboard,
+    dashboardAction,
     listI2CBuses,
     scanI2CBus,
     listSpiDevices,

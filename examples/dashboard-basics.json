@@ -1,0 +1,307 @@
+{
+  "name": "Dashboard basics",
+  "description": "A gauge, a chart and controls on the dashboard, fed by simulated values.",
+  "category": "Getting started",
+  "order": 7,
+  "flows": [
+    {
+      "id": "ex-dashboard-basics",
+      "type": "tab",
+      "label": "Dashboard basics",
+      "info": "Simulated values feed a gauge and a two-line chart; a switch, a slider and a button send messages you can see in the Debug panel, and the slider value also shows in a Text widget. Deploy, then open the dashboard with the button at the top of the editor (the four squares). Each widget picks a group, and each group a page: edit them from the widget's Group field. Replace the two Function nodes with real readings (Modbus, I²C, GPIO) and the switch's Debug with a GPIO Write to drive a relay.",
+      "nodes": [
+        {
+          "id": "ex-dashboard-basics-n1",
+          "type": "inject",
+          "name": "every second",
+          "x": 100,
+          "y": 80,
+          "z": "ex-dashboard-basics",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-dashboard-basics-n2",
+              "ex-dashboard-basics-n3"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 1000,
+            "mode": "interval",
+            "once": true,
+            "props": [
+              {
+                "p": "payload",
+                "v": "rfc3339",
+                "vt": "date"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-dashboard-basics-n2",
+          "type": "function",
+          "name": "simulated tank level",
+          "x": 340,
+          "y": 60,
+          "z": "ex-dashboard-basics",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-dashboard-basics-n4"
+            ]
+          ],
+          "config": {
+            "func": "// A level that rises and falls, in place of a real sensor.\nmsg.payload = Math.round(55 + 25 * Math.sin(Date.now() / 30000));\nreturn msg;"
+          }
+        },
+        {
+          "id": "ex-dashboard-basics-n3",
+          "type": "function",
+          "name": "simulated power",
+          "x": 340,
+          "y": 120,
+          "z": "ex-dashboard-basics",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-dashboard-basics-n5"
+            ]
+          ],
+          "config": {
+            "func": "// Two series on one chart: each msg.topic is a line.\nconst t = Date.now();\nreturn [[\n  { topic: 'grid',  payload: Math.round(400 + 80 * Math.sin(t / 9000)) },\n  { topic: 'solar', payload: Math.round(250 + 60 * Math.cos(t / 7000)) },\n]];"
+          }
+        },
+        {
+          "id": "ex-dashboard-basics-n4",
+          "type": "ui-gauge",
+          "name": "Tank level",
+          "x": 600,
+          "y": 60,
+          "z": "ex-dashboard-basics",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "group": "ex-dashboard-basics-g1",
+            "width": 4,
+            "order": 1,
+            "min": 0,
+            "max": 100,
+            "units": "%"
+          }
+        },
+        {
+          "id": "ex-dashboard-basics-n5",
+          "type": "ui-chart",
+          "name": "Power",
+          "x": 600,
+          "y": 120,
+          "z": "ex-dashboard-basics",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "group": "ex-dashboard-basics-g1",
+            "width": 8,
+            "order": 2,
+            "chartType": "line",
+            "units": "W",
+            "removeOlder": 10,
+            "removeOlderUnit": "60",
+            "removeOlderPoints": 1000
+          }
+        },
+        {
+          "id": "ex-dashboard-basics-n6",
+          "type": "ui-switch",
+          "name": "Light",
+          "x": 100,
+          "y": 260,
+          "z": "ex-dashboard-basics",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-dashboard-basics-n9"
+            ]
+          ],
+          "config": {
+            "group": "ex-dashboard-basics-g2",
+            "order": 1,
+            "onvalue": "true",
+            "onvalueType": "bool",
+            "offvalue": "false",
+            "offvalueType": "bool",
+            "topic": "light"
+          }
+        },
+        {
+          "id": "ex-dashboard-basics-n7",
+          "type": "ui-slider",
+          "name": "Fan speed",
+          "x": 100,
+          "y": 320,
+          "z": "ex-dashboard-basics",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-dashboard-basics-n10",
+              "ex-dashboard-basics-n9"
+            ]
+          ],
+          "config": {
+            "group": "ex-dashboard-basics-g2",
+            "order": 2,
+            "min": 0,
+            "max": 100,
+            "step": 5,
+            "topic": "fan"
+          }
+        },
+        {
+          "id": "ex-dashboard-basics-n8",
+          "type": "ui-button",
+          "name": "Say hello",
+          "x": 100,
+          "y": 380,
+          "z": "ex-dashboard-basics",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-dashboard-basics-n9"
+            ]
+          ],
+          "config": {
+            "group": "ex-dashboard-basics-g2",
+            "order": 3,
+            "payload": "hello",
+            "payloadType": "str",
+            "topic": "button"
+          }
+        },
+        {
+          "id": "ex-dashboard-basics-n9",
+          "type": "debug",
+          "name": "what the controls send",
+          "x": 380,
+          "y": 320,
+          "z": "ex-dashboard-basics",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {}
+        },
+        {
+          "id": "ex-dashboard-basics-n10",
+          "type": "ui-text",
+          "name": "Fan",
+          "x": 380,
+          "y": 260,
+          "z": "ex-dashboard-basics",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "group": "ex-dashboard-basics-g2",
+            "order": 4,
+            "units": "%"
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-dashboard-basics-n1-w0--n2",
+          "sourceNode": "ex-dashboard-basics-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-dashboard-basics-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-dashboard-basics-n1-w0--n3",
+          "sourceNode": "ex-dashboard-basics-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-dashboard-basics-n3",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-dashboard-basics-n2-w0--n4",
+          "sourceNode": "ex-dashboard-basics-n2",
+          "sourcePort": 0,
+          "targetNode": "ex-dashboard-basics-n4",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-dashboard-basics-n3-w0--n5",
+          "sourceNode": "ex-dashboard-basics-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-dashboard-basics-n5",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-dashboard-basics-n6-w0--n9",
+          "sourceNode": "ex-dashboard-basics-n6",
+          "sourcePort": 0,
+          "targetNode": "ex-dashboard-basics-n9",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-dashboard-basics-n7-w0--n10",
+          "sourceNode": "ex-dashboard-basics-n7",
+          "sourcePort": 0,
+          "targetNode": "ex-dashboard-basics-n10",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-dashboard-basics-n7-w0--n9",
+          "sourceNode": "ex-dashboard-basics-n7",
+          "sourcePort": 0,
+          "targetNode": "ex-dashboard-basics-n9",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-dashboard-basics-n8-w0--n9",
+          "sourceNode": "ex-dashboard-basics-n8",
+          "sourcePort": 0,
+          "targetNode": "ex-dashboard-basics-n9",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": [
+    {
+      "id": "ex-dashboard-basics-p1",
+      "type": "ui-page",
+      "name": "Home",
+      "config": {
+        "order": 1
+      }
+    },
+    {
+      "id": "ex-dashboard-basics-g1",
+      "type": "ui-group",
+      "name": "Status",
+      "config": {
+        "page": "ex-dashboard-basics-p1",
+        "width": 12,
+        "order": 1
+      }
+    },
+    {
+      "id": "ex-dashboard-basics-g2",
+      "type": "ui-group",
+      "name": "Controls",
+      "config": {
+        "page": "ex-dashboard-basics-p1",
+        "width": 12,
+        "order": 2
+      }
+    }
+  ]
+}

@@ -56,6 +56,8 @@ func RegisterRoutes(r chi.Router, deps *Deps) {
 			r.Get("/examples/{id}", deps.handleGetExample)
 			r.Get("/status/nodes", deps.handleGetNodeStatuses)
 			r.Get("/debug/messages", deps.handleGetDebugMessages)
+			r.Get("/dashboard", deps.handleGetDashboard)
+			r.Post("/dashboard/widgets/{id}/action", deps.handleDashboardAction)
 			r.Get("/logs", deps.handleGetLogs)
 
 			r.Get("/context/global/{storage}", deps.handleGetContextStore)

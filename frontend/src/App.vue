@@ -22,6 +22,8 @@ const auth = useAuthStore()
 const route = useRoute()
 // Settings is its own place: the palette, flow tabs and panels step aside.
 const inSettings = computed(() => route.path.startsWith('/settings'))
+// The dashboard is a page of its own, without the editor around it.
+const inDashboard = computed(() => route.path.startsWith('/dashboard'))
 
 onMounted(() => {
   auth.init()
@@ -47,6 +49,8 @@ watch(
 // TerminalLogPanel mounts/unmounts dynamically; pass the existing onLog
 // dispatcher through provide so it does not spawn a second WebSocket.
 provide('onLog', ws.onLog)
+provide('onDashboard', ws.onDashboard)
+provide('wsStatus', ws.status)
 
 ws.onDebug((msg) => {
   debugStore.addMessage(msg)
@@ -122,6 +126,9 @@ const mainAreaStyle = computed(() => {
     </template>
     <template v-else-if="!auth.isAuthenticated">
       <LoginModal />
+    </template>
+    <template v-else-if="inDashboard">
+      <router-view />
     </template>
     <template v-else>
       <!-- Top Header Bar -->

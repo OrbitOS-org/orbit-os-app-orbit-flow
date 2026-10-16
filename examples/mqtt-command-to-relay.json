@@ -2,7 +2,7 @@
   "name": "MQTT command to relay",
   "description": "An on/off MQTT message switches a relay on a GPIO pin.",
   "category": "Data",
-  "order": 21,
+  "order": 22,
   "needs": "MQTT broker, relay module on a GPIO",
   "flows": [
     {

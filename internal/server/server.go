@@ -27,6 +27,7 @@ import (
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/auth"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/config"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/credentials"
+	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/dashboard"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/flow"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/library"
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/logbuffer"
@@ -517,6 +518,11 @@ func (s *Server) Start() error {
 	}); err != nil {
 		slog.Error("failed to subscribe to debug messages", "error", err)
 	}
+
+	// Dashboard changes go to the browsers as "dashboard" events.
+	dashboard.Default().SetBroadcast(func(u dashboard.Update) {
+		s.hub.Broadcast(ws.EventDashboard, u)
+	})
 
 	// Start the flow runtime engine.
 	if err := s.engine.Start(); err != nil {

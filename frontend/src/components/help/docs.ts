@@ -147,6 +147,49 @@ export const nodeHelpDocs: Record<string, NodeHelpDoc> = {
     ],
   },
 
+  'ui-gauge': {
+    overview: 'Shows a number on a dial on the dashboard. Works like the Node-RED Dashboard gauge.',
+    inputs: ['msg.payload: a number (or text that is a number).'],
+    properties: [
+      { key: 'group', desc: 'The dashboard group (and so the page) it goes in. The label is the node name.' },
+      { key: 'width / order', desc: 'Columns out of 12 inside the group (0 = default, 4); order inside the group.' },
+      { key: 'min / max / units', desc: 'The ends of the dial and the units shown under the value.' },
+    ],
+    tips: ['The dashboard opens from the button at the top of the editor, or at /orbit-flow/dashboard through the Launcher.'],
+  },
+
+  'ui-chart': {
+    overview: 'Draws the numbers it receives over time on the dashboard: one line per msg.topic, or bars with the last value of each. Works like the Node-RED Dashboard chart.',
+    inputs: ['msg.payload: a number. msg.topic: the line it goes on (the node name when empty). msg.payload = [] empties the chart.'],
+    properties: [
+      { key: 'type', desc: 'Line or bar.' },
+      { key: 'keep', desc: 'How long points are kept, and at most how many per line. They are kept in memory on the device and lost when the app restarts.' },
+    ],
+  },
+
+  'ui-text': {
+    overview: 'Shows msg.payload as text on the dashboard (objects as JSON), with optional units.',
+    inputs: ['msg.payload: any value.'],
+  },
+
+  'ui-switch': {
+    overview: 'An on/off switch on the dashboard. Using it sends the on or off value; a message received sets its position. Works like the Node-RED Dashboard switch.',
+    inputs: ['msg.payload equal to the on value (or true) turns it on; anything else turns it off. Passed through only when "pass through" is on.'],
+    outputs: ['When someone uses it: msg.payload = the on or off value, msg.topic = the topic.'],
+    examples: [{ title: 'Light from the phone', config: 'switch (on true / off false) → GPIO Write', result: 'The light follows the switch; another message to the switch (e.g. from a timer) moves it too.' }],
+  },
+
+  'ui-slider': {
+    overview: 'A slider on the dashboard that sends its value when released. A number received moves it.',
+    outputs: ['msg.payload = the value, msg.topic = the topic.'],
+    examples: [{ title: 'Fan speed', config: 'slider 0–100 → PWM Out', result: 'The fan follows the slider.' }],
+  },
+
+  'ui-button': {
+    overview: 'A button on the dashboard that sends a message when pressed (text, number, true/false, JSON or the time). A message received presses it.',
+    outputs: ['msg.payload = the value set in the node, msg.topic = the topic.'],
+  },
+
   'pwm-out': {
     overview:
       'Sets the duty cycle of a PWM channel of the device: dim a LED, set a fan or motor speed, move a servo. The channels come from the device (a Raspberry Pi has pwm0 and pwm1; boards without PWM list none).',

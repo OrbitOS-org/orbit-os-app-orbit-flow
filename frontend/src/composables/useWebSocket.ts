@@ -8,6 +8,7 @@ import type {
   DeployEvent,
   NotificationEvent,
   LogEntry,
+  DashboardUpdate,
 } from '@/types/events'
 import { basePathNoSlash } from '@/runtime'
 
@@ -48,12 +49,14 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     deploy: Set<MessageCallback<'deploy'>>
     notification: Set<MessageCallback<'notification'>>
     log: Set<MessageCallback<'log'>>
+    dashboard: Set<MessageCallback<'dashboard'>>
   } = {
     debug: new Set(),
     status: new Set(),
     deploy: new Set(),
     notification: new Set(),
     log: new Set(),
+    dashboard: new Set(),
   }
 
   function getReconnectDelay(): number {
@@ -172,6 +175,9 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       case 'log':
         listeners.log.forEach((cb) => cb(payload as LogEntry))
         break
+      case 'dashboard':
+        listeners.dashboard.forEach((cb) => cb(payload as DashboardUpdate))
+        break
       default:
         console.warn(`[Orbit Flow WS] Unknown message type: ${type}`)
     }
@@ -195,6 +201,11 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
   function onNotification(callback: MessageCallback<'notification'>): () => void {
     listeners.notification.add(callback)
     return () => listeners.notification.delete(callback)
+  }
+
+  function onDashboard(callback: MessageCallback<'dashboard'>): () => void {
+    listeners.dashboard.add(callback)
+    return () => listeners.dashboard.delete(callback)
   }
 
   function onLog(callback: MessageCallback<'log'>): () => void {
@@ -234,5 +245,6 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     onDeploy,
     onNotification,
     onLog,
+    onDashboard,
   }
 }
