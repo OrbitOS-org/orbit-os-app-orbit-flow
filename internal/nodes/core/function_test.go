@@ -392,3 +392,35 @@ return msg;`
 		t.Fatalf("context.delete: %v", out[0][0].Payload())
 	}
 }
+
+// As in Node-RED, a list in the place of an output sends all its messages
+// on that output, in order: return [[a, b], c].
+func TestFunctionNode_SeveralMessagesOnOneOutput(t *testing.T) {
+	n, sent := newFunctionNode(t, `
+		const a = {topic: "grid", payload: 400};
+		const b = {topic: "solar", payload: 250};
+		node.send([[{payload: 1}, {payload: 2}], null]);
+		return [[a, b], {payload: "c"}];`, 2)
+
+	outputs, err := n.HandleMessage(inMsg("x"))
+	if err != nil {
+		t.Fatalf("HandleMessage: %v", err)
+	}
+	// node.send was called, so its messages are the result.
+	if len(outputs[0]) != 2 || outputs[0][0].Payload() != int64(1) && outputs[0][0].Payload() != 1.0 {
+		t.Fatalf("node.send list: %v", outputs)
+	}
+	_ = sent
+
+	n2, _ := newFunctionNode(t, `return [[{topic: "grid", payload: 400}, {topic: "solar", payload: 250}], {payload: "c"}];`, 2)
+	outputs, err = n2.HandleMessage(inMsg("x"))
+	if err != nil {
+		t.Fatalf("HandleMessage: %v", err)
+	}
+	if len(outputs[0]) != 2 || outputs[0][0].Topic() != "grid" || outputs[0][1].Topic() != "solar" {
+		t.Fatalf("output 1: %v", outputs[0])
+	}
+	if len(outputs[1]) != 1 || outputs[1][0].Payload() != "c" {
+		t.Fatalf("output 2: %v", outputs[1])
+	}
+}

@@ -485,14 +485,7 @@ func (n *FunctionNode) resultToOutputs(val goja.Value) [][]*flow.Message {
 			if i >= n.outputs {
 				break
 			}
-			if item == nil {
-				continue
-			}
-			// Convert each array element back to a JS value, then to a message.
-			jsVal := n.vm.ToValue(item)
-			if msg := n.jsValueToMessage(jsVal); msg != nil {
-				outputs[i] = []*flow.Message{msg}
-			}
+			outputs[i] = n.itemToMessages(item)
 		}
 		return outputs
 	}
@@ -507,6 +500,30 @@ func (n *FunctionNode) resultToOutputs(val goja.Value) [][]*flow.Message {
 	return nil
 }
 
+// itemToMessages converts the value returned for one output: a message,
+// or (as in Node-RED) a list of messages all sent on that output, in order.
+func (n *FunctionNode) itemToMessages(item any) []*flow.Message {
+	if item == nil {
+		return nil
+	}
+	if list, ok := item.([]interface{}); ok {
+		out := make([]*flow.Message, 0, len(list))
+		for _, m := range list {
+			if m == nil {
+				continue
+			}
+			if msg := n.jsValueToMessage(n.vm.ToValue(m)); msg != nil {
+				out = append(out, msg)
+			}
+		}
+		return out
+	}
+	if msg := n.jsValueToMessage(n.vm.ToValue(item)); msg != nil {
+		return []*flow.Message{msg}
+	}
+	return nil
+}
+
 // jsSend handles calls to node.send() from within the user script.
 func (n *FunctionNode) jsSend(val goja.Value) {
 	if val == nil || goja.IsNull(val) || goja.IsUndefined(val) {
@@ -517,13 +534,10 @@ func (n *FunctionNode) jsSend(val goja.Value) {
 
 	if arr, ok := exported.([]interface{}); ok {
 		for i, item := range arr {
-			if i >= n.outputs || item == nil {
+			if i >= n.outputs {
 				continue
 			}
-			jsVal := n.vm.ToValue(item)
-			if msg := n.jsValueToMessage(jsVal); msg != nil {
-				n.pendingSends[i] = append(n.pendingSends[i], msg)
-			}
+			n.pendingSends[i] = append(n.pendingSends[i], n.itemToMessages(item)...)
 		}
 		return
 	}
