@@ -14,5 +14,5 @@
     "I2CService/*",
     "SpiService/*"
   ],
-  "package_id": "org.orbit-os.orbit_flow"
+  "package_id": "org.orbit-os.tools.orbit_flow"
 }
