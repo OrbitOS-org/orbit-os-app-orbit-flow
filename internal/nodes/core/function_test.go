@@ -119,10 +119,10 @@ func TestFunctionNode_BufferRoundTrip(t *testing.T) {
 		}
 		out := outputs[0][0]
 
-		if l, _ := out.Get("length").(int64); l != 4 {
+		if l, _ := out.Get("length").(float64); l != 4 {
 			t.Errorf("length = %v, want 4", out.Get("length"))
 		}
-		if fb, _ := out.Get("firstByte").(int64); fb != 0xCA {
+		if fb, _ := out.Get("firstByte").(float64); fb != 0xCA {
 			t.Errorf("firstByte = %v, want 0xCA", out.Get("firstByte"))
 		}
 		// The crucial check: the payload must come back as []int — not as a
@@ -407,7 +407,7 @@ func TestFunctionNode_SeveralMessagesOnOneOutput(t *testing.T) {
 		t.Fatalf("HandleMessage: %v", err)
 	}
 	// node.send was called, so its messages are the result.
-	if len(outputs[0]) != 2 || outputs[0][0].Payload() != int64(1) && outputs[0][0].Payload() != 1.0 {
+	if len(outputs[0]) != 2 || outputs[0][0].Payload() != 1.0 {
 		t.Fatalf("node.send list: %v", outputs)
 	}
 	_ = sent
@@ -422,5 +422,29 @@ func TestFunctionNode_SeveralMessagesOnOneOutput(t *testing.T) {
 	}
 	if len(outputs[1]) != 1 || outputs[1][0].Payload() != "c" {
 		t.Fatalf("output 2: %v", outputs[1])
+	}
+}
+
+// JavaScript numbers reach the next node as float64, integers included and
+// at any depth, as JSON gives them; buffers stay []int.
+func TestFunctionNode_NumbersAreFloat64(t *testing.T) {
+	n, _ := newFunctionNode(t, `msg.payload = 1; msg.list = [2, {x: 3}]; msg.buf = Buffer.from([1, 2]); return msg;`, 1)
+	out, err := n.HandleMessage(inMsg(nil))
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := out[0][0]
+	if v, ok := m.Payload().(float64); !ok || v != 1 {
+		t.Fatalf("payload %T %v, want float64 1", m.Payload(), m.Payload())
+	}
+	list := m.Get("list").([]any)
+	if _, ok := list[0].(float64); !ok {
+		t.Fatalf("list[0] %T", list[0])
+	}
+	if _, ok := list[1].(map[string]any)["x"].(float64); !ok {
+		t.Fatalf("nested %T", list[1].(map[string]any)["x"])
+	}
+	if _, ok := m.Get("buf").([]int); !ok {
+		t.Fatalf("buffer %T, want []int", m.Get("buf"))
 	}
 }

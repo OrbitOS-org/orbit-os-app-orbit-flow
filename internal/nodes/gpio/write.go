@@ -116,11 +116,12 @@ func (n *GpioWriteNode) Start() error {
 	if err != nil {
 		return err
 	}
-	n.pin = pin
-	if n.pin.Direction() != orbitclient.GPIO_DIR_OUT {
+	if pin.Direction() != orbitclient.GPIO_DIR_OUT {
 		n.statusError("pin is configured as input")
-		return fmt.Errorf("gpio-write %s: pin %q is configured as input, not output", n.cfg.ID, n.pin.PinLabel())
+		return fmt.Errorf("gpio-write %s: pin %q is configured as input, not output", n.cfg.ID, pin.PinLabel())
 	}
+	// Only an output pin is kept: the safe state never writes to an input.
+	n.pin = pin
 	slog.Info("gpio-write started", "node_id", n.cfg.ID, "pin", n.pin.PinLabel())
 	return nil
 }
@@ -193,6 +194,16 @@ func truthy(v any) bool {
 	case float64:
 		return x != 0
 	case int:
+		return x != 0
+	case int64: // Go and expression nodes may give other integer types
+		return x != 0
+	case int32:
+		return x != 0
+	case uint16:
+		return x != 0
+	case uint32:
+		return x != 0
+	case uint64:
 		return x != 0
 	case string:
 		switch strings.ToLower(strings.TrimSpace(x)) {

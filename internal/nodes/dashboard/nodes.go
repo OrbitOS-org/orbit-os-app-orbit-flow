@@ -66,6 +66,12 @@ func (c *GroupConfig) Status() (string, string) { return "green", "" }
 
 // ---- widgets ----------------------------------------------------------------
 
+// defaultLabel is the title of a widget whose node has no name.
+var defaultLabel = map[string]string{
+	"ui-gauge": "Gauge", "ui-chart": "Chart", "ui-text": "Text",
+	"ui-switch": "Switch", "ui-slider": "Slider", "ui-button": "Button",
+}
+
 // widget is what every ui-* node shares: its place on the dashboard.
 type widget struct {
 	nodes.BaseNode
@@ -77,6 +83,9 @@ func newWidget(cfg flow.NodeConfig, typ string, width int, props map[string]any)
 	label := cfg.Name
 	if label == "" {
 		label = nodes.StringVal(cfg.Properties, "label", "")
+	}
+	if label == "" {
+		label = defaultLabel[typ]
 	}
 	wd := nodes.IntVal(cfg.Properties, "width", width)
 	if wd < 1 || wd > 12 {

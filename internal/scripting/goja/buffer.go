@@ -14,6 +14,7 @@ import (
 	"github.com/dop251/goja"
 
 	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/buffer"
+	"github.com/OrbitOS-org/orbit-os-app-orbit-flow/internal/flow"
 )
 
 // BufferWrapper bundles the Buffer global registration and the wrapBuffer
@@ -575,15 +576,30 @@ func ExportValue(v goja.Value) any {
 	if v == nil {
 		return nil
 	}
-	exported := v.Export()
-	if m, ok := exported.(map[string]any); ok {
-		if raw, ok := m["__bufferData"].([]byte); ok {
+	return exportBuffers(v.Export())
+}
+
+// exportBuffers turns JS Buffers into []int (at any depth) and integers
+// into float64 (see flow.NormalizeNumbers).
+func exportBuffers(x any) any {
+	switch t := x.(type) {
+	case map[string]any:
+		if raw, ok := t["__bufferData"].([]byte); ok {
 			out := make([]int, len(raw))
 			for i, by := range raw {
 				out[i] = int(by)
 			}
 			return out
 		}
+		for k, e := range t {
+			t[k] = exportBuffers(e)
+		}
+		return t
+	case []any:
+		for i, e := range t {
+			t[i] = exportBuffers(e)
+		}
+		return t
 	}
-	return exported
+	return flow.NormalizeNumbers(x)
 }

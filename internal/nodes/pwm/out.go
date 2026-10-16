@@ -169,7 +169,16 @@ func (n *PwmOutNode) Stop() error {
 
 // HandleMessage sets the duty cycle (and frequency) and passes the message on.
 func (n *PwmOutNode) HandleMessage(msg *flow.Message) ([][]*flow.Message, error) {
-	if f, ok := msg.Get("frequency").(float64); ok && f > 0 {
+	var f float64
+	switch v := msg.Get("frequency").(type) { // JavaScript may give an integer
+	case float64:
+		f = v
+	case int64:
+		f = float64(v)
+	case int:
+		f = float64(v)
+	}
+	if f > 0 {
 		n.mu.Lock()
 		n.freq = f
 		n.mu.Unlock()

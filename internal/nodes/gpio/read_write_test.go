@@ -211,3 +211,14 @@ func TestGpioReadWriteNode_HandleMessage_NilMessage(t *testing.T) {
 		t.Fatalf("gpio-write HandleMessage(nil) = (%v, %v), want (nil, nil)", out, err)
 	}
 }
+
+func TestTruthyIntegerTypes(t *testing.T) {
+	for _, v := range []any{int64(1), int32(1), uint16(1), uint32(1), uint64(1)} {
+		if !truthy(v) {
+			t.Errorf("truthy(%T 1) = false", v)
+		}
+	}
+	if truthy(int64(0)) {
+		t.Error("truthy(int64 0) = true")
+	}
+}
