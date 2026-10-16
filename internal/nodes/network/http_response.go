@@ -159,11 +159,7 @@ func encodeResponseBody(payload any) ([]byte, string) {
 		}
 		return out, "application/octet-stream"
 	case []any:
-		// Could be a number array decoded from JSON ("data": [1,2,3]).
-		// Coerce best-effort; fall back to JSON if it's not numeric.
-		if asBytes, ok := numberArrayBytes(v); ok {
-			return asBytes, "application/octet-stream"
-		}
+		// A list is JSON, as in Node-RED (only bytes go out as bytes).
 		b, err := json.Marshal(v)
 		if err != nil {
 			return []byte(fmt.Sprintf("%v", v)), "text/plain; charset=utf-8"
@@ -181,28 +177,6 @@ func encodeResponseBody(payload any) ([]byte, string) {
 	}
 }
 
-// numberArrayBytes attempts to coerce a []any into []byte when every
-// element is a numeric byte. Returns ok=false otherwise.
-func numberArrayBytes(v []any) ([]byte, bool) {
-	out := make([]byte, len(v))
-	for i, e := range v {
-		switch n := e.(type) {
-		case float64:
-			if n < 0 || n > 255 {
-				return nil, false
-			}
-			out[i] = byte(n)
-		case int:
-			if n < 0 || n > 255 {
-				return nil, false
-			}
-			out[i] = byte(n)
-		default:
-			return nil, false
-		}
-	}
-	return out, true
-}
 
 // extractHeaders pulls msg.headers into a normalised map[string]string.
 // Accepts both map[string]string and map[string]any shapes.

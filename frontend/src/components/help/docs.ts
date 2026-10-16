@@ -547,7 +547,7 @@ export const nodeHelpDocs: Record<string, NodeHelpDoc> = {
     overview:
       'Emits a message whenever another node in scope raises an error. Use it to log failures, send notifications or write a dead-letter queue. The Catch Node has no input — it is triggered by error events from the engine, not by upstream wires.',
     outputs: [
-      'For each caught error: the original message that was being processed (when available), enriched with msg.error = { message, source: { id, type, name, flowId } }, as in Node-RED. The same block is also in msg._error, kept for older flows.',
+      'For each caught error: the original message that was being processed (when available), enriched with msg.error = { message, source: { id, type, name, flowId } }, as in Node-RED.',
     ],
     properties: [
       { key: 'scope',       desc: 'flow (default): catch errors from this flow. selected: catch only from a chosen list of nodes. all: catch errors across every flow.' },

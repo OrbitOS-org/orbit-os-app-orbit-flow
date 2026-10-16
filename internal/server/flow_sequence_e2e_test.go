@@ -76,7 +76,7 @@ func TestEndToEndSequenceNodes(t *testing.T) {
 		in("in1", "/adc", "adc"),
 		node("adc", "test-adc", [][]string{{"sp"}}, nil),
 		node("sp", "split", [][]string{{"rg"}}, nil),
-		node("rg", "range", [][]string{{"fl"}}, map[string]any{"action": "drop", "minin": 0.0, "maxin": 4095.0, "minout": 0.0, "maxout": 1000.0, "round": true}),
+		node("rg", "range", [][]string{{"fl"}}, map[string]any{"action": "drop", "minin": 0.0, "maxin": 4095.0, "minout": 0.0, "maxout": 100.0, "round": true}),
 		node("fl", "filter", [][]string{{"jn"}}, map[string]any{"func": "rbe", "septopics": false}),
 		node("jn", "join", [][]string{{"out1"}}, map[string]any{"mode": "custom", "build": "array", "count": 4.0}),
 		resp("out1"),
@@ -106,9 +106,8 @@ func TestEndToEndSequenceNodes(t *testing.T) {
 	}
 
 	// 9999 is outside the input range (dropped) and the second 2048 is not a
-	// change (filtered): four values reach the join. (The target range goes
-	// to 1000 because http-response sends a list of 0–255 numbers as bytes.)
-	if got, want := get("/adc"), []any{0.0, 250.0, 500.0, 1000.0}; !reflect.DeepEqual(got, want) {
+	// change (filtered): four values reach the join.
+	if got, want := get("/adc"), []any{0.0, 25.0, 50.0, 100.0}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("/adc: got %v, want %v", got, want)
 	}
 	if got := get("/big"); !reflect.DeepEqual(got, big) {

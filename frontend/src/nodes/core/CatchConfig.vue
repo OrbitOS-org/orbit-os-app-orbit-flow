@@ -90,9 +90,8 @@ onBeforeUnmount(() => {
       The outgoing message carries
       <code class="text-terminal-text">msg.error</code> with
       <code class="text-terminal-text">message</code> and a
-      <code class="text-terminal-text">source</code> object, as in Node-RED
-      (also in <code class="text-terminal-text">msg._error</code>, kept for
-      older flows); the original message payload is preserved.
+      <code class="text-terminal-text">source</code> object, as in Node-RED;
+      the original message payload is preserved.
       Catch is meant for logging and notifications — it is not a retry
       mechanism (failures along a catch branch are intentionally not
       re-caught).

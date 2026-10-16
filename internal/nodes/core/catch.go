@@ -169,21 +169,16 @@ func (n *CatchNode) handleError(em flow.ErrorMessage) {
 	} else {
 		out = flow.NewMessage()
 	}
-	// msg.error is where Node-RED puts it; msg._error is kept for flows
-	// written before. Two separate maps, so editing one leaves the other.
-	errBlock := func() map[string]any {
-		return map[string]any{
-			"message": em.Error,
-			"source": map[string]any{
-				"id":     em.NodeID,
-				"type":   em.SourceType,
-				"name":   em.SourceName,
-				"flowId": em.FlowID,
-			},
-		}
-	}
-	out.Set("error", errBlock())
-	out.Set("_error", errBlock())
+	// msg.error, as in Node-RED.
+	out.Set("error", map[string]any{
+		"message": em.Error,
+		"source": map[string]any{
+			"id":     em.NodeID,
+			"type":   em.SourceType,
+			"name":   em.SourceName,
+			"flowId": em.FlowID,
+		},
+	})
 	// Loop guard: any error raised by a downstream node along this catch
 	// branch must not re-trigger catch fan-out. The engine reads this flag
 	// in makeErrorFunc.

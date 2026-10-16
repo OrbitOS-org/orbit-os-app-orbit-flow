@@ -190,27 +190,26 @@ func TestCatch_ScopeFlow_TriggeredOnError(t *testing.T) {
 	if len(got) != 1 {
 		t.Fatalf("want 1 captured message, got %d", len(got))
 	}
-	errBlock, _ := got[0].Get("_error").(map[string]any)
+	errBlock, _ := got[0].Get("error").(map[string]any)
 	if errBlock == nil {
-		t.Fatalf("missing _error on captured message")
+		t.Fatalf("missing error on captured message")
 	}
 	if errBlock["message"] != "intentional test error" {
-		t.Errorf("_error.message: want %q, got %v", "intentional test error", errBlock["message"])
+		t.Errorf("error.message: want %q, got %v", "intentional test error", errBlock["message"])
 	}
 	source, _ := errBlock["source"].(map[string]any)
 	if source["id"] != "err-1" {
-		t.Errorf("_error.source.id: want %q, got %v", "err-1", source["id"])
+		t.Errorf("error.source.id: want %q, got %v", "err-1", source["id"])
 	}
 	if source["flowId"] != "flow-1" {
-		t.Errorf("_error.source.flowId: want %q, got %v", "flow-1", source["flowId"])
+		t.Errorf("error.source.flowId: want %q, got %v", "flow-1", source["flowId"])
 	}
 	if source["type"] != "test-err" {
-		t.Errorf("_error.source.type: want %q, got %v", "test-err", source["type"])
+		t.Errorf("error.source.type: want %q, got %v", "test-err", source["type"])
 	}
-	// msg.error (Node-RED's field) carries the same block.
-	nrBlock, _ := got[0].Get("error").(map[string]any)
-	if nrBlock == nil || nrBlock["message"] != "intentional test error" {
-		t.Errorf("error: want the same block as _error, got %v", nrBlock)
+	// Node-RED's field only: no msg._error.
+	if got[0].Get("_error") != nil {
+		t.Errorf("msg._error should not be set")
 	}
 }
 
@@ -386,7 +385,7 @@ func TestCatch_AsyncError_TriggersCatch(t *testing.T) {
 	if len(got) != 1 {
 		t.Fatalf("async catch: want 1 capture, got %d", len(got))
 	}
-	errBlock, _ := got[0].Get("_error").(map[string]any)
+	errBlock, _ := got[0].Get("error").(map[string]any)
 	if errBlock == nil || errBlock["message"] != "async boom" {
 		t.Errorf("expected async error payload, got %v", errBlock)
 	}
@@ -432,20 +431,20 @@ func TestCatch_StateMachineGuardError(t *testing.T) {
 	if len(got) != 1 {
 		t.Fatalf("want 1 catch capture from guard error, got %d", len(got))
 	}
-	errBlock, _ := got[0].Get("_error").(map[string]any)
+	errBlock, _ := got[0].Get("error").(map[string]any)
 	if errBlock == nil {
-		t.Fatalf("missing _error on captured message")
+		t.Fatalf("missing error on captured message")
 	}
 	source, _ := errBlock["source"].(map[string]any)
 	if source["id"] != "sm-1" {
-		t.Errorf("_error.source.id: want sm-1, got %v", source["id"])
+		t.Errorf("error.source.id: want sm-1, got %v", source["id"])
 	}
 	if source["type"] != "statemachine" {
-		t.Errorf("_error.source.type: want statemachine, got %v", source["type"])
+		t.Errorf("error.source.type: want statemachine, got %v", source["type"])
 	}
 	gotMsg, _ := errBlock["message"].(string)
 	if gotMsg == "" || !contains(gotMsg, "pinCorrect") {
-		t.Errorf("_error.message should mention guard name, got %q", gotMsg)
+		t.Errorf("error.message should mention guard name, got %q", gotMsg)
 	}
 }
 

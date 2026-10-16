@@ -267,3 +267,19 @@ func TestHTTPResponseInitRejectsBadStatus(t *testing.T) {
 		t.Errorf("Init should reject statusCode=99")
 	}
 }
+
+// A list of small numbers is still a list: JSON, as in Node-RED.
+func TestHTTPResponseNumberListIsJSON(t *testing.T) {
+	h := newHTTPRespHarness(t, nil)
+	msg, _ := h.registerSlot()
+	msg.SetPayload([]any{1.0, 2.0, 3.0})
+
+	_, _ = h.node.HandleMessage(msg)
+
+	if ct := h.rec.Header().Get("Content-Type"); ct != "application/json" {
+		t.Errorf("ct: got %q", ct)
+	}
+	if got := h.rec.Body.String(); got != "[1,2,3]" {
+		t.Errorf("body: got %q", got)
+	}
+}
