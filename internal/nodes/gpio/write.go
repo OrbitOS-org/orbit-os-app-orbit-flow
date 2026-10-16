@@ -47,6 +47,7 @@ type GpioWriteNode struct {
 	pinID  string
 	pin    *GpioPinConfig
 	action gpioAction
+	onStop string // "off" (default), "on" or "keep": the level when flows stop
 }
 
 // NewGpioWriteNode is the NodeFactory for the gpio-write node type.
@@ -71,7 +72,33 @@ func (n *GpioWriteNode) Init() error {
 	default:
 		return fmt.Errorf("gpio-write %s: invalid action %q (expected payload|on|off|toggle)", n.cfg.ID, action)
 	}
+
+	n.onStop = nodes.StringVal(n.cfg.Properties, "onStop", "off")
+	switch n.onStop {
+	case "off", "on", "keep":
+	default:
+		return fmt.Errorf("gpio-write %s: invalid \"when flows stop\" %q (expected off|on|keep)", n.cfg.ID, n.onStop)
+	}
 	return nil
+}
+
+// OutputKey implements flow.SafeOutput: the pin this node drives.
+func (n *GpioWriteNode) OutputKey() string {
+	if n.pin == nil {
+		return ""
+	}
+	return n.pin.Key()
+}
+
+// ApplySafeState implements flow.SafeOutput: drives the pin to the level
+// chosen in "when flows stop" (off by default), or leaves it.
+func (n *GpioWriteNode) ApplySafeState() {
+	if n.pin == nil || n.onStop == "keep" {
+		return
+	}
+	if err := n.pin.Write(n.onStop == "on"); err != nil {
+		slog.Warn("gpio-write: safe state failed", "node_id", n.cfg.ID, "pin", n.pin.PinLabel(), "error", err)
+	}
 }
 
 // SetConfigLookup implements flow.ConfigProvider.
@@ -190,6 +217,7 @@ func GpioWriteTypeInfo() flow.NodeTypeInfo {
 		Defaults: map[string]any{
 			"pin":    "",
 			"action": string(gpioActionPayload),
+			"onStop": "off",
 		},
 		Inputs:  1,
 		Outputs: 1,

@@ -367,7 +367,7 @@ const NODE_FILL: Record<string, string> = {
   'modbus-read': '#e9967a', 'modbus-write': '#e9967a', 'modbus-parser': '#e9967a',
   'opcua-read': '#9fd4d9', 'opcua-subscribe': '#9fd4d9', 'opcua-write': '#9fd4d9',
   's7-read': '#b5cde8', 's7-write': '#b5cde8', 's7-parser': '#b5cde8',
-  'gpio-read': '#c6dbef', 'gpio-write': '#c6dbef',
+  'gpio-read': '#c6dbef', 'gpio-write': '#c6dbef', 'pwm-out': '#c6dbef',
   'i2c-transfer': '#c6dbef', 'spi-transfer': '#c6dbef',
   'serial-in': '#c6dbef', 'serial-out': '#c6dbef', 'serial-request': '#c6dbef',
   'system-metrics': '#cfd4e6', 'device-identity': '#cfd4e6',

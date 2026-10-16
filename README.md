@@ -8,7 +8,7 @@
 
 Orbit Flow is a visual flow editor for [Orbit OS](https://www.orbit-os.org/?ref=github-orbit-flow). You drag nodes onto a canvas, connect them and deploy: read a Modbus register every 30 seconds, switch a relay when an input closes, publish a value over MQTT, send a notification to your phone. The flows run on the device, with no cloud service.
 
-It is also an example of a complete Orbit OS app in Go: it uses the [Orbit OS Go SDK](https://github.com/OrbitOS-org/orbit-os-sdk-go) for the serial ports, GPIO, I²C, SPI, system metrics and mobile notifications.
+It is also an example of a complete Orbit OS app in Go: it uses the [Orbit OS Go SDK](https://github.com/OrbitOS-org/orbit-os-sdk-go) for the serial ports, GPIO, PWM, I²C, SPI, system metrics and mobile notifications.
 
 Runs on Raspberry Pi, Arduino UNO Q and other ARM64 devices with Orbit OS (free Community Edition).
 
@@ -20,7 +20,7 @@ Runs on Raspberry Pi, Arduino UNO Q and other ARM64 devices with Orbit OS (free 
 - **Visual editor** — drag, connect and deploy; several flows in tabs, with a live debug panel and a log view; light by default, with a dark theme
 - **Works like Node-RED** — Deploy with *Full*, *Modified Flows* or *Modified Nodes*, and *Restart Flows*; right-click a tab to edit its properties, hide it (it keeps running), disable it (applied on the next Deploy), export or delete it; the list at the end of the tabs shows every flow, hidden ones included
 - **Industrial protocols built in** — Modbus TCP and RTU, OPC UA (read, subscribe, write), Siemens S7 and MQTT
-- **The device's own I/O** — GPIO, I²C, SPI and the serial ports, through the Orbit OS API; *Serial In*, *Serial Out* and *Serial Request* work like Node-RED's serial nodes, on the board's UARTs, RS-232/RS-485 ports and USB-serial adapters
+- **The device's own I/O** — GPIO, PWM, I²C, SPI and the serial ports, through the Orbit OS API; outputs (GPIO Write, PWM Out) go to a safe state, off by default, when the flows stop; *Serial In*, *Serial Out* and *Serial Request* work like Node-RED's serial nodes, on the board's UARTs, RS-232/RS-485 ports and USB-serial adapters
 - **Logic without code, or with it** — switch, change, delay, trigger, filter, range, template and state-machine nodes; split, join and batch for sequences; JavaScript, expressions or Go when you need them
 - **Data in and out** — HTTP, TCP and UDP nodes; JSON, XML and CSV; Write File, Read File and Watch on the app's own files, which you can see, download and delete in Settings → Files
 - **Notifications on your phone** — a node that sends a push notification through the Orbit OS mobile app
@@ -56,7 +56,7 @@ You need [VS Code](https://code.visualstudio.com/) with the Orbit Studio extensi
 | `cmd/orbit_flow/` | app entry point (`main.go`), the node groups built into the app (`groups.go`), `metadata.json` (manifest and permissions) |
 | `cmd/orbit_flow/orb/icon.svg` | Launcher and Store icon |
 | `internal/flow/`, `internal/server/`, `internal/api/` | flow engine, HTTP server and API |
-| `internal/nodes/` | the nodes, one folder per group; `gpio`, `i2c`, `spi`, `serial` and `orbit` use the Orbit OS API |
+| `internal/nodes/` | the nodes, one folder per group; `gpio`, `pwm`, `i2c`, `spi`, `serial` and `orbit` use the Orbit OS API |
 | `internal/auth/`, `internal/credentials/` | users, sessions and encrypted credentials |
 | `frontend/` | the editor (Vue 3); `npm run build` writes it to `web/dist/`, which is embedded in the app |
 | `examples/` | example flows shipped inside the app, one JSON file each (see `examples/examples.go`) |
@@ -69,7 +69,7 @@ You need [VS Code](https://code.visualstudio.com/) with the Orbit Studio extensi
 ## Security
 
 - **The page is reached only through the Launcher**, at `http://<device>/orbit-flow/`, after the Launcher's login. The app listens on the device itself (127.0.0.1, a port between 50000 and 60000: 52880 or the next free one), so that port is not open to the network. Orbit Flow then asks for its own login (admin, editor or viewer); create the administrator account right after installing.
-- The app talks to the device's hardware only through the Orbit OS API, with the permissions listed in `metadata.json`: system information, Launcher registration, serial ports, GPIO, I²C, SPI and mobile notifications.
+- The app talks to the device's hardware only through the Orbit OS API, with the permissions listed in `metadata.json`: system information, Launcher registration, serial ports, GPIO, PWM, I²C, SPI and mobile notifications.
 - The file nodes can only read and write inside the `files` folder of the app's data folder, never the app's keys, users or saved flows.
 - The message broker inside the app opens no network port.
 - Flows can open network connections and listen on ports (HTTP, TCP, UDP, MQTT). Whoever can edit flows can do that; give the editor role only to people you trust.

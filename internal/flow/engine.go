@@ -270,7 +270,12 @@ func (e *Engine) Stop() error {
 
 	slog.Info("flow engine stopping", "active_nodes", len(e.nodes))
 
+	outputs := e.safeOutputs()
 	e.stopAllNodes()
+	for key, node := range outputs {
+		slog.Info("output to its safe state", "output", key)
+		node.ApplySafeState()
+	}
 
 	// Cancel any HTTP routes still registered with the server-side mux,
 	// drain in-flight slots with a 503, and stop the sweeper. Order:
@@ -318,14 +323,18 @@ func (e *Engine) Deploy(flows []Flow, configs []ConfigNode, mode DeployMode) err
 		"mode", string(mode),
 	)
 
+	before := e.safeOutputs()
+	var err error
 	switch mode {
 	case DeployModifiedNodes:
-		return e.deployModifiedNodes(flows, configs)
+		err = e.deployModifiedNodes(flows, configs)
 	case DeployModifiedFlows:
-		return e.deployModifiedFlows(flows, configs)
+		err = e.deployModifiedFlows(flows, configs)
 	default:
-		return e.deployFull(flows, configs)
+		err = e.deployFull(flows, configs)
 	}
+	e.applySafeStates(before)
+	return err
 }
 
 // ─── Deploy modes ───────────────────────────────────────────────────────────

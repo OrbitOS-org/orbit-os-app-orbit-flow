@@ -150,6 +150,11 @@ func (c *GpioPinConfig) PinLabel() string {
 	return fmt.Sprintf("chip%d/line%d", c.pin.ChipNumber, c.pin.Number)
 }
 
+// Key names the physical line for the engine's safe-output tracking.
+func (c *GpioPinConfig) Key() string {
+	return fmt.Sprintf("gpio:%d:%d", c.pin.ChipNumber, c.pin.Number)
+}
+
 // Read returns the current level of the configured pin.
 func (c *GpioPinConfig) Read() (bool, error) {
 	orbit := orbitsdk.Client()

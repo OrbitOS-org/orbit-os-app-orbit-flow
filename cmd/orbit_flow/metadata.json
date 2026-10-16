@@ -10,6 +10,7 @@
     "UartService/*",
     "MobileNotificationService/*",
     "GpioService/*",
+    "PwmService/*",
     "I2CService/*",
     "SpiService/*"
   ],

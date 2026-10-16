@@ -79,6 +79,7 @@ const icons: Record<string, string[]> = {
   // ── OrbitOS ───────────────────────────────
   'mobile-notify': ['M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9', 'M13.73 21a2 2 0 0 1-3.46 0'], // bell
   'gpio-read':  ['M7 8h10v8H7z', 'M9 8V4', 'M15 8V4', 'M9 16v4', 'M15 16v4', 'M2 12h5', 'M4 9l3 3-3 3'], // chip + arrow in
+  'pwm-out':    ['M2 17h3V7h4v10h3V7h4v10h3V7h3'],                                  // PWM square wave
   'gpio-write': ['M7 8h10v8H7z', 'M9 8V4', 'M15 8V4', 'M9 16v4', 'M15 16v4', 'M17 12h5', 'M20 9l3 3-3 3'], // chip + arrow out
   'system-metrics':  ['M3 3v18h18', 'M7 15l4-5 3 3 5-7'], // line chart (gauge/trend)
   'device-identity': ['M4 4h16v16H4z', 'M4 9h16', 'M8 13h3', 'M8 16h6'], // ID card

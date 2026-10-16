@@ -38,6 +38,7 @@ import I2CTransferNode from "@/components/nodes/I2CTransferNode.vue";
 import SpiTransferNode from "@/components/nodes/SpiTransferNode.vue";
 import SerialNode from "@/components/nodes/SerialNode.vue";
 import SequenceNode from "@/components/nodes/SequenceNode.vue";
+import PwmOutNode from "@/components/nodes/PwmOutNode.vue";
 
 import "@vue-flow/core/dist/style.css";
 import "@vue-flow/core/dist/theme-default.css";
@@ -351,6 +352,10 @@ onMounted(async () => {
 
             <template #node-delay="nodeProps">
                 <DelayNode v-bind="nodeProps as any" />
+            </template>
+
+            <template #node-pwm-out="nodeProps">
+                <PwmOutNode v-bind="nodeProps as any" />
             </template>
 
             <template #node-trigger="nodeProps">

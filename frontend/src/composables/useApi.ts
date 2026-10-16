@@ -145,6 +145,11 @@ export interface OpcuaReadResponse {
   result?: OpcuaReadResult
 }
 
+export interface PwmChannelInfo {
+  channel: number
+  name: string
+}
+
 export interface GpioPinInfo {
   name: string
   line: number
@@ -669,6 +674,15 @@ export function useApi() {
   }
 
   /**
+   * List the PWM channels the OrbitOS device reports, for the PWM Out
+   * channel picker. Empty when the device has none.
+   */
+  async function listPwmChannels(): Promise<PwmChannelInfo[]> {
+    const res = await request<{ channels: PwmChannelInfo[] }>('/pwm/channels')
+    return res.channels ?? []
+  }
+
+  /**
    * List I2C bus numbers the OrbitOS device reports, for the I2C Bus
    * config's bus picker. Same "empty is not an error" convention.
    */
@@ -817,6 +831,7 @@ export function useApi() {
     readOpcua,
     listUartPorts,
     listGpioPins,
+    listPwmChannels,
     listI2CBuses,
     scanI2CBus,
     listSpiDevices,

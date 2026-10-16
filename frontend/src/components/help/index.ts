@@ -227,6 +227,14 @@ const summaries: Record<string, NodeSummaryFn> = {
     return mode === 'delete' ? `deletes ${path}` : `${mode === 'append' ? 'appends to' : 'overwrites'} ${path}`
   },
 
+  'pwm-out'(cfg) {
+    const ch = Number(cfg.channel ?? -1)
+    if (ch < 0) return 'no channel selected'
+    const f = Number(cfg.frequency ?? 1000)
+    const freq = f >= 1000 && f % 100 === 0 ? `${f / 1000} kHz` : `${f} Hz`
+    return `${(cfg.channelName as string) || `pwm${ch}`} · ${freq}`
+  },
+
   trigger(cfg) {
     const unit: Record<string, string> = { ms: 'ms', s: 's', min: 'min', hr: 'h' }
     const d = `${Number(cfg.duration ?? 250)} ${unit[(cfg.units as string) ?? 'ms'] ?? 'ms'}`

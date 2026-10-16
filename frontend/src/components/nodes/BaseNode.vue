@@ -109,6 +109,7 @@ const typeLabel = computed(() => {
         "mobile-notify": "Mobile Notification",
         "gpio-read": "GPIO Read",
         "gpio-write": "GPIO Write",
+        "pwm-out": "PWM Out",
         "system-metrics": "System Metrics",
         "device-identity": "Device Info",
         "i2c-transfer": "I2C Transfer",

@@ -10,6 +10,13 @@ const { options: pinOptions, openNewConfig, openEditConfig } = useConfigSelector
 
 const pin = useNodeProperty<string>('pin', '')
 const action = useNodeProperty<string>('action', 'payload')
+const onStop = useNodeProperty<string>('onStop', 'off')
+
+const ON_STOP = [
+  { value: 'off', label: 'Off' },
+  { value: 'on', label: 'On' },
+  { value: 'keep', label: 'Leave as is' },
+]
 
 const ACTIONS = [
   { value: 'payload', label: 'From payload' },
@@ -57,6 +64,13 @@ const isPayloadMode = computed(() => action.value === 'payload')
       Reads the pin's current level and writes the opposite. Adds a read
       before the write, so it's a little slower than On/Off.
     </div>
+
+    <FormField
+      label="When flows stop"
+      hint="Also when this node is deleted or its flow is disabled. A deploy that keeps the node leaves the pin as it is."
+    >
+      <ToggleGroup v-model="onStop" :options="ON_STOP" />
+    </FormField>
 
     <div class="text-[10px] text-terminal-text-dim leading-relaxed">
       The pin must be configured as <span class="text-accent">Output</span>.

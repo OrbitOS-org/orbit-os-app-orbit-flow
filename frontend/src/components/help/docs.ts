@@ -147,6 +147,24 @@ export const nodeHelpDocs: Record<string, NodeHelpDoc> = {
     ],
   },
 
+  'pwm-out': {
+    overview:
+      'Sets the duty cycle of a PWM channel of the device: dim a LED, set a fan or motor speed, move a servo. The channels come from the device (a Raspberry Pi has pwm0 and pwm1; boards without PWM list none).',
+    inputs: [
+      'msg.payload: the duty cycle, in the chosen range (0–100 %, 0–1 or 0–255), as "40%", or true/false for full on/off. Values outside the range are limited.',
+      'msg.frequency (Hz, optional): changes the frequency from this message on.',
+    ],
+    outputs: ['The message, unchanged, after the channel is set.'],
+    properties: [
+      { key: 'channel',         desc: 'The PWM channel, chosen from the list the device reports (or typed).' },
+      { key: 'frequency',       desc: 'In Hz. Fans usually 25 kHz, LEDs 1 kHz, servos 50 Hz.' },
+      { key: 'when flows stop', desc: 'Off (default) · a fixed value · leave as is. Also applies when the node is deleted or its flow disabled; a deploy that keeps the node leaves the output as it is.' },
+    ],
+    examples: [
+      { title: 'Fan speed from a dashboard slider or a temperature', config: 'range 20–40 °C → 0–100 · limit → PWM Out (25 kHz)', result: 'The fan runs faster as it gets hotter, and stops when the flows stop.' },
+    ],
+  },
+
   trigger: {
     overview:
       'Sends a message when one arrives, waits, then sends a second message. Typical uses: switch a light on and off again 60 s after the last motion, a watchdog that alarms when messages stop, a pulse on a relay. Works like the Node-RED trigger node.',
