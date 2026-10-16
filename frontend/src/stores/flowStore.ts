@@ -290,19 +290,8 @@ export const useFlowStore = defineStore("flow", () => {
     if (activeFlowId.value) syncCanvasToActiveFlow();
 
     const configIds = new Map<string, string>();
-    for (const c of example.configs ?? []) {
-      const same = configs.value.find(
-        (x) => x.type === c.type && JSON.stringify(x.config) === JSON.stringify(c.config),
-      );
-      if (same) {
-        configIds.set(c.id, same.id);
-      } else {
-        const id = generateId();
-        configIds.set(c.id, id);
-        configs.value.push({ ...JSON.parse(JSON.stringify(c)), id });
-      }
-    }
-    // Node settings point at connections by ID (e.g. config.server).
+    // Settings point at connections by ID: a node's config.server, and also
+    // one connection's setting pointing at another (a dashboard group's page).
     const remapConfig = (v: unknown): unknown => {
       if (typeof v === "string") return configIds.get(v) ?? v;
       if (Array.isArray(v)) return v.map(remapConfig);
@@ -311,6 +300,34 @@ export const useFlowStore = defineStore("flow", () => {
       }
       return v;
     };
+    // Connections that point at no other connection of the example first, so
+    // the ones that do (groups → pages) are compared and saved with new IDs.
+    const exampleIds = new Set((example.configs ?? []).map((c) => c.id));
+    const refersTo = (c: ConfigNode) =>
+      JSON.stringify(c.config ?? {}).match(/"[^"]*"/g)?.map((q) => q.slice(1, -1)).filter((s) => exampleIds.has(s) && s !== c.id) ?? [];
+    let pending = [...(example.configs ?? [])];
+    while (pending.length) {
+      const ready = pending.filter((c) => refersTo(c).every((id) => configIds.has(id)));
+      const batch = ready.length ? ready : pending; // a loop of references: take them as they are
+      for (const c of batch) {
+        const config = remapConfig(c.config ?? {}) as Record<string, unknown>;
+        // Dashboard pages and groups are told apart by name too: two pages
+        // with the same order are still two pages.
+        const byName = c.type === "ui-page" || c.type === "ui-group";
+        const same = configs.value.find(
+          (x) => x.type === c.type && JSON.stringify(x.config) === JSON.stringify(config) &&
+            (!byName || x.name === c.name),
+        );
+        if (same) {
+          configIds.set(c.id, same.id);
+        } else {
+          const id = generateId();
+          configIds.set(c.id, id);
+          configs.value.push({ ...JSON.parse(JSON.stringify(c)), id, config });
+        }
+      }
+      pending = pending.filter((c) => !batch.includes(c));
+    }
 
     let first: Flow | undefined;
     for (const src of example.flows) {
