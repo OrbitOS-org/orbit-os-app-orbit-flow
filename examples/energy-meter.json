@@ -1,6 +1,6 @@
 {
   "name": "Energy meter",
-  "description": "Reads voltage, current and power from an Eastron SDM meter.",
+  "description": "Reads voltage, current and power from an Eastron SDM meter, on the dashboard too.",
   "category": "Industrial",
   "order": 17,
   "needs": "Energy meter, RS-485",
@@ -9,7 +9,7 @@
       "id": "ex-energy-meter",
       "type": "tab",
       "label": "Energy meter",
-      "info": "Reads an Eastron SDM120 or SDM230 meter every 10 seconds over Modbus RTU: voltage (register 0), current (6) and active power (12), each a 32-bit float in the input registers. The meter is expected at unit 1, 9600 baud, 8N1 — set your values in the Modbus connection. The Function node joins the three readings into one message.",
+      "info": "Reads an Eastron SDM120 or SDM230 meter every 10 seconds over Modbus RTU: voltage (register 0), current (6) and active power (12), each a 32-bit float in the input registers. The meter is expected at unit 1, 9600 baud, 8N1 — set your values in the Modbus connection. The Function node joins the three readings into one message. On the dashboard (the button with four squares at the top of the editor): the power on a gauge, the voltage and current as text, and the power over the last 24 hours.",
       "nodes": [
         {
           "id": "ex-energy-meter-n1",
@@ -22,7 +22,8 @@
           "outputs": 1,
           "wires": [
             [
-              "ex-energy-meter-n5"
+              "ex-energy-meter-n5",
+              "ex-energy-meter-n6"
             ]
           ],
           "config": {
@@ -144,6 +145,106 @@
             "statusOutput": "same",
             "statusProperty": ""
           }
+        },
+        {
+          "id": "ex-energy-meter-n6",
+          "type": "function",
+          "name": "for the dashboard",
+          "x": 600,
+          "y": 260,
+          "z": "ex-energy-meter",
+          "inputs": 1,
+          "outputs": 3,
+          "wires": [
+            [
+              "ex-energy-meter-n7",
+              "ex-energy-meter-n10"
+            ],
+            [
+              "ex-energy-meter-n8"
+            ],
+            [
+              "ex-energy-meter-n9"
+            ]
+          ],
+          "config": {
+            "func": "// The joined reading has one key per register (topic modbus/<meter>/<address>).\nconst p = msg.payload;\nconst at = a => Object.entries(p).find(([k]) => k.endsWith('/' + a))?.[1];\nreturn [\n  { topic: 'power W', payload: at(12) },\n  { payload: at(0) },\n  { payload: at(6) },\n];",
+            "outputs": 3
+          }
+        },
+        {
+          "id": "ex-energy-meter-n7",
+          "type": "ui-gauge",
+          "name": "Power",
+          "x": 840,
+          "y": 220,
+          "z": "ex-energy-meter",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "group": "ex-energy-meter-g1",
+            "order": 1,
+            "width": 4,
+            "min": 0,
+            "max": 4000,
+            "units": "W"
+          }
+        },
+        {
+          "id": "ex-energy-meter-n8",
+          "type": "ui-text",
+          "name": "Voltage",
+          "x": 840,
+          "y": 270,
+          "z": "ex-energy-meter",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "group": "ex-energy-meter-g1",
+            "order": 2,
+            "width": 4,
+            "units": "V"
+          }
+        },
+        {
+          "id": "ex-energy-meter-n9",
+          "type": "ui-text",
+          "name": "Current",
+          "x": 840,
+          "y": 320,
+          "z": "ex-energy-meter",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "group": "ex-energy-meter-g1",
+            "order": 3,
+            "width": 4,
+            "units": "A"
+          }
+        },
+        {
+          "id": "ex-energy-meter-n10",
+          "type": "ui-chart",
+          "name": "Power, last 24 h",
+          "x": 840,
+          "y": 380,
+          "z": "ex-energy-meter",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "group": "ex-energy-meter-g2",
+            "order": 1,
+            "width": 12,
+            "chartType": "line",
+            "units": "W",
+            "removeOlder": 24,
+            "removeOlderUnit": "3600",
+            "removeOlderPoints": 10000
+          }
         }
       ],
       "wires": [
@@ -174,6 +275,41 @@
           "sourcePort": 0,
           "targetNode": "ex-energy-meter-n1",
           "targetPort": 0
+        },
+        {
+          "id": "ex-energy-meter-n6-w0--n7",
+          "sourceNode": "ex-energy-meter-n6",
+          "sourcePort": 0,
+          "targetNode": "ex-energy-meter-n7",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-energy-meter-n6-w0--n10",
+          "sourceNode": "ex-energy-meter-n6",
+          "sourcePort": 0,
+          "targetNode": "ex-energy-meter-n10",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-energy-meter-n6-w1--n8",
+          "sourceNode": "ex-energy-meter-n6",
+          "sourcePort": 1,
+          "targetNode": "ex-energy-meter-n8",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-energy-meter-n6-w2--n9",
+          "sourceNode": "ex-energy-meter-n6",
+          "sourcePort": 2,
+          "targetNode": "ex-energy-meter-n9",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-energy-meter-n1-w0--n6",
+          "sourceNode": "ex-energy-meter-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-energy-meter-n6",
+          "targetPort": 0
         }
       ]
     }
@@ -196,6 +332,34 @@
         "stopBits": 1,
         "timeout": 1000,
         "transport": "rtu"
+      }
+    },
+    {
+      "id": "ex-energy-meter-p1",
+      "type": "ui-page",
+      "name": "Energy",
+      "config": {
+        "order": 1
+      }
+    },
+    {
+      "id": "ex-energy-meter-g1",
+      "type": "ui-group",
+      "name": "Now",
+      "config": {
+        "page": "ex-energy-meter-p1",
+        "width": 12,
+        "order": 1
+      }
+    },
+    {
+      "id": "ex-energy-meter-g2",
+      "type": "ui-group",
+      "name": "Power",
+      "config": {
+        "page": "ex-energy-meter-p1",
+        "width": 12,
+        "order": 2
       }
     }
   ]

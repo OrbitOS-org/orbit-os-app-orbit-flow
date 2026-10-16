@@ -1,6 +1,6 @@
 {
   "name": "I²C temperature sensor",
-  "description": "Reads a TMP102 or LM75 sensor every 10 s.",
+  "description": "Reads a TMP102 or LM75 sensor every 10 s, with a gauge and a chart on the dashboard.",
   "category": "Device",
   "order": 12,
   "needs": "I²C sensor (TMP102 or LM75)",
@@ -9,7 +9,7 @@
       "id": "ex-i2c-temperature-sensor",
       "type": "tab",
       "label": "I²C temperature sensor",
-      "info": "Every 10 seconds the I²C Transfer node writes the register number 0x00 to the sensor at address 0x48 and reads 2 bytes back; the Function node turns them into °C. Set the I²C bus of your device in the I²C bus connection, and change the address if your sensor uses another one (0x48 to 0x4B).",
+      "info": "Every 10 seconds the I²C Transfer node writes the register number 0x00 to the sensor at address 0x48 and reads 2 bytes back; the Function node turns them into °C. Set the I²C bus of your device in the I²C bus connection, and change the address if your sensor uses another one (0x48 to 0x4B). The temperature also shows on the dashboard (the button with four squares at the top of the editor): a gauge and a chart of the last 6 hours.",
       "nodes": [
         {
           "id": "ex-i2c-temperature-sensor-n1",
@@ -71,7 +71,9 @@
           "outputs": 1,
           "wires": [
             [
-              "ex-i2c-temperature-sensor-n4"
+              "ex-i2c-temperature-sensor-n4",
+              "ex-i2c-temperature-sensor-n5",
+              "ex-i2c-temperature-sensor-n6"
             ]
           ],
           "config": {
@@ -97,6 +99,46 @@
             "statusOutput": "same",
             "statusProperty": ""
           }
+        },
+        {
+          "id": "ex-i2c-temperature-sensor-n5",
+          "type": "ui-gauge",
+          "name": "Temperature",
+          "x": 720,
+          "y": 200,
+          "z": "ex-i2c-temperature-sensor",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "group": "ex-i2c-temperature-sensor-g1",
+            "order": 1,
+            "width": 4,
+            "min": -10,
+            "max": 50,
+            "units": "°C"
+          }
+        },
+        {
+          "id": "ex-i2c-temperature-sensor-n6",
+          "type": "ui-chart",
+          "name": "Last 6 hours",
+          "x": 720,
+          "y": 260,
+          "z": "ex-i2c-temperature-sensor",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "group": "ex-i2c-temperature-sensor-g1",
+            "order": 2,
+            "width": 8,
+            "chartType": "line",
+            "units": "°C",
+            "removeOlder": 6,
+            "removeOlderUnit": "3600",
+            "removeOlderPoints": 3000
+          }
         }
       ],
       "wires": [
@@ -120,6 +162,20 @@
           "sourcePort": 0,
           "targetNode": "ex-i2c-temperature-sensor-n4",
           "targetPort": 0
+        },
+        {
+          "id": "ex-i2c-temperature-sensor-n3-w0--n5",
+          "sourceNode": "ex-i2c-temperature-sensor-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-i2c-temperature-sensor-n5",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-i2c-temperature-sensor-n3-w0--n6",
+          "sourceNode": "ex-i2c-temperature-sensor-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-i2c-temperature-sensor-n6",
+          "targetPort": 0
         }
       ]
     }
@@ -135,6 +191,24 @@
         "clockStretching": false,
         "name": "I²C bus 1",
         "tenBitAddr": false
+      }
+    },
+    {
+      "id": "ex-i2c-temperature-sensor-p1",
+      "type": "ui-page",
+      "name": "Temperature",
+      "config": {
+        "order": 1
+      }
+    },
+    {
+      "id": "ex-i2c-temperature-sensor-g1",
+      "type": "ui-group",
+      "name": "Sensor",
+      "config": {
+        "page": "ex-i2c-temperature-sensor-p1",
+        "width": 12,
+        "order": 1
       }
     }
   ]

@@ -1,6 +1,6 @@
 {
   "name": "EBYTE relay board",
-  "description": "Switch the 4 relays of an EBYTE MA01-AXCX4040 board over Modbus RTU (RS-485), run them one after the other, and read its inputs.",
+  "description": "Switch the 4 relays of an EBYTE MA01-AXCX4040 board over Modbus RTU (RS-485), run them one after the other, and read its inputs, from the editor or the dashboard.",
   "category": "Industrial",
   "order": 14,
   "needs": "EBYTE board, RS-485",
@@ -455,7 +455,8 @@
           "outputs": 1,
           "wires": [
             [
-              "er-state"
+              "er-state",
+              "er-ui-state"
             ]
           ],
           "config": {
@@ -497,7 +498,7 @@
         {
           "id": "er-inputs",
           "type": "modbus-read",
-          "name": "Inputs DI1–DI4 (every 30 s)",
+          "name": "Inputs DI1–DI4 (every 5 s)",
           "x": 560,
           "y": 800,
           "z": "ebyte-relays",
@@ -505,7 +506,8 @@
           "outputs": 1,
           "wires": [
             [
-              "er-di"
+              "er-di",
+              "er-ui-di"
             ]
           ],
           "config": {
@@ -517,7 +519,7 @@
             "fc": 2,
             "mode": "static",
             "offset": 0,
-            "pollInterval": 30000,
+            "pollInterval": 5000,
             "quantity": 4,
             "scale": 1,
             "server": "ebyte-rs485",
@@ -664,6 +666,242 @@
           "config": {
             "func": "// One step of the chase on each tick: only the next relay is on (1, 2, 3, 4, 1…).\nif (flow.get('chase') !== true) return null;\nconst prev = context.get('step');\nconst step = prev === undefined ? 0 : (prev + 1) % 4;\ncontext.set('step', step);\nmsg.payload = [0, 1, 2, 3].map(i => i === step);\nnode.status('blue', 'relay ' + (step + 1));\nreturn msg;",
             "outputs": 1
+          }
+        },
+        {
+          "id": "er-ui-relay1",
+          "type": "ui-switch",
+          "name": "Relay 1",
+          "x": 330,
+          "y": 60,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-write1"
+            ]
+          ],
+          "config": {
+            "group": "er-g1",
+            "order": 1,
+            "width": 3,
+            "onvalue": "true",
+            "onvalueType": "bool",
+            "offvalue": "false",
+            "offvalueType": "bool",
+            "topic": "",
+            "passthru": false
+          }
+        },
+        {
+          "id": "er-ui-relay2",
+          "type": "ui-switch",
+          "name": "Relay 2",
+          "x": 330,
+          "y": 160,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-write2"
+            ]
+          ],
+          "config": {
+            "group": "er-g1",
+            "order": 2,
+            "width": 3,
+            "onvalue": "true",
+            "onvalueType": "bool",
+            "offvalue": "false",
+            "offvalueType": "bool",
+            "topic": "",
+            "passthru": false
+          }
+        },
+        {
+          "id": "er-ui-relay3",
+          "type": "ui-switch",
+          "name": "Relay 3",
+          "x": 330,
+          "y": 260,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-write3"
+            ]
+          ],
+          "config": {
+            "group": "er-g1",
+            "order": 3,
+            "width": 3,
+            "onvalue": "true",
+            "onvalueType": "bool",
+            "offvalue": "false",
+            "offvalueType": "bool",
+            "topic": "",
+            "passthru": false
+          }
+        },
+        {
+          "id": "er-ui-relay4",
+          "type": "ui-switch",
+          "name": "Relay 4",
+          "x": 330,
+          "y": 360,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-write4"
+            ]
+          ],
+          "config": {
+            "group": "er-g1",
+            "order": 4,
+            "width": 3,
+            "onvalue": "true",
+            "onvalueType": "bool",
+            "offvalue": "false",
+            "offvalueType": "bool",
+            "topic": "",
+            "passthru": false
+          }
+        },
+        {
+          "id": "er-ui-alloff",
+          "type": "ui-button",
+          "name": "All off",
+          "x": 330,
+          "y": 520,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-writeall"
+            ]
+          ],
+          "config": {
+            "group": "er-g2",
+            "order": 3,
+            "width": 4,
+            "payload": "[false,false,false,false]",
+            "payloadType": "json",
+            "topic": ""
+          }
+        },
+        {
+          "id": "er-ui-start",
+          "type": "ui-button",
+          "name": "Start relay chase",
+          "x": 330,
+          "y": 620,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-chase-onoff"
+            ]
+          ],
+          "config": {
+            "group": "er-g2",
+            "order": 1,
+            "width": 4,
+            "payload": "true",
+            "payloadType": "bool",
+            "topic": ""
+          }
+        },
+        {
+          "id": "er-ui-stop",
+          "type": "ui-button",
+          "name": "Stop relay chase",
+          "x": 330,
+          "y": 700,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-chase-onoff"
+            ]
+          ],
+          "config": {
+            "group": "er-g2",
+            "order": 2,
+            "width": 4,
+            "payload": "false",
+            "payloadType": "bool",
+            "topic": ""
+          }
+        },
+        {
+          "id": "er-ui-state",
+          "type": "function",
+          "name": "relay state to switches",
+          "x": 800,
+          "y": 680,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 4,
+          "wires": [
+            [
+              "er-ui-relay1"
+            ],
+            [
+              "er-ui-relay2"
+            ],
+            [
+              "er-ui-relay3"
+            ],
+            [
+              "er-ui-relay4"
+            ]
+          ],
+          "config": {
+            "func": "// The coils read from the board set the four switches, so they show the\n// real state (also after the chase or the inject buttons).\nconst c = msg.payload || [];\nreturn [0, 1, 2, 3].map(i => ({ payload: Boolean(c[i]) }));",
+            "outputs": 4
+          }
+        },
+        {
+          "id": "er-ui-di",
+          "type": "function",
+          "name": "inputs as text",
+          "x": 800,
+          "y": 860,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "er-ui-inputs"
+            ]
+          ],
+          "config": {
+            "func": "const d = msg.payload || [];\nmsg.payload = [0, 1, 2, 3].map(i => `DI${i + 1} ${d[i] ? 'on' : 'off'}`).join(' · ');\nreturn msg;"
+          }
+        },
+        {
+          "id": "er-ui-inputs",
+          "type": "ui-text",
+          "name": "Inputs",
+          "x": 1020,
+          "y": 860,
+          "z": "ebyte-relays",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "group": "er-g3",
+            "order": 1,
+            "width": 12,
+            "units": ""
           }
         }
       ],
@@ -821,9 +1059,107 @@
           "sourcePort": 0,
           "targetNode": "er-writeall",
           "targetPort": 0
+        },
+        {
+          "id": "er-ui-relay1-w0--write1",
+          "sourceNode": "er-ui-relay1",
+          "sourcePort": 0,
+          "targetNode": "er-write1",
+          "targetPort": 0
+        },
+        {
+          "id": "er-ui-relay2-w0--write2",
+          "sourceNode": "er-ui-relay2",
+          "sourcePort": 0,
+          "targetNode": "er-write2",
+          "targetPort": 0
+        },
+        {
+          "id": "er-ui-relay3-w0--write3",
+          "sourceNode": "er-ui-relay3",
+          "sourcePort": 0,
+          "targetNode": "er-write3",
+          "targetPort": 0
+        },
+        {
+          "id": "er-ui-relay4-w0--write4",
+          "sourceNode": "er-ui-relay4",
+          "sourcePort": 0,
+          "targetNode": "er-write4",
+          "targetPort": 0
+        },
+        {
+          "id": "er-ui-alloff-w0--writeall",
+          "sourceNode": "er-ui-alloff",
+          "sourcePort": 0,
+          "targetNode": "er-writeall",
+          "targetPort": 0
+        },
+        {
+          "id": "er-ui-start-w0--onoff",
+          "sourceNode": "er-ui-start",
+          "sourcePort": 0,
+          "targetNode": "er-chase-onoff",
+          "targetPort": 0
+        },
+        {
+          "id": "er-ui-stop-w0--onoff",
+          "sourceNode": "er-ui-stop",
+          "sourcePort": 0,
+          "targetNode": "er-chase-onoff",
+          "targetPort": 0
+        },
+        {
+          "id": "er-ui-state-w0--relay1",
+          "sourceNode": "er-ui-state",
+          "sourcePort": 0,
+          "targetNode": "er-ui-relay1",
+          "targetPort": 0
+        },
+        {
+          "id": "er-ui-state-w1--relay2",
+          "sourceNode": "er-ui-state",
+          "sourcePort": 1,
+          "targetNode": "er-ui-relay2",
+          "targetPort": 0
+        },
+        {
+          "id": "er-ui-state-w2--relay3",
+          "sourceNode": "er-ui-state",
+          "sourcePort": 2,
+          "targetNode": "er-ui-relay3",
+          "targetPort": 0
+        },
+        {
+          "id": "er-ui-state-w3--relay4",
+          "sourceNode": "er-ui-state",
+          "sourcePort": 3,
+          "targetNode": "er-ui-relay4",
+          "targetPort": 0
+        },
+        {
+          "id": "er-ui-di-w0--inputs",
+          "sourceNode": "er-ui-di",
+          "sourcePort": 0,
+          "targetNode": "er-ui-inputs",
+          "targetPort": 0
+        },
+        {
+          "id": "er-coils-w0--state",
+          "sourceNode": "er-coils",
+          "sourcePort": 0,
+          "targetNode": "er-ui-state",
+          "targetPort": 0
+        },
+        {
+          "id": "er-inputs-w0--di",
+          "sourceNode": "er-inputs",
+          "sourcePort": 0,
+          "targetNode": "er-ui-di",
+          "targetPort": 0
         }
       ],
-      "info": "Controls an EBYTE MA01-AXCX4040 board (4 digital inputs, 4 relays) over Modbus RTU on RS-485. Press the button next to an inject node to switch a relay on or off (function 5, coils 0 to 3) or all four at once (function 15). \"Start relay chase\" switches the relays on one after the other, one per second (1, 2, 3, 4, 1…); \"Stop relay chase\" stops and switches them all off; change the time in \"every 1 s\". The relay state is read every 5 s (function 1) and the inputs every 30 s (function 2). Before deploying, set the serial port, baud rate and unit ID of the board in the Modbus connection."
+      "info": "Controls an EBYTE MA01-AXCX4040 board (4 digital inputs, 4 relays) over Modbus RTU on RS-485. Press the button next to an inject node to switch a relay on or off (function 5, coils 0 to 3) or all four at once (function 15). \"Start relay chase\" switches the relays on one after the other, one per second (1, 2, 3, 4, 1…); \"Stop relay chase\" stops and switches them all off; change the time in \"every 1 s\". The relay state is read every 5 s (function 1) and the inputs every 5 s (function 2). Before deploying, set the serial port, baud rate and unit ID of the board in the Modbus connection. On the dashboard (the button with four squares at the top of the editor) a switch per relay does the same and follows the real state of the board; buttons start and stop the chase or switch all off, and the inputs show as text."
     }
   ],
   "configs": [
@@ -844,6 +1180,44 @@
         "stopBits": 1,
         "timeout": 1000,
         "transport": "rtu"
+      }
+    },
+    {
+      "id": "er-p1",
+      "type": "ui-page",
+      "name": "Relay board",
+      "config": {
+        "order": 1
+      }
+    },
+    {
+      "id": "er-g1",
+      "type": "ui-group",
+      "name": "Relays",
+      "config": {
+        "page": "er-p1",
+        "width": 12,
+        "order": 1
+      }
+    },
+    {
+      "id": "er-g2",
+      "type": "ui-group",
+      "name": "Actions",
+      "config": {
+        "page": "er-p1",
+        "width": 12,
+        "order": 2
+      }
+    },
+    {
+      "id": "er-g3",
+      "type": "ui-group",
+      "name": "Inputs",
+      "config": {
+        "page": "er-p1",
+        "width": 12,
+        "order": 3
       }
     }
   ]
