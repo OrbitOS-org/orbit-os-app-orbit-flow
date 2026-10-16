@@ -2,7 +2,7 @@
   "name": "Publish to MQTT",
   "description": "Publishes the device metrics to an MQTT broker.",
   "category": "Data",
-  "order": 21,
+  "order": 22,
   "needs": "MQTT broker",
   "flows": [
     {

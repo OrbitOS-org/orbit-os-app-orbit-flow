@@ -1,0 +1,307 @@
+{
+  "name": "GPIO and PWM on the dashboard",
+  "description": "Switch a light on a GPIO pin, set a LED brightness with PWM and see a button, from the dashboard.",
+  "category": "Device",
+  "order": 12,
+  "needs": "A LED or relay on a GPIO pin, a LED on a PWM output, a button (a Raspberry Pi has all three)",
+  "flows": [
+    {
+      "id": "ex-gpio-pwm-dashboard",
+      "type": "tab",
+      "label": "GPIO and PWM on the dashboard",
+      "info": "Three things on the dashboard (open it with the button with four squares at the top of the editor). Light: a switch that drives GPIO 22 through GPIO Write. Brightness: a slider (0–100 %) that sets PWM channel 0 through PWM Out. Button: GPIO 17 read every 250 ms, shown as pressed or released (the Filter passes only the changes). When the flows stop, the light and the LED go off. Before deploying, pick your pins in the two GPIO Pin connections and your channel in PWM Out (it lists the channels the device has; on a Raspberry Pi, pwm0 is usually GPIO 18).",
+      "nodes": [
+        {
+          "id": "ex-gpio-pwm-dashboard-n1",
+          "type": "ui-switch",
+          "name": "Light",
+          "x": 120,
+          "y": 80,
+          "z": "ex-gpio-pwm-dashboard",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-gpio-pwm-dashboard-n2"
+            ]
+          ],
+          "config": {
+            "group": "ex-gpio-pwm-dashboard-g1",
+            "order": 1,
+            "width": 6,
+            "onvalue": "true",
+            "onvalueType": "bool",
+            "offvalue": "false",
+            "offvalueType": "bool",
+            "topic": "",
+            "passthru": false
+          }
+        },
+        {
+          "id": "ex-gpio-pwm-dashboard-n2",
+          "type": "gpio-write",
+          "name": "light (GPIO 22)",
+          "x": 380,
+          "y": 80,
+          "z": "ex-gpio-pwm-dashboard",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            []
+          ],
+          "config": {
+            "pin": "ex-gpio-pwm-dashboard-c2",
+            "action": "payload",
+            "onStop": "off"
+          }
+        },
+        {
+          "id": "ex-gpio-pwm-dashboard-n3",
+          "type": "ui-slider",
+          "name": "Brightness",
+          "x": 120,
+          "y": 160,
+          "z": "ex-gpio-pwm-dashboard",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-gpio-pwm-dashboard-n4"
+            ]
+          ],
+          "config": {
+            "group": "ex-gpio-pwm-dashboard-g1",
+            "order": 2,
+            "width": 6,
+            "min": 0,
+            "max": 100,
+            "step": 5,
+            "topic": "",
+            "passthru": false
+          }
+        },
+        {
+          "id": "ex-gpio-pwm-dashboard-n4",
+          "type": "pwm-out",
+          "name": "LED (PWM channel 0)",
+          "x": 380,
+          "y": 160,
+          "z": "ex-gpio-pwm-dashboard",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            []
+          ],
+          "config": {
+            "channel": 0,
+            "channelName": "",
+            "frequency": 1000,
+            "scale": "percent",
+            "onStop": "off",
+            "stopValue": 0
+          }
+        },
+        {
+          "id": "ex-gpio-pwm-dashboard-n5",
+          "type": "inject",
+          "name": "every 250 ms",
+          "x": 120,
+          "y": 260,
+          "z": "ex-gpio-pwm-dashboard",
+          "inputs": 0,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-gpio-pwm-dashboard-n6"
+            ]
+          ],
+          "config": {
+            "cron": "",
+            "interval": 250,
+            "mode": "interval",
+            "once": false,
+            "props": [
+              {
+                "p": "payload",
+                "v": "rfc3339",
+                "vt": "date"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ex-gpio-pwm-dashboard-n6",
+          "type": "gpio-read",
+          "name": "button (GPIO 17)",
+          "x": 330,
+          "y": 260,
+          "z": "ex-gpio-pwm-dashboard",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-gpio-pwm-dashboard-n7"
+            ]
+          ],
+          "config": {
+            "pin": "ex-gpio-pwm-dashboard-c1"
+          }
+        },
+        {
+          "id": "ex-gpio-pwm-dashboard-n7",
+          "type": "filter",
+          "name": "only when it changes",
+          "x": 540,
+          "y": 260,
+          "z": "ex-gpio-pwm-dashboard",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-gpio-pwm-dashboard-n8"
+            ]
+          ],
+          "config": {
+            "func": "rbe",
+            "gap": "",
+            "inout": "out",
+            "property": "payload",
+            "septopics": true,
+            "topi": "topic"
+          }
+        },
+        {
+          "id": "ex-gpio-pwm-dashboard-n8",
+          "type": "function",
+          "name": "pressed or released",
+          "x": 760,
+          "y": 260,
+          "z": "ex-gpio-pwm-dashboard",
+          "inputs": 1,
+          "outputs": 1,
+          "wires": [
+            [
+              "ex-gpio-pwm-dashboard-n9"
+            ]
+          ],
+          "config": {
+            "func": "msg.payload = msg.payload ? 'pressed' : 'released';\nreturn msg;"
+          }
+        },
+        {
+          "id": "ex-gpio-pwm-dashboard-n9",
+          "type": "ui-text",
+          "name": "Button",
+          "x": 980,
+          "y": 260,
+          "z": "ex-gpio-pwm-dashboard",
+          "inputs": 1,
+          "outputs": 0,
+          "wires": [],
+          "config": {
+            "group": "ex-gpio-pwm-dashboard-g2",
+            "order": 1,
+            "width": 12,
+            "units": ""
+          }
+        }
+      ],
+      "wires": [
+        {
+          "id": "ex-gpio-pwm-dashboard-n1-w0--n2",
+          "sourceNode": "ex-gpio-pwm-dashboard-n1",
+          "sourcePort": 0,
+          "targetNode": "ex-gpio-pwm-dashboard-n2",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-gpio-pwm-dashboard-n3-w0--n4",
+          "sourceNode": "ex-gpio-pwm-dashboard-n3",
+          "sourcePort": 0,
+          "targetNode": "ex-gpio-pwm-dashboard-n4",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-gpio-pwm-dashboard-n5-w0--n6",
+          "sourceNode": "ex-gpio-pwm-dashboard-n5",
+          "sourcePort": 0,
+          "targetNode": "ex-gpio-pwm-dashboard-n6",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-gpio-pwm-dashboard-n6-w0--n7",
+          "sourceNode": "ex-gpio-pwm-dashboard-n6",
+          "sourcePort": 0,
+          "targetNode": "ex-gpio-pwm-dashboard-n7",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-gpio-pwm-dashboard-n7-w0--n8",
+          "sourceNode": "ex-gpio-pwm-dashboard-n7",
+          "sourcePort": 0,
+          "targetNode": "ex-gpio-pwm-dashboard-n8",
+          "targetPort": 0
+        },
+        {
+          "id": "ex-gpio-pwm-dashboard-n8-w0--n9",
+          "sourceNode": "ex-gpio-pwm-dashboard-n8",
+          "sourcePort": 0,
+          "targetNode": "ex-gpio-pwm-dashboard-n9",
+          "targetPort": 0
+        }
+      ]
+    }
+  ],
+  "configs": [
+    {
+      "id": "ex-gpio-pwm-dashboard-c1",
+      "type": "gpio-pin",
+      "name": "Button (GPIO 17)",
+      "config": {
+        "chip": 0,
+        "direction": "input",
+        "line": 17,
+        "name": ""
+      }
+    },
+    {
+      "id": "ex-gpio-pwm-dashboard-c2",
+      "type": "gpio-pin",
+      "name": "Light (GPIO 22)",
+      "config": {
+        "chip": 0,
+        "direction": "output",
+        "line": 22,
+        "name": ""
+      }
+    },
+    {
+      "id": "ex-gpio-pwm-dashboard-p1",
+      "type": "ui-page",
+      "name": "GPIO and PWM",
+      "config": {
+        "order": 1
+      }
+    },
+    {
+      "id": "ex-gpio-pwm-dashboard-g1",
+      "type": "ui-group",
+      "name": "Outputs",
+      "config": {
+        "page": "ex-gpio-pwm-dashboard-p1",
+        "width": 12,
+        "order": 1
+      }
+    },
+    {
+      "id": "ex-gpio-pwm-dashboard-g2",
+      "type": "ui-group",
+      "name": "Inputs",
+      "config": {
+        "page": "ex-gpio-pwm-dashboard-p1",
+        "width": 12,
+        "order": 2
+      }
+    }
+  ]
+}

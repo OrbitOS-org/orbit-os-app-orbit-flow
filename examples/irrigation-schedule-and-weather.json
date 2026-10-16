@@ -2,7 +2,7 @@
   "name": "Irrigation by schedule and weather",
   "description": "Waters on a schedule and skips the cycle when rain is coming (Sprinqua).",
   "category": "Projects",
-  "order": 28,
+  "order": 29,
   "needs": "Relay module on a GPIO, internet",
   "flows": [
     {

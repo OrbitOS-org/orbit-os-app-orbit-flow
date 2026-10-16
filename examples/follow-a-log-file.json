@@ -2,7 +2,7 @@
   "name": "Follow a log file",
   "description": "Reads only the lines added to a log since the last read.",
   "category": "Data",
-  "order": 24,
+  "order": 25,
   "flows": [
     {
       "id": "ex-follow-a-log-file",

@@ -2,7 +2,7 @@
   "name": "Process new files in a folder",
   "description": "Watches a folder, reads each new CSV file and deletes it when done.",
   "category": "Data",
-  "order": 25,
+  "order": 26,
   "flows": [
     {
       "id": "ex-process-new-files",
