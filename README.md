@@ -35,6 +35,8 @@ Runs on Raspberry Pi, Arduino UNO Q and other ARM64 devices with Orbit OS (free 
 
 **From source — recommended: [Orbit Studio](https://marketplace.visualstudio.com/items?itemName=orbit-os.orbit-studio) (VS Code):**
 
+<a href="https://marketplace.visualstudio.com/items?itemName=orbit-os.orbit-studio"><img src="https://www.orbit-os.org/images/vscode/orbit-studio-logo.png" width="200" alt="Orbit Studio for VS Code"></a>
+
 You need [VS Code](https://code.visualstudio.com/) with the Orbit Studio extension, **[Go](https://go.dev/dl/) 1.25 or newer** (`go` on your PATH) and, to build the editor, **[Node.js](https://nodejs.org/) 20 or newer**.
 
 1. Clone the repository, build the editor and open the folder in VS Code:
