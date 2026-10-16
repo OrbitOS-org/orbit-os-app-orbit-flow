@@ -10,7 +10,7 @@ An [Orbit OS](https://www.orbit-os.org/?ref=github-orbit-flow) app for visual au
 
 It is also a complete example of an Orbit OS app in Go, using the **GPIO, PWM, UART, I²C, SPI, system and mobile notification APIs** through the [Orbit OS Go SDK](https://github.com/OrbitOS-org/orbit-os-sdk-go).
 
-Runs on Raspberry Pi, Arduino UNO Q and other ARM64 devices with Orbit OS (free Community Edition).
+Runs on Raspberry Pi, Arduino UNO Q and other ARM64 devices with Orbit OS (free Community Edition), and on 32-bit ARM (ARMv7) [certified products](https://www.orbit-os.org/platform.html?ref=github-orbit-flow#architectures).
 
 <p align="center">
   <img src="docs/store-screenshots/desktop-1-editor.png" width="640" alt="Orbit Flow: a pump-station flow with Modbus, OPC UA, S7, MQTT, GPIO and a phone notification">
