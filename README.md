@@ -39,14 +39,14 @@ Runs on Raspberry Pi, Arduino UNO Q and other ARM64 devices with Orbit OS (free 
 
 You need [VS Code](https://code.visualstudio.com/) with the Orbit Studio extension, **[Go](https://go.dev/dl/) 1.25 or newer** (`go` on your PATH) and, to build the editor, **[Node.js](https://nodejs.org/) 20 or newer**.
 
-1. Clone the repository, build the editor and open the folder in VS Code:
+1. Clone the repository and build the editor:
    ```bash
    git clone https://github.com/OrbitOS-org/orbit-os-app-orbit-flow
-   cd orbit-os-app-orbit-flow/frontend && npm install && npm run build && cd ..
-   code .
+   cd orbit-os-app-orbit-flow/frontend && npm install && npm run build
    ```
-2. In the Orbit sidebar, run **Add / Update SDK** and set your device's IP.
-3. Use **Run** to try it live against a device in Developer Mode, then **Build + Deploy** to install the signed `.orb`.
+2. In VS Code, open **Orbit Studio** from the Activity Bar → **My projects** → **Open project** and pick the `orbit-os-app-orbit-flow` folder. Orbit Studio downloads the SDK, adds the development certificates and opens the project.
+3. Choose your device in the device picker of the status bar (add it by its IP the first time).
+4. Press **Run** to try it live against a device in Developer Mode, then **Deploy** to build, sign and install the `.orb`.
 
 **Without Orbit Studio:** unpack the [SDK release](https://github.com/OrbitOS-org/orbit-os-sdk-go/releases) into `orbit-os-sdk-go/`, build the editor as above, then `go build ./cmd/orbit_flow` builds the binary — use Orbit Studio to package and sign the `.orb`.
 
@@ -74,7 +74,7 @@ Each node runs on its own and passes messages to the nodes wired after it; Deplo
 | `examples/` | the example flows of **+** → *Open…*, one JSON file each |
 | `orbit.project.json` | Orbit Studio project settings |
 
-- **Recommended workflow:** open the folder in VS Code with Orbit Studio, **Add / Update SDK** (downloads the SDK into `orbit-os-sdk-go/`, which is not in the repository), then **Run** or **Build + Deploy**.
+- **Recommended workflow:** in Orbit Studio, **My projects** → **Open project** (downloads the SDK into `orbit-os-sdk-go/`, which is not in the repository, and adds the development certificates), then **Run** or **Deploy** from the status bar.
 - Build the editor (`frontend/`, `npm run build`) before the app: the app serves it from `web/dist/`, which is not in the repository.
 - Run the tests with `go test ./...`.
 - Development TLS certificates live in `cmd/certs/grpc/` and are never committed.
